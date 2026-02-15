@@ -46,7 +46,7 @@ api.interceptors.response.use(
     // 400 with specific message: Tenant/Restaurant resolution failed
     if (error.response) {
       const isAuthError = error.response.status === 401;
-      
+
       // Only redirect for Auth errors. 400 errors (like 'Restaurant not found') should be handled by the component.
       if (isAuthError) {
         console.warn("Session expired. Redirecting to login...", error.response.data);
@@ -143,10 +143,15 @@ export const uploadAPI = {
       file = fileOrFormData.get('file');
     }
 
+    // Force resource_type to 'image' for 3D models (glb, gltf) as Cloudinary often handles them as such
+    if (file && file.name && file.name.match(/\.(glb|gltf)$/i)) {
+      resourceType = 'image';
+    }
+
     try {
       // 1. Get Signature from Backend
       console.log("Fetching signature...");
-      const signRes = await api.get('/upload/signature', config);
+      const signRes = await api.get('/upload/signature', { ...config, params: { resource_type: resourceType } });
       console.log("Signature received:", signRes.data);
 
       // 2. Prepare Direct Upload Data

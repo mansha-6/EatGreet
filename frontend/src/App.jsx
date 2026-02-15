@@ -125,7 +125,7 @@ function App() {
       <ErrorBoundary>
         <Router>
           <TitleUpdater />
-          <Toaster position="top-right" />
+          <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} />
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />

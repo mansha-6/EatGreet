@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import '@google/model-viewer';
 import { createPortal } from 'react-dom';
-import { Search, Filter, Plus, Pencil, Trash2, Image as ImageIcon, X, Upload, Eye, Box, Camera, Clock, Flame } from 'lucide-react';
+import { Search, Filter, Plus, Pencil, Trash2, Image as ImageIcon, X, Upload, Eye, Box, Camera, Clock, Flame, AlertCircle } from 'lucide-react';
 import MediaSlider from '../../components/MediaSlider';
 import { MENU_ITEMS_KEY } from '../../constants';
 import { menuAPI, categoryAPI, uploadAPI, restaurantAPI } from '../../utils/api';
@@ -97,6 +97,8 @@ const AdminMenu = () => {
     const [newItemCalories, setNewItemCalories] = useState('250');
     const [newItemTime, setNewItemTime] = useState('15-20');
     const [newItemIsVeg, setNewItemIsVeg] = useState(true);
+    const [modelError, setModelError] = useState(null);
+    const [uploadProgress, setUploadProgress] = useState(0); // 0 to 100
 
     const removeMedia = (indexToRemove) => {
         setMediaItems(mediaItems.filter((_, index) => index !== indexToRemove));
@@ -303,6 +305,8 @@ const AdminMenu = () => {
             return;
         }
 
+        setModelError(null); // Clear previous errors
+
         if (files.length > remainingSlots) {
             toast(
                 `Only the first ${remainingSlots} model(s) will be added due to the 1-item limit.`,
@@ -318,8 +322,8 @@ const AdminMenu = () => {
 
         for (const file of files) {
             try {
-                // Check 3D Model Extension
-                const is3D = file.name.match(/\.(glb|gltf|obj)$/i);
+                // Check 3D Model Extension (case insensitive)
+                const is3D = file.name.toLowerCase().match(/\.(glb|gltf|obj)$/);
                 if (!is3D) {
                     toast.error(`File ${file.name} is not a supported 3D model.`);
                     continue;
@@ -327,19 +331,25 @@ const AdminMenu = () => {
 
                 // Check File Size
                 if (file.size > MAX_MODEL_SIZE) {
-                    toast.error(`File ${file.name} exceeds the 10MB limit allowed by the server.`);
+                    const msg = `File "${file.name}" is too large (>10MB). Please choose a smaller file.`;
+                    setModelError(msg);
+                    toast.error(msg);
                     continue;
                 }
 
                 // Create Preview URL
                 const previewUrl = URL.createObjectURL(file);
 
+                // Some browsers/OS don't detect MIME type for GLB, defaulting to empty string.
+                // We force it here for our internal logic.
+                const safeType = (file.type || '').includes('model') ? file.type : 'model/gltf-binary';
+
                 newItems.push({
                     name: file.name,
-                    url: previewUrl, // Temporary blob URL for preview
-                    type: is3D ? 'model/gltf-binary' : file.type, // Force model type for 3D files
+                    url: previewUrl,
+                    type: safeType,
                     size: (file.size / 1024 / 1024).toFixed(2) + ' MB',
-                    file: file // Store actual file for later upload
+                    file: file
                 });
 
             } catch (error) {
@@ -479,6 +489,7 @@ const AdminMenu = () => {
         setNewItemTime('15-20');
         setNewItemIsVeg(true);
         setEditingItem(null);
+        setModelError(null);
     };
 
     const handleSave = async () => {
@@ -495,16 +506,30 @@ const AdminMenu = () => {
         abortControllerRef.current = new AbortController();
         const signal = abortControllerRef.current.signal;
         uploadedPublicIdsRef.current = []; // Reset tracking for this batch
+        setUploadProgress(0); // Reset progress
 
         const loadToast = toast.loading('Initiating upload...', { duration: Infinity });
 
         try {
             // Count items that need uploading
             const filesToUploadIndices = mediaItems.map((item, idx) => item.file ? idx : -1).filter(idx => idx !== -1);
-            const totalUploads = filesToUploadIndices.length;
+            const modelFilesToUploadIndices = modelItems.map((item, idx) => item.file ? idx : -1).filter(idx => idx !== -1);
 
-            let uploadedCount = 0;
-            const progressMap = {}; // idx -> percent
+            const totalMediaUploads = filesToUploadIndices.length;
+            const totalModelUploads = modelFilesToUploadIndices.length;
+            const totalUploads = totalMediaUploads + totalModelUploads;
+
+            // Shared progress tracking
+            const progressMap = {}; // key -> percent (e.g. 'media-0', 'model-0')
+
+            const updateProgress = () => {
+                const currentTotal = Object.values(progressMap).reduce((a, b) => a + b, 0);
+                const avgAsync = totalUploads > 0 ? Math.round(currentTotal / totalUploads) : 100;
+                const doneAsync = Object.values(progressMap).filter(p => p === 100).length;
+
+                toast.loading(`Uploading ${doneAsync}/${totalUploads} files (${avgAsync}%)...`, { id: loadToast });
+                setUploadProgress(avgAsync);
+            };
 
             if (totalUploads > 0) {
                 toast.loading(`Uploading 0/${totalUploads} (0%)...`, { id: loadToast });
@@ -514,18 +539,9 @@ const AdminMenu = () => {
                 if (item.file) {
                     try {
                         const res = await uploadAPI.uploadDirectNew(item.file, (percent) => {
-                            progressMap[index] = percent;
-
-                            // Calculate Average
-                            const currentTotal = Object.values(progressMap).reduce((a, b) => a + b, 0);
-                            const avgAsync = Math.round(currentTotal / totalUploads);
-                            const doneAsync = Object.values(progressMap).filter(p => p === 100).length;
-
-                            toast.loading(`Uploading ${doneAsync}/${totalUploads} (${avgAsync}%)...`, { id: loadToast });
-
+                            progressMap[`media-${index}`] = percent;
+                            updateProgress();
                         }, { signal });
-
-                        uploadedCount++;
 
                         // Track ID for potential cleanup
                         if (res.data.public_id) {
@@ -539,9 +555,7 @@ const AdminMenu = () => {
                             size: item.size
                         };
                     } catch (err) {
-                        if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
-                            throw err;
-                        }
+                        if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') throw err;
                         const errMsg = err.response?.data?.error?.message || err.message;
                         throw new Error(`Failed to upload ${item.name}: ${errMsg}`);
                     }
@@ -551,13 +565,14 @@ const AdminMenu = () => {
             });
 
             // Upload Logic for 3D Models
-            const modelFilesToUploadIndices = modelItems.map((item, idx) => item.file ? idx : -1).filter(idx => idx !== -1);
-            
             const modelUploadPromises = modelItems.map(async (item, index) => {
                 if (item.file) {
                     try {
                         // Use 'image' resource type for GLB/GLTF as Cloudinary supports them as images and might offer better limits/handling
-                        const res = await uploadAPI.uploadDirectNew(item.file, null, { signal }, 'image'); 
+                        const res = await uploadAPI.uploadDirectNew(item.file, (percent) => {
+                            progressMap[`model-${index}`] = percent;
+                            updateProgress();
+                        }, { signal }, 'image');
 
                         // Track ID for potential cleanup
                         if (res.data.public_id) {
@@ -580,8 +595,10 @@ const AdminMenu = () => {
                 }
             });
 
-            const finalMediaItems = await Promise.all(uploadPromises);
-            const finalModelItems = await Promise.all(modelUploadPromises);
+            const [finalMediaItems, finalModelItems] = await Promise.all([
+                Promise.all(uploadPromises),
+                Promise.all(modelUploadPromises)
+            ]);
 
             // 2. Save Item Data
             toast.loading('Saving item details...', { id: loadToast });
@@ -615,8 +632,10 @@ const AdminMenu = () => {
             fetchData(true); // Background refresh so UI doesn't flicker
             setIsModalOpen(false); // Close the modal
             resetForm();
+            setUploadProgress(0);
 
         } catch (error) {
+            setUploadProgress(0);
             if (error.name === 'CanceledError' || error.code === 'ERR_CANCELED') {
                 toast.dismiss(loadToast);
                 toast('Upload cancelled', { icon: '🛑' });
@@ -640,10 +659,10 @@ const AdminMenu = () => {
 
             } else {
                 console.error("Save Error", error);
-                
+
                 // Close modal even on error as requested, so user can see the error toast clearly
-                setIsModalOpen(false); 
-                
+                setIsModalOpen(false);
+
                 // We still want to show the error
                 toast.error('Failed: ' + (error.message || 'Unknown error'), { id: loadToast, duration: 5000 });
 
@@ -653,7 +672,7 @@ const AdminMenu = () => {
                     uploadAPI.cleanupFiles(ids); // Fire and forget
                     uploadedPublicIdsRef.current = [];
                 }
-                
+
                 // Since we closed the modal, we should probably reset the form or at least stop loading state?
                 // The user asked to close it to see the error. 
                 // We don't want to reset form data completely in case they want to retry... 
@@ -1002,6 +1021,13 @@ const AdminMenu = () => {
                                         <h3 className="text-lg sm:text-xl font-medium text-gray-800 mb-2 sm:mb-4">3D Models</h3>
                                         <p className="text-xs sm:text-sm text-gray-400 mb-3">Add 3D model (.glb, .gltf, .obj).</p>
 
+                                        {modelError && (
+                                            <div className="mb-4 text-red-600 text-sm font-medium bg-red-50 px-3 py-2 rounded-xl border border-red-100 flex items-center gap-2">
+                                                <AlertCircle className="w-4 h-4 shrink-0" />
+                                                {modelError}
+                                            </div>
+                                        )}
+
                                         {modelItems.length > 0 ? (
                                             <div className="flex flex-col gap-4">
                                                 {modelItems.map((model, index) => (
@@ -1306,12 +1332,27 @@ const AdminMenu = () => {
                                         >
                                             Cancel
                                         </button>
-                                        <button
-                                            onClick={handleSave}
-                                            className="px-8 py-2.5 rounded-full bg-[#FD6941] text-white text-base font-medium shadow-lg shadow-orange-200 hover:shadow-orange-300 hover:scale-105 transition-all"
-                                        >
-                                            Save Item
-                                        </button>
+                                        {uploadProgress === 0 ? (
+                                            <button
+                                                onClick={handleSave}
+                                                className="px-8 py-2.5 rounded-full bg-[#FD6941] text-white text-base font-medium shadow-lg shadow-orange-200 hover:shadow-orange-300 hover:scale-105 transition-all"
+                                            >
+                                                Save Item
+                                            </button>
+                                        ) : (
+                                            <div className="w-full max-w-[200px] flex flex-col gap-1 animate-in fade-in duration-300">
+                                                <div className="flex justify-between text-xs font-semibold text-gray-500">
+                                                    <span>Uploading...</span>
+                                                    <span>{Math.round(uploadProgress)}%</span>
+                                                </div>
+                                                <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-[#FD6941] transition-all duration-300 ease-out"
+                                                        style={{ width: `${uploadProgress}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>

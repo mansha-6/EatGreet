@@ -11,6 +11,8 @@ import { orderAPI, restaurantAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { useSocket } from '../../context/SocketContext';
+import toast from 'react-hot-toast';
 
 // Helper to format currency
 const formatCurrency = (amount, symbol = '$') => {
@@ -392,6 +394,64 @@ const AdminSales = () => {
         };
         fetchAllOrders();
     }, []);
+
+    // Socket.io Integration for Real-time Updates
+    const socket = useSocket();
+    
+    useEffect(() => {
+        if (!socket || !restaurant?.name) return;
+
+        // Join the restaurant room
+        socket.emit('joinRestaurant', restaurant.name);
+
+        const handleOrderUpdate = (payload) => {
+            const { action, data } = payload;
+            
+            // Only consider orders that are relevant to sales (completed, active revenue)
+            // The initial fetch filters by: 'completed,ready,delivered'
+            const relevantStatuses = ['completed', 'ready', 'delivered'];
+            
+            if (action === 'create') {
+                if (relevantStatuses.includes(data.status)) {
+                    setOrders(prev => {
+                        // Prevent duplicates
+                        if (prev.find(o => o._id === data._id)) return prev;
+                        toast.success(`New Sale Recorded: ${formatCurrency(data.totalAmount, currencySymbol)}`);
+                        return [data, ...prev];
+                    });
+                }
+            } else if (action === 'update') {
+                setOrders(prev => {
+                    const isRelevant = relevantStatuses.includes(data.status);
+                    const exists = prev.find(o => o._id === data._id);
+
+                    if (exists) {
+                        if (isRelevant) {
+                            // Update existing order
+                            return prev.map(o => o._id === data._id ? data : o);
+                        } else {
+                            // Order moved to non-relevant status (e.g. cancelled? or back to pending)
+                            // Remove it from sales view
+                            return prev.filter(o => o._id !== data._id);
+                        }
+                    } else {
+                        // Order wasn't in list, but now is relevant (e.g. moved from pending -> ready)
+                        if (isRelevant) {
+                             toast.success(`Order #${data.dailySequence || data._id.slice(-4)} is now ${data.status}`);
+                             return [data, ...prev];
+                        }
+                        return prev;
+                    }
+                });
+            }
+        };
+
+        socket.on('orderUpdated', handleOrderUpdate);
+
+        return () => {
+             socket.off('orderUpdated', handleOrderUpdate);
+        };
+    }, [socket, restaurant, currencySymbol]);
 
     // State for Date Filter
     // defaulting to empty so it shows "All Time" data initially (per user request "not impact to data")

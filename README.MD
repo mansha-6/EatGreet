@@ -79,6 +79,35 @@ To build the application for production deployment:
 npm run build
 ```
 
+## 🌐 Deployment
+
+To run this application live, you need to deploy both the Frontend and the Backend.
+
+### 1. Backend Deployment (Recommended: Render)
+Since this app uses **Socket.io** for real-time notifications and order updates, we recommend **Render** or **Railway** for the backend, as Vercel's serverless platform does not support permanent WebSocket connections.
+
+1. Create a new "Web Service" on [Render](https://render.com/).
+2. Connect your GitHub repository.
+3. Set the **Root Directory** to `backend`.
+4. Set the **Build Command** to `npm install`.
+5. Set the **Start Command** to `node index.js`.
+6. Add the following **Environment Variables**:
+   - `MONGO_URI`: Your MongoDB connection string.
+   - `JWT_SECRET`: A secure random string.
+   - `PORT`: `5001`.
+   - `NODE_ENV`: `production`.
+   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`.
+
+### 2. Frontend Deployment (Recommended: Vercel)
+Vercel is the best platform for your React/Vite frontend.
+
+1. Connect your GitHub repository to [Vercel](https://vercel.com/).
+2. Select the `frontend` directory as the project root.
+3. Vercel will automatically detect **Vite** settings.
+4. Add the following **Environment Variable**:
+   - `VITE_API_BASE_URL`: The URL of your deployed backend (e.g., `https://eatgreet-api.onrender.com/api`).
+5. Deploy!
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.

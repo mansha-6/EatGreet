@@ -1,8 +1,4 @@
-require('dotenv').config(); // Load environment variables
-const dns = require('dns');
-// Set Google DNS to bypass local network DNS issues
-dns.setServers(['8.8.8.8', '8.8.4.4']);
-
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
@@ -41,22 +37,43 @@ app.use(express.urlencoded({ limit: '20mb', extended: true }));
 
 // Socket.io Setup
 const io = new Server(server, {
-    cors: corsOptions,
-    pingTimeout: 60000, // 60s
-    pingInterval: 25000, // 25s
-    connectTimeout: 45000 // 45s
+    cors: {
+        origin: allowedOrigins.length > 0 ? allowedOrigins : "*",
+        methods: ["GET", "POST"],
+        credentials: true
+    },
+    pingTimeout: 60000,
+    pingInterval: 25000,
+    connectTimeout: 60000,
+    transports: ['polling', 'websocket'] // Match client side
 });
 
 // Store io instance in app to use in controllers
 app.set('io', io);
 
+// Debug socket events
+io.engine.on("connection_error", (err) => {
+    console.log('Socket Connection Error Detail:', {
+        req: err.req?.url,
+        code: err.code,
+        message: err.message,
+        context: err.context
+    });
+});
+
 io.on('connection', (socket) => {
+    console.log(`New Socket Connected: ${socket.id}`);
+
     // Join a specific restaurant room for updates
     socket.on('joinRestaurant', (nameOrId) => {
         // Sanitize for commonality with tenantDbName logic
         const room = String(nameOrId).toLowerCase().replace(/[^a-z0-9]/g, '_');
         socket.join(room);
         console.log(`Socket ${socket.id} joined room: ${room}`);
+    });
+
+    socket.on('disconnect', (reason) => {
+        console.log(`Socket ${socket.id} disconnected: ${reason}`);
     });
 });
 
@@ -146,14 +163,13 @@ app.post('/api/upload/cleanup', protect, async (req, res) => {
 app.get('/', (req, res) => {
     res.send('API is running...');
 });
-
 // Database Connection and Server Startup
 const startServer = async () => {
     try {
         console.log('Connecting to MongoDB...');
         await connectDB();
 
-        const PORT = process.env.PORT || 5000;
+        const PORT = process.env.PORT || 5001;
         server.listen(PORT, () => {
             console.log(`🚀 Server running on port ${PORT}`);
             console.log(`🔗 API Base URL: http://localhost:${PORT}/api`);
@@ -164,11 +180,15 @@ const startServer = async () => {
         console.log('✅ Startup complete');
     } catch (error) {
         console.error('❌ Fatal Startup Error:', error);
-        process.exit(1);
+        // On serverless environments, we don't want to exit immediately
+        if (process.env.NODE_ENV !== 'production') process.exit(1);
     }
 };
 
-startServer();
+// Start server if run directly
+if (require.main === module) {
+    startServer();
+}
 
 // Global Error Handler
 app.use((err, req, res, next) => {
@@ -179,3 +199,4 @@ app.use((err, req, res, next) => {
     });
 });
 
+module.exports = app;

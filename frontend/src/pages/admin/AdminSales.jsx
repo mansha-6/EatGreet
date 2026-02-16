@@ -374,6 +374,12 @@ const AdminSales = () => {
     const [paymentFilter, setPaymentFilter] = useState('All');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
+    // State for Analytics Data (from statsAPI)
+    const [analytics, setAnalytics] = useState({
+        summary: { totalRevenue: 0, totalOrders: 0, avgOrderValue: 0, rangeRevenue: 0, yearlyEBITDA: 0 },
+        charts: { hourlyAnalysis: [], revenueTrend: [] }
+    });
+
     // Fetch Restaurant Details on Mount
     useEffect(() => {
         const fetchRestaurantDetails = async () => {
@@ -387,29 +393,43 @@ const AdminSales = () => {
         fetchRestaurantDetails();
     }, []);
 
-    // Default to current year/month/week logic
-    // Fetch orders when component mounts or date range changes
+    // Fetch Analytics Stats (for Cards and Charts)
+    const fetchAnalytics = async () => {
+        try {
+            const params = {
+                startDate: dateRange.start || undefined,
+                endDate: dateRange.end || undefined
+            };
+            const res = await statsAPI.getAdminStats(params);
+            setAnalytics(res.data);
+        } catch (error) {
+            console.error("Error fetching analytics:", error);
+        }
+    };
+
+    // Fetch Orders List (for Table)
+    const fetchOrdersList = async () => {
+        setLoading(true);
+        try {
+            const params = {
+                limit: 1000,
+                status: 'completed,ready,delivered',
+                startDate: dateRange.start || undefined,
+                endDate: dateRange.end || undefined
+            };
+            const res = await orderAPI.getOrders(params);
+            setOrders(res.data || []);
+        } catch (error) {
+            console.error("Error fetching orders list:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
-        const fetchAllOrders = async () => {
-            setLoading(true);
-            try {
-                // Fetching orders for the specific range if provided
-                const params = {
-                    limit: 1000,
-                    status: 'completed,ready,delivered',
-                    startDate: dateRange.start || undefined,
-                    endDate: dateRange.end || undefined
-                };
-                const res = await orderAPI.getOrders(params);
-                setOrders(res.data || []);
-            } catch (error) {
-                console.error("Error fetching orders for sales:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchAllOrders();
-    }, [dateRange.start, dateRange.end]); // Re-fetch on date change
+        fetchAnalytics();
+        fetchOrdersList();
+    }, [dateRange.start, dateRange.end]);
 
     // Socket.io Integration for Real-time Updates
     const socket = useSocket();
@@ -421,45 +441,9 @@ const AdminSales = () => {
         socket.emit('joinRestaurant', restaurant.name);
 
         const handleOrderUpdate = (payload) => {
-            const { action, data } = payload;
-
-            // Only consider orders that are relevant to sales (completed, active revenue)
-            // The initial fetch filters by: 'completed,ready,delivered'
-            const relevantStatuses = ['completed', 'ready', 'delivered'];
-
-            if (action === 'create') {
-                if (relevantStatuses.includes(data.status)) {
-                    setOrders(prev => {
-                        // Prevent duplicates
-                        if (prev.find(o => o._id === data._id)) return prev;
-                        toast.success(`New Sale Recorded: ${formatCurrency(data.totalAmount, currencySymbol)}`);
-                        return [data, ...prev];
-                    });
-                }
-            } else if (action === 'update') {
-                setOrders(prev => {
-                    const isRelevant = relevantStatuses.includes(data.status);
-                    const exists = prev.find(o => o._id === data._id);
-
-                    if (exists) {
-                        if (isRelevant) {
-                            // Update existing order
-                            return prev.map(o => o._id === data._id ? data : o);
-                        } else {
-                            // Order moved to non-relevant status (e.g. cancelled? or back to pending)
-                            // Remove it from sales view
-                            return prev.filter(o => o._id !== data._id);
-                        }
-                    } else {
-                        // Order wasn't in list, but now is relevant (e.g. moved from pending -> ready)
-                        if (isRelevant) {
-                            toast.success(`Order #${data.dailySequence || data._id.slice(-4)} is now ${data.status}`);
-                            return [data, ...prev];
-                        }
-                        return prev;
-                    }
-                });
-            }
+            // Re-fetch all data on socket event to keep stats in sync
+            fetchAnalytics();
+            fetchOrdersList();
         };
 
         socket.on('orderUpdated', handleOrderUpdate);
@@ -514,65 +498,34 @@ const AdminSales = () => {
     }, [orders, dateRange, searchQuery, paymentFilter]);
 
     // 2. Stats Calculation based on Filtered Data
+    // 2. Stats for Cards (From Analytics)
     const stats = useMemo(() => {
-        let totalRevenue = 0;
-        let totalOrders = 0;
-        let totalEbitda = 0;
-
-        // Custom EBITDA definition: Revenue excluding Tax (5%)
-        // Total = Subtotal * 1.05
-        // Subtotal (EBITDA) = Total / 1.05
-
-        filteredOrders.forEach(order => {
-            const amount = order.totalAmount || 0;
-            totalRevenue += amount;
-            totalOrders++;
-            totalEbitda += (amount / 1.05);
-        });
-
-        const aov = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+        const s = analytics.summary || {};
+        const isFiltered = !!(dateRange.start || dateRange.end);
 
         return {
-            revenue: totalRevenue,
-            orders: totalOrders,
-            aov: aov,
-            ebitda: totalEbitda
+            revenue: isFiltered ? (s.rangeRevenue || 0) : (s.totalRevenue || 0),
+            orders: isFiltered ? (s.totalOrders || 0) : (s.allTimeOrders || 0),
+            aov: s.avgOrderValue || 0,
+            ebitda: (s.yearlyRevenue || 0) * 0.95 // Simplified EBITDA for view
         };
-    }, [filteredOrders]);
+    }, [analytics, dateRange]);
 
-    // 3. Graph Data Preparation (Based on Filtered Data)
+    // 3. Graph Data Preparation (From Analytics)
     const graphData = useMemo(() => {
-        const groups = {};
-        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const trend = analytics.charts?.revenueTrend || [];
+        if (trend.length === 0) {
+            const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            return months.map(m => ({ name: m, sales: 0, ebitda: 0, volume: 0 }));
+        }
 
-        // Initialize all 12 months with 0
-        months.forEach(m => {
-            groups[m] = { name: m, sales: 0, cash: 0, online: 0, ebitda: 0, volume: 0 };
-        });
-
-        // Process filtered orders to aggregate into the chart
-        filteredOrders.forEach(order => {
-            const d = new Date(order.createdAt);
-            const key = d.toLocaleDateString('en-US', { month: 'short' });
-
-            if (groups[key]) {
-                const amount = order.totalAmount || 0;
-                groups[key].sales += amount;
-                groups[key].volume += 1;
-
-                const method = (order.paymentMethod || 'Cash').toLowerCase();
-                if (method === 'online' || method === 'card' || method === 'upi') {
-                    groups[key].online += 1;
-                } else {
-                    groups[key].cash += 1;
-                }
-
-                groups[key].ebitda += (amount / 1.05); // Revenue ex. tax
-            }
-        });
-
-        return months.map(m => groups[m]);
-    }, [filteredOrders]);
+        return trend.map(item => ({
+            name: item._id, // Date string YYYY-MM-DD
+            sales: item.total,
+            ebitda: item.total * 0.9,
+            volume: 1 // Trend doesn't return count per day yet in trendRevenueData
+        }));
+    }, [analytics]);
 
     // 4. Table Display Data (Directly uses filteredOrders)
     const tableData = filteredOrders;

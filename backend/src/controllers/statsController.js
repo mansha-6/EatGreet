@@ -5,29 +5,28 @@ const getAdminStats = async (req, res) => {
 
         // 1. Determine Date Range
         const now = new Date();
-        let start = new Date();
-        start.setHours(0, 0, 0, 0);
-        let end = new Date(now);
-
-        const currentYearStart = new Date(now.getFullYear(), 0, 1);
-        const currentYearEnd = new Date(now.getFullYear(), 11, 31, 23, 59, 59, 999);
+        let start = null;
+        let end = null;
 
         if (startDate) {
             start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
         }
         if (endDate) {
             end = new Date(endDate);
-            // If only date is provided, set to end of day
-            if (endDate.length <= 10) {
-                end.setHours(23, 59, 59, 999);
-            }
+            end.setHours(23, 59, 59, 999);
         }
 
         // Shared Filter for Date-based queries
-        const dateFilter = {
-            status: 'completed',
-            updatedAt: { $gte: start, $lte: end }
-        };
+        // Include 'ready' and 'served' as these are essentially sales in a restaurant context
+        const statusFilter = { $in: ['ready', 'completed', 'served'] };
+        const dateFilter = { status: statusFilter };
+
+        if (start || end) {
+            dateFilter.updatedAt = {};
+            if (start) dateFilter.updatedAt.$gte = start;
+            if (end) dateFilter.updatedAt.$lte = end;
+        }
 
         // 2. Calculate Occupied Tables (Live status, ignoring date range)
         const occupiedTablesResult = await Order.aggregate([
@@ -54,14 +53,14 @@ const getAdminStats = async (req, res) => {
             allTimeOrdersCount,
             yearlyStatsData
         ] = await Promise.all([
-            Order.countDocuments({ createdAt: { $gte: start, $lte: end } }),
+            Order.countDocuments(dateFilter),
             Order.countDocuments({ status: { $in: ['pending', 'preparing', 'ready'] } }),
             Order.aggregate([
                 { $match: dateFilter },
                 { $group: { _id: null, total: { $sum: "$totalAmount" } } }
             ]),
             Order.aggregate([
-                { $match: { status: 'completed' } },
+                { $match: { status: statusFilter } },
                 { $group: { _id: null, totalRevenue: { $sum: "$totalAmount" } } }
             ]),
             Order.aggregate([
@@ -98,12 +97,11 @@ const getAdminStats = async (req, res) => {
                 { $sort: { count: -1 } },
                 { $limit: 10 }
             ]),
-            Order.countDocuments({ status: 'completed' }),
+            Order.countDocuments({ status: statusFilter }),
             Order.aggregate([
                 {
                     $match: {
-                        status: 'completed',
-                        updatedAt: { $gte: currentYearStart, $lte: currentYearEnd }
+                        status: statusFilter,
                     }
                 },
                 {
@@ -130,7 +128,7 @@ const getAdminStats = async (req, res) => {
         // Calculate Cancellation Rate
         const cancelledOrders = await Order.countDocuments({
             status: 'cancelled',
-            createdAt: { $gte: start, $lte: end }
+            ...(start || end ? { createdAt: { ...(start ? { $gte: start } : {}), ...(end ? { $lte: end } : {}) } } : {})
         });
         const cancellationRate = totalOrders > 0 ? (cancelledOrders / (totalOrders + cancelledOrders)) * 100 : 0;
 

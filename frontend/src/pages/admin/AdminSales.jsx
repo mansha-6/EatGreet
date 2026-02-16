@@ -366,6 +366,14 @@ const AdminSales = () => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [restaurant, setRestaurant] = useState(null);
 
+    // State for Date Filter
+    // defaulting to empty so it shows "All Time" data initially (per user request "not impact to data")
+    const [dateRange, setDateRange] = useState({ start: '', end: '' });
+
+    const [searchQuery, setSearchQuery] = useState('');
+    const [paymentFilter, setPaymentFilter] = useState('All');
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+
     // Fetch Restaurant Details on Mount
     useEffect(() => {
         const fetchRestaurantDetails = async () => {
@@ -380,11 +388,19 @@ const AdminSales = () => {
     }, []);
 
     // Default to current year/month/week logic
+    // Fetch orders when component mounts or date range changes
     useEffect(() => {
         const fetchAllOrders = async () => {
+            setLoading(true);
             try {
-                // Fetching a large number of orders to calculate stats client-side 
-                const res = await orderAPI.getOrders({ limit: 1000, status: 'completed,ready,delivered' });
+                // Fetching orders for the specific range if provided
+                const params = {
+                    limit: 1000,
+                    status: 'completed,ready,delivered',
+                    startDate: dateRange.start || undefined,
+                    endDate: dateRange.end || undefined
+                };
+                const res = await orderAPI.getOrders(params);
                 setOrders(res.data || []);
             } catch (error) {
                 console.error("Error fetching orders for sales:", error);
@@ -393,11 +409,11 @@ const AdminSales = () => {
             }
         };
         fetchAllOrders();
-    }, []);
+    }, [dateRange.start, dateRange.end]); // Re-fetch on date change
 
     // Socket.io Integration for Real-time Updates
     const socket = useSocket();
-    
+
     useEffect(() => {
         if (!socket || !restaurant?.name) return;
 
@@ -406,11 +422,11 @@ const AdminSales = () => {
 
         const handleOrderUpdate = (payload) => {
             const { action, data } = payload;
-            
+
             // Only consider orders that are relevant to sales (completed, active revenue)
             // The initial fetch filters by: 'completed,ready,delivered'
             const relevantStatuses = ['completed', 'ready', 'delivered'];
-            
+
             if (action === 'create') {
                 if (relevantStatuses.includes(data.status)) {
                     setOrders(prev => {
@@ -437,8 +453,8 @@ const AdminSales = () => {
                     } else {
                         // Order wasn't in list, but now is relevant (e.g. moved from pending -> ready)
                         if (isRelevant) {
-                             toast.success(`Order #${data.dailySequence || data._id.slice(-4)} is now ${data.status}`);
-                             return [data, ...prev];
+                            toast.success(`Order #${data.dailySequence || data._id.slice(-4)} is now ${data.status}`);
+                            return [data, ...prev];
                         }
                         return prev;
                     }
@@ -449,17 +465,10 @@ const AdminSales = () => {
         socket.on('orderUpdated', handleOrderUpdate);
 
         return () => {
-             socket.off('orderUpdated', handleOrderUpdate);
+            socket.off('orderUpdated', handleOrderUpdate);
         };
     }, [socket, restaurant, currencySymbol]);
 
-    // State for Date Filter
-    // defaulting to empty so it shows "All Time" data initially (per user request "not impact to data")
-    const [dateRange, setDateRange] = useState({ start: '', end: '' });
-
-    const [searchQuery, setSearchQuery] = useState('');
-    const [paymentFilter, setPaymentFilter] = useState('All');
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     // 1. Filter Orders based on Date Range & Search
     const filteredOrders = useMemo(() => {
@@ -469,21 +478,28 @@ const AdminSales = () => {
         if (dateRange.start) {
             const startDate = new Date(dateRange.start);
             startDate.setHours(0, 0, 0, 0);
-            filtered = filtered.filter(o => new Date(o.createdAt) >= startDate);
+            filtered = filtered.filter(o => {
+                const d = new Date(o.createdAt);
+                return d >= startDate;
+            });
         }
         if (dateRange.end) {
             const endDate = new Date(dateRange.end);
             endDate.setHours(23, 59, 59, 999);
-            filtered = filtered.filter(o => new Date(o.createdAt) <= endDate);
+            filtered = filtered.filter(o => {
+                const d = new Date(o.createdAt);
+                return d <= endDate;
+            });
         }
 
-        // Search Filter
+        // Search Filter (Consolidated - Includes Table Number)
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             filtered = filtered.filter(o =>
                 (o.customerInfo?.name || '').toLowerCase().includes(query) ||
                 (o._id || '').toLowerCase().includes(query) ||
-                (o.dailySequence || '').toString().includes(query)
+                (o.dailySequence || '').toString().includes(query) ||
+                (o.tableNumber || '').toString().includes(query)
             );
         }
 
@@ -524,23 +540,19 @@ const AdminSales = () => {
         };
     }, [filteredOrders]);
 
-    // 3. Graph Data Preparation (Current Year Overview)
+    // 3. Graph Data Preparation (Based on Filtered Data)
     const graphData = useMemo(() => {
         const groups = {};
         const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        const currentYear = new Date().getFullYear();
 
         // Initialize all 12 months with 0
         months.forEach(m => {
             groups[m] = { name: m, sales: 0, cash: 0, online: 0, ebitda: 0, volume: 0 };
         });
 
-        // Process orders for the current year
-        orders.forEach(order => {
+        // Process filtered orders to aggregate into the chart
+        filteredOrders.forEach(order => {
             const d = new Date(order.createdAt);
-            // Only aggregate data for the current year
-            if (d.getFullYear() !== currentYear) return;
-
             const key = d.toLocaleDateString('en-US', { month: 'short' });
 
             if (groups[key]) {
@@ -548,7 +560,6 @@ const AdminSales = () => {
                 groups[key].sales += amount;
                 groups[key].volume += 1;
 
-                // Payment breakdown for Volume (if needed later)
                 const method = (order.paymentMethod || 'Cash').toLowerCase();
                 if (method === 'online' || method === 'card' || method === 'upi') {
                     groups[key].online += 1;
@@ -560,34 +571,11 @@ const AdminSales = () => {
             }
         });
 
-        // Return ordered array Jan -> Dec
         return months.map(m => groups[m]);
-    }, [orders]);
+    }, [filteredOrders]);
 
-    // 4. Table Display Data (Search & Payment Filter on top of Date Filter)
-    const tableData = useMemo(() => {
-        let result = filteredOrders;
-
-        // Search Filter
-        if (searchQuery) {
-            const lowerQuery = searchQuery.toLowerCase();
-            result = result.filter(o =>
-                (o.dailySequence && String(o.dailySequence).includes(lowerQuery)) ||
-                (o._id && o._id.toLowerCase().includes(lowerQuery)) ||
-                (o.customerInfo?.name && o.customerInfo.name.toLowerCase().includes(lowerQuery)) ||
-                (o.tableNumber && String(o.tableNumber).includes(lowerQuery))
-            );
-        }
-
-        // Payment Mode Filter
-        if (paymentFilter !== 'All') {
-            result = result.filter(o => {
-                const mode = o.paymentMethod || 'Cash';
-                return mode.toLowerCase() === paymentFilter.toLowerCase();
-            });
-        }
-        return result;
-    }, [filteredOrders, searchQuery, paymentFilter]);
+    // 4. Table Display Data (Directly uses filteredOrders)
+    const tableData = filteredOrders;
 
     // Download PDF Handler
     const handleDownloadPDF = () => {

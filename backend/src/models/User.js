@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema({
         },
         isActive: { type: Boolean, default: true },
         totalTables: { type: Number, default: 0 },
+        monthlyExpense: { type: Number, default: 0 },
         joinedAt: { type: Date, default: Date.now }
     },
 

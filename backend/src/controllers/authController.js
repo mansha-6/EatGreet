@@ -92,7 +92,8 @@ const getUserProfile = async (req, res) => {
                 phone: user.phone,
                 city: user.city,
                 restaurantName: user.restaurantName,
-                currency: user.currency
+                currency: user.currency,
+                restaurantDetails: user.restaurantDetails
             });
         } else {
             res.status(404).json({ message: 'User not found' });

@@ -18,21 +18,24 @@ const getAdminStats = async (req, res) => {
         }
 
         // Shared Filter for Date-based queries
-        // Include 'ready' and 'served' as these are essentially sales in a restaurant context
-        const statusFilter = { $in: ['ready', 'completed', 'served'] };
-        const dateFilter = { status: statusFilter };
+        const salesStatus = ['ready', 'completed', 'served', 'prepared'];
+        const volumeStatus = ['pending', 'preparing', 'prepared', 'ready', 'served', 'completed'];
 
+        const dateFilter = {};
         if (start || end) {
             dateFilter.updatedAt = {};
             if (start) dateFilter.updatedAt.$gte = start;
             if (end) dateFilter.updatedAt.$lte = end;
         }
 
-        // 2. Calculate Occupied Tables (Live status, ignoring date range)
+        const financialsFilter = { ...dateFilter, status: { $in: salesStatus } };
+        const volumeFilter = { ...dateFilter, status: { $in: volumeStatus } };
+
+        // 2. Calculate Occupied Tables (Live status)
         const occupiedTablesResult = await Order.aggregate([
             {
                 $match: {
-                    status: { $in: ['pending', 'preparing', 'ready'] },
+                    status: { $in: ['pending', 'preparing', 'ready', 'served'] },
                     tableNumber: { $regex: /^[0-9]+$/ }
                 }
             },
@@ -42,6 +45,7 @@ const getAdminStats = async (req, res) => {
         const dineInCount = occupiedTablesResult.length > 0 ? occupiedTablesResult[0].count : 0;
 
         // 3. Parallel Stats Fetching
+        const isFiltered = !!(start || end);
         const [
             totalOrders,
             activeOrders,
@@ -53,28 +57,45 @@ const getAdminStats = async (req, res) => {
             allTimeOrdersCount,
             yearlyStatsData
         ] = await Promise.all([
-            Order.countDocuments(dateFilter),
-            Order.countDocuments({ status: { $in: ['pending', 'preparing', 'ready'] } }),
+            Order.countDocuments(volumeFilter),
+            Order.countDocuments({ status: { $in: ['pending', 'preparing', 'ready', 'served'] } }),
             Order.aggregate([
-                { $match: dateFilter },
+                { $match: financialsFilter },
                 { $group: { _id: null, total: { $sum: "$totalAmount" } } }
             ]),
             Order.aggregate([
-                { $match: { status: statusFilter } },
+                { $match: { status: { $in: salesStatus } } },
                 { $group: { _id: null, totalRevenue: { $sum: "$totalAmount" } } }
             ]),
             Order.aggregate([
-                { $match: dateFilter },
+                { $match: volumeFilter },
                 {
                     $group: {
-                        _id: { $dateToString: { format: "%Y-%m-%d", date: "$updatedAt", timezone: "Asia/Kolkata" } },
-                        total: { $sum: "$totalAmount" }
+                        _id: {
+                            $dateToString: {
+                                format: isFiltered ? "%Y-%m-%d" : "%Y-%m",
+                                date: "$updatedAt",
+                                timezone: "Asia/Kolkata"
+                            }
+                        },
+                        // Revenue: Only if status is in salesStatus
+                        total: {
+                            $sum: {
+                                $cond: [
+                                    { $in: ["$status", salesStatus] },
+                                    "$totalAmount",
+                                    0
+                                ]
+                            }
+                        },
+                        // Volume: All matches (volumeStatus)
+                        count: { $sum: 1 }
                     }
                 },
                 { $sort: { _id: 1 } }
             ]),
             Order.aggregate([
-                { $match: dateFilter },
+                { $match: financialsFilter },
                 {
                     $group: {
                         _id: { $hour: { date: "$updatedAt", timezone: "Asia/Kolkata" } },
@@ -84,7 +105,7 @@ const getAdminStats = async (req, res) => {
                 { $sort: { _id: 1 } }
             ]),
             Order.aggregate([
-                { $match: dateFilter },
+                { $match: financialsFilter },
                 { $unwind: "$items" },
                 {
                     $group: {
@@ -97,11 +118,11 @@ const getAdminStats = async (req, res) => {
                 { $sort: { count: -1 } },
                 { $limit: 10 }
             ]),
-            Order.countDocuments({ status: statusFilter }),
+            Order.countDocuments({ status: { $in: volumeStatus } }),
             Order.aggregate([
                 {
                     $match: {
-                        status: statusFilter,
+                        status: { $in: salesStatus },
                     }
                 },
                 {

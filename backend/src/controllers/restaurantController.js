@@ -22,6 +22,7 @@ const getRestaurantDetails = async (req, res) => {
                 currency: user.currency || 'INR',
                 location: user.restaurantDetails.location,
                 operatingHours: user.restaurantDetails.operatingHours,
+                monthlyExpense: user.restaurantDetails.monthlyExpense || 0,
                 orderPreferences: user.orderPreferences,
                 bankDetails: user.bankDetails,
                 notificationPreferences: user.notificationPreferences,
@@ -56,6 +57,7 @@ const updateRestaurantDetails = async (req, res) => {
             user.restaurantDetails.cuisineType = req.body.cuisineType || user.restaurantDetails.cuisineType;
             user.restaurantDetails.businessEmail = req.body.businessEmail || user.restaurantDetails.businessEmail;
             user.restaurantDetails.totalTables = req.body.totalTables ?? user.restaurantDetails.totalTables;
+            user.restaurantDetails.monthlyExpense = req.body.monthlyExpense !== undefined ? Number(req.body.monthlyExpense) : user.restaurantDetails.monthlyExpense;
 
             // New Fields
             if (req.body.location) {
@@ -100,10 +102,12 @@ const updateRestaurantDetails = async (req, res) => {
             }
 
             const updatedUser = await user.save();
+            const details = updatedUser.restaurantDetails.toObject();
+
             res.json({
-                ...updatedUser.restaurantDetails,
+                ...details,
                 name: updatedUser.restaurantName,
-                restaurantDetails: updatedUser.restaurantDetails // Explicitly send nested object too
+                restaurantDetails: details
             });
         } else {
             res.status(404).json({ message: 'User not found' });

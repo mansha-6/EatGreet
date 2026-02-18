@@ -18,7 +18,7 @@ const createOrder = async (req, res) => {
             return res.status(400).json({ message: 'Name is required' });
         }
         if (!resolvedCustomerInfo.phone || !resolvedCustomerInfo.phone.trim()) {
-             return res.status(400).json({ message: 'Phone number is required' });
+            return res.status(400).json({ message: 'Phone number is required' });
         }
 
         // 2. SAVE/UPDATE CUSTOMER DATA (Scoped to eatgreet_customer DB)
@@ -156,32 +156,25 @@ const createOrder = async (req, res) => {
 const getOrders = async (req, res) => {
     try {
         const { Order } = req.tenantModels;
-        const { status, limit } = req.query;
-
-        // --- AUTO-MIGRATION: Fix missing sequences for today (Self-Healing) ---
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
-        const unsequencedCount = await Order.countDocuments({
-            createdAt: { $gte: startOfDay },
-            dailySequence: { $exists: false }
-        });
-
-        if (unsequencedCount > 0) {
-            const todaysOrders = await Order.find({ createdAt: { $gte: startOfDay } }).sort({ createdAt: 1 });
-            const bulkOps = todaysOrders.map((order, index) => ({
-                updateOne: {
-                    filter: { _id: order._id },
-                    update: { $set: { dailySequence: index + 1 } }
-                }
-            }));
-            if (bulkOps.length > 0) {
-                await Order.bulkWrite(bulkOps);
-            }
-        }
-        // -----------------------------------------------------------------------
+        const { status, limit, startDate, endDate } = req.query;
 
         // Base filter
         let filter = {};
+
+        // Date range filter
+        if (startDate || endDate) {
+            filter.createdAt = {};
+            if (startDate) {
+                const s = new Date(startDate);
+                s.setHours(0, 0, 0, 0);
+                filter.createdAt.$gte = s;
+            }
+            if (endDate) {
+                const e = new Date(endDate);
+                e.setHours(23, 59, 59, 999);
+                filter.createdAt.$lte = e;
+            }
+        }
         if (req.user && req.user.role === 'customer') {
             filter['customerInfo.id'] = req.user._id.toString();
         }

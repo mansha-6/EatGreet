@@ -41,7 +41,8 @@ const AdminSettings = () => {
         cuisineType: user?.restaurantDetails?.cuisineType || '',
         businessEmail: user?.restaurantDetails?.businessEmail || user?.email || '',
         location: { lat: 23.0225, lng: 72.5714 },
-        operatingHours: { open: '09:00', close: '23:00' }
+        operatingHours: { open: '09:00', close: '23:00' },
+        monthlyExpense: user?.restaurantDetails?.monthlyExpense || 0
     });
 
     const [orderPreferences, setOrderPreferences] = useState({
@@ -86,7 +87,8 @@ const AdminSettings = () => {
                         cuisineType: data.cuisineType || '',
                         businessEmail: data.businessEmail || user?.email || '',
                         location: data.location || { lat: 23.0225, lng: 72.5714 },
-                        operatingHours: data.operatingHours || { open: '09:00', close: '23:00' }
+                        operatingHours: data.operatingHours || { open: '09:00', close: '23:00' },
+                        monthlyExpense: data.monthlyExpense || 0
                     });
                     if (data.orderPreferences) setOrderPreferences(data.orderPreferences);
                     if (data.bankDetails) setBankDetails(data.bankDetails);
@@ -507,6 +509,25 @@ const AdminSettings = () => {
                                     <InputGroup label="Closing Time" type="time" name="close" value={restoDetails.operatingHours.close} onChange={(e) => handleNestedChange('hours', 'close', e.target.value)} />
                                 </div>
                             </SectionCard>
+
+                            <SectionCard title="Financial Settings">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <InputGroup
+                                        label="Monthly Operating Expense"
+                                        type="number"
+                                        name="monthlyExpense"
+                                        value={restoDetails.monthlyExpense}
+                                        onChange={handleRestoChange}
+                                        placeholder="e.g. 50000"
+                                        prefix={profile.currency === 'INR' ? '₹' : (profile.currency === 'USD' ? '$' : (profile.currency === 'EUR' ? '€' : (profile.currency === 'GBP' ? '£' : '$')))}
+                                    />
+                                    <div className="flex flex-col justify-end pb-3">
+                                        <p className="text-xs text-gray-400">
+                                            This amount will be deducted from your total revenue to calculate **Net Profit** in the Sales Dashboard.
+                                        </p>
+                                    </div>
+                                </div>
+                            </SectionCard>
                         </div>
                     )}
 
@@ -748,26 +769,35 @@ const SidebarItem = ({ icon: Icon, label, isActive, onClick }) => (
 const SectionCard = ({ title, icon: Icon, children }) => (
     <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-8 shadow-sm border border-gray-100">
         <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-            <div className="p-2 sm:p-3 bg-gray-100 rounded-xl text-black">
-                <Icon className="w-5 h-5 sm:w-6 h-6" />
-            </div>
+            {Icon && (
+                <div className="p-2 sm:p-3 bg-gray-100 rounded-xl text-black">
+                    <Icon className="w-5 h-5 sm:w-6 h-6" />
+                </div>
+            )}
             <h3 className="text-base sm:text-lg font-medium text-gray-800">{title}</h3>
         </div>
         {children}
     </div>
 );
 
-const InputGroup = ({ label, value, onChange, name, type = "text", placeholder }) => (
+const InputGroup = ({ label, value, onChange, name, type = "text", placeholder, prefix }) => (
     <div>
         <label className="block text-xs font-medium text-gray-400 mb-2">{label}</label>
-        <input
-            type={type}
-            name={name}
-            value={value}
-            onChange={onChange}
-            placeholder={placeholder}
-            className="w-full px-4 py-3 rounded-xl bg-gray-50 border-none text-gray-800 text-sm font-medium focus:ring-0 focus:bg-white focus:shadow-sm transition-all outline-none placeholder-gray-300"
-        />
+        <div className="relative">
+            {prefix && (
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-sm">
+                    {prefix}
+                </div>
+            )}
+            <input
+                type={type}
+                name={name}
+                value={value}
+                onChange={onChange}
+                placeholder={placeholder}
+                className={`w-full ${prefix ? 'pl-8' : 'px-4'} py-3 rounded-xl bg-gray-50 border-none text-gray-800 text-sm font-medium focus:ring-0 focus:bg-white focus:shadow-sm transition-all outline-none placeholder-gray-300`}
+            />
+        </div>
     </div>
 );
 

@@ -5,9 +5,10 @@ import {
 } from 'recharts';
 import {
     Calendar, DollarSign, TrendingUp, Download, Eye, X, Printer,
-    FileText, Search, Filter, ChevronDown, Wallet, ShoppingBag, PieChart, Activity, UtensilsCrossed
+    FileText, Search, Filter, ChevronDown, Wallet, ShoppingBag, PieChart, Activity, UtensilsCrossed,
+    ChevronLeft, ChevronRight, RotateCcw
 } from 'lucide-react';
-import { orderAPI, restaurantAPI } from '../../utils/api';
+import { orderAPI, restaurantAPI, statsAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -22,16 +23,16 @@ const formatCurrency = (amount, symbol = '$') => {
 
 const SalesCard = ({ title, value, subValue, icon: Icon, isCurrency, mobileTitle }) => {
     return (
-        <div className="bg-white rounded-[1.2rem] sm:rounded-[2rem] px-3 sm:px-6 py-2 sm:py-4 flex items-center h-[82px] sm:h-[140px] shadow-sm relative border border-transparent hover:border-gray-50 transition-all">
-            <div className="flex items-center gap-2 sm:gap-4">
+        <div className="bg-white rounded-[1.2rem] sm:rounded-[2rem] px-3 sm:px-6 py-2 sm:py-4 flex items-center h-[82px] sm:h-[140px] shadow-sm relative border border-transparent hover:border-gray-100 transition-all">
+            <div className="flex items-center gap-2 sm:gap-4 w-full">
                 <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#F3F3F3] rounded-full flex items-center justify-center shrink-0">
                     <Icon className="w-4.5 h-4.5 sm:w-6 sm:h-6 opacity-60 text-black" />
                 </div>
-                <div className="flex flex-col">
+                <div className="flex flex-col min-w-0">
                     <h3 className="text-[16px] sm:text-[28px] lg:text-[32px] font-medium text-black leading-none flex items-baseline tracking-tight">
                         {value}
                     </h3>
-                    <p className="text-[10px] sm:text-[13px] lg:text-[14px] text-gray-400 mt-1 sm:mt-2 font-medium tracking-tight truncate max-w-[100px] sm:max-w-full">
+                    <p className="text-[10px] sm:text-[13px] lg:text-[14px] text-gray-400 mt-1 sm:mt-2 font-medium tracking-tight truncate w-full">
                         <span className="inline sm:hidden">{mobileTitle || title}</span>
                         <span className="hidden sm:inline">{title}</span>
                         {subValue && <span className="opacity-60 ml-1 font-normal hidden sm:inline">- {subValue}</span>}
@@ -100,6 +101,181 @@ const DynamicEbitdaCard = ({ stats, currencySymbol }) => {
 };
 
 // Invoice Modal Component
+// Custom Date Range Picker Component
+const DateRangePicker = ({ range, onChange, onClose }) => {
+    const [viewDate, setViewDate] = useState(new Date(range.start || new Date()));
+    const [selection, setSelection] = useState({
+        start: range.start ? new Date(range.start) : null,
+        end: range.end ? new Date(range.end) : null
+    });
+
+    const daysInMonth = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+    const firstDayOfMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+
+    const handleDateClick = (day) => {
+        const clickedDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
+        if (!selection.start || (selection.start && selection.end)) {
+            setSelection({ start: clickedDate, end: null });
+        } else if (clickedDate >= selection.start) {
+            setSelection({ ...selection, end: clickedDate });
+        } else {
+            setSelection({ start: clickedDate, end: null });
+        }
+    };
+
+    const toLocalDateString = (date) => {
+        if (!date) return '';
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const applySelection = () => {
+        onChange({
+            start: toLocalDateString(selection.start),
+            end: toLocalDateString(selection.end || selection.start)
+        });
+        onClose();
+    };
+
+    const clearSelection = () => {
+        setSelection({ start: null, end: null });
+        onChange({ start: '', end: '' });
+        onClose();
+    };
+
+    const setPreset = (type) => {
+        const now = new Date();
+        let start, end = now;
+        switch (type) {
+            case 'today':
+                start = now;
+                break;
+            case 'yesterday':
+                start = new Date(now);
+                start.setDate(now.getDate() - 1);
+                end = start;
+                break;
+            case 'week':
+                start = new Date(now);
+                start.setDate(now.getDate() - 7);
+                break;
+            case 'month':
+                start = new Date(now.getFullYear(), now.getMonth(), 1);
+                break;
+            default:
+                start = null;
+                end = null;
+        }
+        if (start) {
+            onChange({
+                start: toLocalDateString(start),
+                end: toLocalDateString(end)
+            });
+            onClose();
+        }
+    };
+
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    const isSelected = (day) => {
+        const d = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
+        if (selection.start && d.getTime() === selection.start.getTime()) return true;
+        if (selection.end && d.getTime() === selection.end.getTime()) return true;
+        return false;
+    };
+
+    const isInRange = (day) => {
+        if (!selection.start || !selection.end) return false;
+        const d = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
+        return d > selection.start && d < selection.end;
+    };
+
+    return (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
+            <div className="bg-white w-full max-w-[420px] rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden flex flex-col p-6 sm:p-8 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-medium text-black">Select Date Range</h3>
+                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                        <X className="w-5 h-5 text-gray-400" />
+                    </button>
+                </div>
+
+                {/* Presets */}
+                <div className="flex flex-wrap gap-2 mb-6">
+                    {[
+                        { id: 'today', label: 'Today' },
+                        { id: 'yesterday', label: 'Yesterday' },
+                        { id: 'week', label: 'Last 7 Days' },
+                        { id: 'month', label: 'This Month' }
+                    ].map(p => (
+                        <button
+                            key={p.id}
+                            onClick={() => setPreset(p.id)}
+                            className="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-full text-xs font-medium transition-all"
+                        >
+                            {p.label}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Calendar Header */}
+                <div className="flex justify-between items-center mb-4">
+                    <button onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1))} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
+                        <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    <span className="font-medium text-lg text-black">{monthNames[viewDate.getMonth()]} {viewDate.getFullYear()}</span>
+                    <button onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1))} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
+                        <ChevronRight className="w-5 h-5" />
+                    </button>
+                </div>
+
+                {/* Calendar Grid */}
+                <div className="grid grid-cols-7 gap-1 mb-6">
+                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
+                        <div key={d} className="h-10 flex items-center justify-center text-[10px] font-bold text-gray-300 uppercase">{d}</div>
+                    ))}
+                    {Array.from({ length: firstDayOfMonth(viewDate) }).map((_, i) => <div key={`empty-${i}`} />)}
+                    {Array.from({ length: daysInMonth(viewDate) }).map((_, i) => {
+                        const day = i + 1;
+                        const active = isSelected(day);
+                        const range = isInRange(day);
+                        return (
+                            <button
+                                key={day}
+                                onClick={() => handleDateClick(day)}
+                                className={`h-10 w-10 sm:h-11 sm:w-11 flex items-center justify-center text-sm rounded-full transition-all relative
+                                    ${active ? 'bg-black text-white shadow-lg z-10' : ''}
+                                    ${range ? 'bg-gray-100 text-black' : 'text-gray-700 hover:bg-gray-50'}
+                                `}
+                            >
+                                {day}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                <div className="flex gap-3">
+                    <button
+                        onClick={clearSelection}
+                        className="flex-1 py-4 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-2xl text-sm font-medium transition-all flex items-center justify-center gap-2"
+                    >
+                        <RotateCcw className="w-4 h-4" />
+                        Clear
+                    </button>
+                    <button
+                        onClick={applySelection}
+                        className="flex-[2] py-4 bg-black hover:bg-gray-800 text-white rounded-2xl text-sm font-medium transition-all shadow-lg shadow-black/10"
+                    >
+                        Apply Range
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) => {
     if (!isOpen || !order) return null;
 
@@ -369,6 +545,7 @@ const AdminSales = () => {
     // State for Date Filter
     // defaulting to empty so it shows "All Time" data initially (per user request "not impact to data")
     const [dateRange, setDateRange] = useState({ start: '', end: '' });
+    const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [paymentFilter, setPaymentFilter] = useState('All');
@@ -503,29 +680,106 @@ const AdminSales = () => {
         const s = analytics.summary || {};
         const isFiltered = !!(dateRange.start || dateRange.end);
 
+        // Determine which revenue and order count to use
+        const revenue = isFiltered ? (s.rangeRevenue || 0) : (s.totalRevenue || 0);
+        // Fallback to totalOrders if allTimeOrders isn't present
+        const orders = isFiltered ? (s.totalOrders || 0) : (s.allTimeOrders || s.totalOrders || 0);
+
+        // Net Profit Logic: Revenue - Expenses
+        const monthlyExpense = restaurant?.monthlyExpense || restaurant?.restaurantDetails?.monthlyExpense || 0;
+        let totalExpense = 0;
+
+        if (isFiltered && dateRange.start && dateRange.end) {
+            // Pro-rate for specific date range
+            const start = new Date(dateRange.start);
+            const end = new Date(dateRange.end);
+            const diffDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1;
+            totalExpense = (monthlyExpense / 30) * diffDays;
+        } else {
+            // For All Time, count how many unique months have data
+            const uniqueMonths = new Set(analytics.charts?.revenueTrend?.filter(t => t._id.length === 7).map(t => t._id));
+            const activeMonthCount = Math.max(uniqueMonths.size, 1);
+            totalExpense = monthlyExpense * activeMonthCount;
+        }
+
+        const netProfit = revenue - totalExpense;
+        const profitMargin = revenue > 0 ? ((netProfit / revenue) * 100).toFixed(1) : 0;
+
         return {
-            revenue: isFiltered ? (s.rangeRevenue || 0) : (s.totalRevenue || 0),
-            orders: isFiltered ? (s.totalOrders || 0) : (s.allTimeOrders || 0),
+            revenue,
+            orders,
             aov: s.avgOrderValue || 0,
-            ebitda: (s.yearlyRevenue || 0) * 0.95 // Simplified EBITDA for view
+            netProfit: netProfit,
+            profitMargin: profitMargin
         };
-    }, [analytics, dateRange]);
+    }, [analytics, dateRange, restaurant]);
 
     // 3. Graph Data Preparation (From Analytics)
     const graphData = useMemo(() => {
         const trend = analytics.charts?.revenueTrend || [];
-        if (trend.length === 0) {
+        const isFiltered = !!(dateRange.start || dateRange.end);
+        const monthlyExpense = restaurant?.monthlyExpense || restaurant?.restaurantDetails?.monthlyExpense || 0;
+        const dailyExpense = monthlyExpense / 30;
+
+        // 1. All Time View (Fixed 12-Month Jan-Dec Axis)
+        if (!isFiltered) {
             const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            return months.map(m => ({ name: m, sales: 0, ebitda: 0, volume: 0 }));
+
+            return months.map((monthName, index) => {
+                // Find all trend items where month matches current loop index (0-11)
+                // Backend returns "YYYY-MM", so we split and check the month part
+                const matches = trend.filter(item => {
+                    const parts = item._id.split('-'); // ["2026", "02"]
+                    if (parts.length < 2) return false;
+                    return parseInt(parts[1], 10) - 1 === index;
+                });
+
+                const totalRev = matches.reduce((acc, curr) => acc + (curr.total || curr.sales || 0), 0);
+                const totalVol = matches.reduce((acc, curr) => acc + (curr.count || 0), 0);
+
+                // Expense Logic:
+                // If we found specific month data points (e.g. Feb 2025 and Feb 2026), subtract expense for each.
+                // If no data found (e.g. future month), subtract 1 unit of monthly expense to show fixed cost.
+                const expenseMultiplier = Math.max(matches.length, 1);
+                const totalPeriodExpense = monthlyExpense * expenseMultiplier;
+
+                return {
+                    name: monthName,
+                    totalRevenue: totalRev,
+                    netProfit: totalRev - totalPeriodExpense,
+                    volume: totalVol
+                };
+            });
         }
 
-        return trend.map(item => ({
-            name: item._id, // Date string YYYY-MM-DD
-            sales: item.total,
-            ebitda: item.total * 0.9,
-            volume: 1 // Trend doesn't return count per day yet in trendRevenueData
-        }));
-    }, [analytics]);
+        // 2. Filtered View (Dynamic Daily/Hourly Axis)
+        if (trend.length === 0) return [];
+
+        return trend.map(item => {
+            let label = item._id;
+            try {
+                // For YYYY-MM dates or YYYY-MM-DD, handle parsing safely
+                // If length is 7 (YYYY-MM), treat as month start
+                const dateStr = item._id.length === 7 ? `${item._id}-01` : item._id;
+                const d = new Date(dateStr);
+
+                // Format based on granularity
+                // If filtered by range, usually daily data
+                label = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+            } catch (e) {
+                label = item._id;
+            }
+
+            const revenuePoint = item.sales || item.total || 0;
+
+            return {
+                name: label,
+                totalRevenue: revenuePoint,
+                netProfit: revenuePoint - (isFiltered ? dailyExpense : monthlyExpense),
+                volume: item.count || 0
+            };
+        });
+    }, [analytics, restaurant, dateRange]);
 
     // 4. Table Display Data (Directly uses filteredOrders)
     const tableData = filteredOrders;
@@ -590,26 +844,31 @@ const AdminSales = () => {
                     <p className="text-[12px] sm:text-[18px] text-gray-400 font-medium">Financial Overview & Analytics</p>
                 </div>
                 <div className="flex flex-row items-center justify-end gap-1.5 sm:gap-2 w-full md:w-auto overflow-x-auto no-scrollbar pb-1">
-                    <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                        <input
-                            type="text"
-                            placeholder="Start Date"
-                            onFocus={(e) => (e.target.type = "date")}
-                            onBlur={(e) => !e.target.value && (e.target.type = "text")}
-                            value={dateRange.start}
-                            onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                            className="bg-white border border-gray-100 text-gray-700 text-[10px] sm:text-sm rounded-full focus:ring-black focus:border-black block px-2.5 sm:px-4 py-2 sm:py-2.5 outline-none shadow-sm transition-all hover:border-gray-300 [&::-webkit-calendar-picker-indicator]:w-4 [&::-webkit-calendar-picker-indicator]:h-4 sm:[&::-webkit-calendar-picker-indicator]:w-5 sm:[&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                        />
-                        <span className="self-center text-gray-400 font-medium text-[10px] sm:text-sm">-</span>
-                        <input
-                            type="text"
-                            placeholder="End Date"
-                            onFocus={(e) => (e.target.type = "date")}
-                            onBlur={(e) => !e.target.value && (e.target.type = "text")}
-                            value={dateRange.end}
-                            onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                            className="bg-white border border-gray-100 text-gray-700 text-[10px] sm:text-sm rounded-full focus:ring-black focus:border-black block px-2.5 sm:px-4 py-2 sm:py-2.5 outline-none shadow-sm transition-all hover:border-gray-300 [&::-webkit-calendar-picker-indicator]:w-4 [&::-webkit-calendar-picker-indicator]:h-4 sm:[&::-webkit-calendar-picker-indicator]:w-5 sm:[&::-webkit-calendar-picker-indicator]:h-5 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                        />
+                    <div className="flex items-center shrink-0">
+                        <button
+                            onClick={() => setIsDatePickerOpen(true)}
+                            className="bg-white border border-gray-100 text-gray-700 text-[10px] sm:text-[13px] rounded-full px-4 sm:px-6 py-2 sm:py-3 outline-none shadow-sm transition-all hover:border-gray-300 flex items-center gap-2 font-medium"
+                        >
+                            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
+                            {dateRange.start ? (
+                                <span>
+                                    {new Date(dateRange.start).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                    <span className="mx-1 text-gray-300">-</span>
+                                    {dateRange.end ? new Date(dateRange.end).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Today'}
+                                </span>
+                            ) : (
+                                <span className="text-gray-400">Select Date Range</span>
+                            )}
+                            <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 ml-1" />
+                        </button>
+
+                        {isDatePickerOpen && (
+                            <DateRangePicker
+                                range={dateRange}
+                                onChange={setDateRange}
+                                onClose={() => setIsDatePickerOpen(false)}
+                            />
+                        )}
                     </div>
                     <button
                         onClick={handleDownloadPDF}
@@ -629,19 +888,19 @@ const AdminSales = () => {
                 {/* 1. Total Revenue */}
                 <SalesCard
                     title="Total Revenue"
-                    mobileTitle="Total Revenue"
+                    mobileTitle="Revenue"
                     value={formatCurrency(stats.revenue, currencySymbol)}
                     subValue={dateRange.start ? "Period Revenue" : "All Time Revenue"}
                     icon={DollarSign}
                 />
 
-                {/* 2. Total Orders */}
+                {/* 2. Net Profit */}
                 <SalesCard
-                    title="Total Orders"
-                    mobileTitle="Total Orders"
-                    value={stats.orders}
-                    subValue={dateRange.start ? "Period Orders" : "All Time Orders"}
-                    icon={ShoppingBag}
+                    title="Net Profit"
+                    mobileTitle="Profit"
+                    value={formatCurrency(stats.netProfit, currencySymbol)}
+                    subValue="Revenue - Expenses"
+                    icon={TrendingUp}
                 />
 
                 {/* 3. Avg Order Value (AOV) */}
@@ -653,46 +912,83 @@ const AdminSales = () => {
                     icon={Activity}
                 />
 
-                {/* 4. Yearly EBITDA */}
+                {/* 4. Total Orders */}
                 <SalesCard
-                    title="EBITDA"
-                    mobileTitle="EBITDA"
-                    value={formatCurrency(stats.ebitda, currencySymbol)}
-                    subValue={dateRange.start ? "Period (Excl. Tax)" : "Total (Excl. Tax)"}
-                    icon={PieChart}
+                    title="Total Orders"
+                    mobileTitle="Orders"
+                    value={stats.orders}
+                    subValue={dateRange.start ? "Period Orders" : "All Time Orders"}
+                    icon={ShoppingBag}
                 />
             </div>
 
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Graph: Sales & EBITDA */}
+                {/* Main Graph: Sales & Net Profit */}
                 <div className="lg:col-span-2 bg-white p-6 rounded-[1.5rem] shadow-sm">
                     <div className="mb-6">
-                        <h3 className="text-[16px] sm:text-[24px] font-medium text-black">Revenue & EBITDA</h3>
-                        <p className="text-[10px] text-gray-400 font-medium">Monthly breakdown of sales and earnings</p>
+                        <h3 className="text-[16px] sm:text-[24px] font-medium text-black">Revenue & Net Profit</h3>
+                        <p className="text-[10px] text-gray-400 font-medium">Monthly breakdown of sales and actual earnings</p>
                     </div>
                     <div className="h-[300px] w-full min-w-0">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                            <AreaChart data={graphData}>
+                            <AreaChart data={graphData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
-                                    <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#000000" stopOpacity={0.1} />
-                                        <stop offset="95%" stopColor="#000000" stopOpacity={0} />
+                                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#0F172A" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#0F172A" stopOpacity={0} />
                                     </linearGradient>
-                                    <linearGradient id="colorEbitda" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#22C55E" stopOpacity={0.1} />
-                                        <stop offset="95%" stopColor="#22C55E" stopOpacity={0} />
+                                    <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f3f3" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 12 }} dy={10} />
-                                <YAxis hide />
-                                <Tooltip
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                                <XAxis
+                                    dataKey="name"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fill: '#64748B', fontSize: 12 }}
+                                    dy={10}
                                 />
-                                <Legend />
-                                <Area type="monotone" dataKey="sales" name="Sales" stroke="#000000" fillOpacity={1} fill="url(#colorSales)" strokeWidth={3} />
-                                <Area type="monotone" dataKey="ebitda" name="EBITDA" stroke="#22C55E" fillOpacity={1} fill="url(#colorEbitda)" strokeWidth={3} />
+                                <YAxis hide domain={['auto', 'auto']} />
+                                <Tooltip
+                                    contentStyle={{
+                                        borderRadius: '16px',
+                                        border: 'none',
+                                        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                                        background: '#fff',
+                                        padding: '12px'
+                                    }}
+                                    itemStyle={{ fontSize: '13px', fontWeight: 500 }}
+                                />
+                                <Legend
+                                    verticalAlign="top"
+                                    align="right"
+                                    height={36}
+                                    iconType="circle"
+                                    formatter={(value) => <span className="text-[12px] font-medium text-slate-600 mr-4">{value}</span>}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="totalRevenue"
+                                    name="Total Revenue"
+                                    stroke="#0F172A"
+                                    fillOpacity={1}
+                                    fill="url(#colorRevenue)"
+                                    strokeWidth={3}
+                                    animationDuration={1500}
+                                />
+                                <Area
+                                    type="monotone"
+                                    dataKey="netProfit"
+                                    name="Net Profit"
+                                    stroke="#10B981"
+                                    fillOpacity={1}
+                                    fill="url(#colorProfit)"
+                                    strokeWidth={3}
+                                    animationDuration={1500}
+                                />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>

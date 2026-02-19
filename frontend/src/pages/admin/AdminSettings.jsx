@@ -167,6 +167,13 @@ const AdminSettings = () => {
         const file = e.target.files[0];
         if (!file) return;
 
+        const allowedTypes = ['image/png', 'image/svg+xml'];
+        if (!allowedTypes.includes(file.type)) {
+            toast.error('Only PNG and SVG formats are allowed for logo.');
+            e.target.value = '';
+            return;
+        }
+
         setUploadingLogo(true);
         const loadToast = toast.loading('Uploading logo...');
         try {
@@ -425,7 +432,7 @@ const AdminSettings = () => {
                                                 type="file"
                                                 id="logo-upload-resto"
                                                 className="hidden"
-                                                accept="image/*"
+                                                accept=".png, .svg"
                                                 onChange={handleLogoUpload}
                                             />
                                             <button

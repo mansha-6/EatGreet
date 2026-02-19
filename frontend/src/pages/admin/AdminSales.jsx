@@ -6,14 +6,16 @@ import {
 import {
     Calendar, DollarSign, TrendingUp, Download, Eye, X, Printer,
     FileText, Search, Filter, ChevronDown, Wallet, ShoppingBag, PieChart, Activity, UtensilsCrossed,
-    ChevronLeft, ChevronRight, RotateCcw
+    ChevronLeft, ChevronRight, RotateCcw, FileSpreadsheet
 } from 'lucide-react';
 import { orderAPI, restaurantAPI, statsAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import { useSocket } from '../../context/SocketContext';
 import toast from 'react-hot-toast';
+import EatGreetLogo from '../../assets/logo-full.png';
 
 // Helper to format currency
 const formatCurrency = (amount, symbol = '$') => {
@@ -102,27 +104,16 @@ const DynamicEbitdaCard = ({ stats, currencySymbol }) => {
 
 // Invoice Modal Component
 // Custom Date Range Picker Component
+// Custom Date Range Picker Component
 const DateRangePicker = ({ range, onChange, onClose }) => {
-    const [viewDate, setViewDate] = useState(new Date(range.start || new Date()));
-    const [selection, setSelection] = useState({
-        start: range.start ? new Date(range.start) : null,
-        end: range.end ? new Date(range.end) : null
-    });
-
-    const daysInMonth = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-    const firstDayOfMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-
-    const handleDateClick = (day) => {
-        const clickedDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
-        if (!selection.start || (selection.start && selection.end)) {
-            setSelection({ start: clickedDate, end: null });
-        } else if (clickedDate >= selection.start) {
-            setSelection({ ...selection, end: clickedDate });
-        } else {
-            setSelection({ start: clickedDate, end: null });
-        }
+    // Helper: Parse "YYYY-MM-DD" string to Local Date Object (Midnight)
+    const parseLocalDate = (dateStr) => {
+        if (!dateStr) return null;
+        const [y, m, d] = dateStr.split('-').map(Number);
+        return new Date(y, m - 1, d);
     };
 
+    // Helper: Format Date Object to "YYYY-MM-DD" local string
     const toLocalDateString = (date) => {
         if (!date) return '';
         const year = date.getFullYear();
@@ -131,11 +122,44 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
         return `${year}-${month}-${day}`;
     };
 
+    const [viewDate, setViewDate] = useState(() => {
+        return range.start ? parseLocalDate(range.start) : new Date();
+    });
+
+    const [selection, setSelection] = useState({
+        start: range.start ? parseLocalDate(range.start) : null,
+        end: range.end ? parseLocalDate(range.end) : null
+    });
+
+    const daysInMonth = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+    const firstDayOfMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+
+    const handleDateClick = (day) => {
+        // Create date at 00:00:00 Local Time
+        const clickedDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
+        
+        // Reset check: if we already have both, or no start, start over
+        if (!selection.start || (selection.start && selection.end)) {
+            setSelection({ start: clickedDate, end: null });
+        } else {
+            // We have start, but no end
+            if (clickedDate.getTime() >= selection.start.getTime()) {
+                 // If clicking the same date or future date, set as end
+                setSelection({ ...selection, end: clickedDate });
+            } else {
+                // If clicking before start, reset as new start
+                setSelection({ start: clickedDate, end: null });
+            }
+        }
+    };
+
     const applySelection = () => {
-        onChange({
-            start: toLocalDateString(selection.start),
-            end: toLocalDateString(selection.end || selection.start)
-        });
+        if (selection.start) {
+            onChange({
+                start: toLocalDateString(selection.start),
+                end: toLocalDateString(selection.end || selection.start)
+            });
+        }
         onClose();
     };
 
@@ -147,15 +171,18 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
 
     const setPreset = (type) => {
         const now = new Date();
-        let start, end = now;
+        // Set time to midnight for consistency
+        now.setHours(0,0,0,0);
+        let start, end = new Date(now);
+        
         switch (type) {
             case 'today':
-                start = now;
+                start = new Date(now);
                 break;
             case 'yesterday':
                 start = new Date(now);
                 start.setDate(now.getDate() - 1);
-                end = start;
+                end = new Date(start);
                 break;
             case 'week':
                 start = new Date(now);
@@ -166,8 +193,8 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
                 break;
             default:
                 start = null;
-                end = null;
         }
+        
         if (start) {
             onChange({
                 start: toLocalDateString(start),
@@ -181,8 +208,11 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
 
     const isSelected = (day) => {
         const d = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
-        if (selection.start && d.getTime() === selection.start.getTime()) return true;
-        if (selection.end && d.getTime() === selection.end.getTime()) return true;
+        if (!selection.start) return false;
+        
+        const t = d.getTime();
+        if (t === selection.start.getTime()) return true;
+        if (selection.end && t === selection.end.getTime()) return true;
         return false;
     };
 
@@ -233,22 +263,29 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
 
                 {/* Calendar Grid */}
                 <div className="grid grid-cols-7 gap-1 mb-6">
-                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
-                        <div key={d} className="h-10 flex items-center justify-center text-[10px] font-bold text-gray-300 uppercase">{d}</div>
+                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                        <div key={`${d}-${i}`} className="h-10 flex items-center justify-center text-[10px] font-bold text-gray-300 uppercase">{d}</div>
                     ))}
                     {Array.from({ length: firstDayOfMonth(viewDate) }).map((_, i) => <div key={`empty-${i}`} />)}
                     {Array.from({ length: daysInMonth(viewDate) }).map((_, i) => {
                         const day = i + 1;
                         const active = isSelected(day);
                         const range = isInRange(day);
+                        
+                        let stateClasses = "";
+                        if (active) {
+                            stateClasses = "bg-[#FD6941] text-white shadow-lg shadow-orange-200 z-10 hover:bg-[#E55A35]";
+                        } else if (range) {
+                            stateClasses = "bg-orange-50 text-orange-900 hover:bg-orange-100";
+                        } else {
+                            stateClasses = "text-gray-700 hover:bg-gray-100";
+                        }
+
                         return (
                             <button
                                 key={day}
                                 onClick={() => handleDateClick(day)}
-                                className={`h-10 w-10 sm:h-11 sm:w-11 flex items-center justify-center text-sm rounded-full transition-all relative
-                                    ${active ? 'bg-[#FD6941] text-white shadow-lg shadow-orange-200 z-10' : ''}
-                                    ${range ? 'bg-orange-50 text-orange-900' : 'text-gray-700 hover:bg-white/50'}
-                                `}
+                                className={`h-10 w-10 sm:h-11 sm:w-11 flex items-center justify-center text-sm rounded-full transition-all relative ${stateClasses}`}
                             >
                                 {day}
                             </button>
@@ -785,53 +822,384 @@ const AdminSales = () => {
     const tableData = filteredOrders;
 
     // Download PDF Handler
-    const handleDownloadPDF = () => {
+    const handleDownloadPDF = async () => {
+        const toastId = toast.loading('Generating PDF report...');
         try {
+            // Helper: Safe Currency Formatter for PDF
+            const formatCurrencyPDF = (amount) => {
+                const val = Number(amount) || 0;
+                return `${currencySymbol === '₹' ? 'Rs.' : currencySymbol} ${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            };
+
+            // Helper to load image
+            const loadImage = (url) => {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.crossOrigin = 'Anonymous';
+                    img.src = url;
+                    img.onload = () => {
+                        try {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0);
+                            const dataUrl = canvas.toDataURL('image/png');
+                            resolve(dataUrl);
+                        } catch (e) {
+                            // Fallback to image element if canvas fails (e.g. taint)
+                            resolve(img);
+                        }
+                    };
+                    img.onerror = () => resolve(null);
+                });
+            };
+
             // Instantiate jsPDF
             const jsPDFConstructor = jsPDF.default || jsPDF;
             const doc = new jsPDFConstructor();
 
-            // Header
-            doc.setFontSize(18);
-            doc.text("Sales Report", 14, 22);
+            // Load Custom Font (Urbanist) - We'll use Helvetica as fallback, but set style to match "Urbanist" look
+            // Note: jsPDF default fonts are limited. To use actual Urbanist, we'd need to add the font file as base64.
+            // For now, we'll stick to standard sans-serif but style it closer to Urbanist with weights.
+            doc.setFont("helvetica"); 
 
-            doc.setFontSize(11);
-            doc.setTextColor(100);
-            let dateText = "All Time";
-            if (dateRange.start || dateRange.end) {
-                dateText = `${dateRange.start || 'Start'} to ${dateRange.end || 'Now'}`;
+            // Layout Constants
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const pageHeight = doc.internal.pageSize.getHeight();
+            const margin = 15;
+            let yPos = 15; // Reduced top margin
+
+            // Brand Colors
+            const brandOrange = [253, 105, 65];   // #FD6941
+            const textDark = [30, 30, 30];        // Nearly black
+            const textGray = [100, 100, 100];     // Gray
+            const bgLight = [249, 250, 251];      // Very light gray
+
+            // 1. Header Bar
+            doc.setFillColor(...brandOrange);
+            doc.rect(0, 0, pageWidth, 4, 'F'); // Thinner bar
+            
+            yPos = 12; // Start content higher
+
+            // Restaurant Logo & Info
+            let logoImg = null;
+            const footerLogoImg = await loadImage(EatGreetLogo);
+            const logoUrl = restaurant?.logo || restaurant?.image || restaurant?.restaurantDetails?.logo;
+            
+            if (logoUrl) {
+                logoImg = await loadImage(logoUrl);
             }
-            doc.text(`Period: ${dateText}`, 14, 30);
 
-            // Summary
-            doc.text(`Total Revenue: ${formatCurrency(stats.revenue, currencySymbol)}`, 14, 40);
-            doc.text(`Total Orders: ${stats.orders}`, 80, 40);
+            if (logoImg) {
+                const imgProps = doc.getImageProperties(logoImg);
+                const ratio = imgProps.width / imgProps.height;
+                const w = 24;
+                const h = w / ratio;
+                doc.addImage(logoImg, 'PNG', margin, yPos, w, h);
+                
+                const textX = margin + w + 10;
+                doc.setFontSize(22);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(...textDark);
+                doc.text(restaurant?.name || 'EatGreet Restaurant', textX, yPos + 8);
+                
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "normal");
+                doc.setTextColor(...textGray);
+                
+                let detailsY = yPos + 14;
+                if (restaurant?.address) {
+                    doc.text(restaurant.address, textX, detailsY);
+                    detailsY += 5;
+                }
+                const contactParts = [];
+                if (restaurant?.contactNumber) contactParts.push(`Tel: ${restaurant.contactNumber}`);
+                if (restaurant?.businessEmail) contactParts.push(`Email: ${restaurant.businessEmail}`);
+                if (contactParts.length > 0) {
+                    doc.text(contactParts.join(' | '), textX, detailsY);
+                }
+                
+                yPos = Math.max(yPos + h + 10, detailsY + 15);
+            } else {
+                doc.setFontSize(22);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(...textDark);
+                doc.text(restaurant?.name || 'EatGreet Restaurant', margin, yPos + 8);
+                
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "normal");
+                doc.setTextColor(...textGray);
+                yPos += 16;
+                if (restaurant?.address) { doc.text(restaurant.address, margin, yPos); yPos += 5; }
+                if (restaurant?.contactNumber) { doc.text(`Tel: ${restaurant.contactNumber}`, margin, yPos); yPos += 5; }
+                yPos += 10;
+            }
 
-            // Table
-            const tableColumn = ["Date", "Order ID", "Customer", "Payment", "Items", "Total"];
+            // Divider
+            doc.setDrawColor(230);
+            doc.setLineWidth(0.5);
+            doc.line(margin, yPos, pageWidth - margin, yPos);
+            yPos += 12; // Adjusted spacing
+
+            // 2. Report Title
+            doc.setFontSize(18);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(...textDark);
+            doc.text("Sales Performance Report", margin, yPos);
+            
+            // Meta Info
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(...textGray);
+            const generatedDate = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+            doc.text(`Report Date: ${generatedDate}`, pageWidth - margin, yPos, { align: 'right' });
+            
+            yPos += 8;
+            doc.setFontSize(10);
+            const periodText = (dateRange.start || dateRange.end) 
+                ? `${new Date(dateRange.start).toLocaleDateString()}  to  ${new Date(dateRange.end || new Date()).toLocaleDateString()}`
+                : "All Time History";
+            doc.text(`Period: ${periodText}`, margin, yPos);
+            
+            yPos += 15; // Increased to fix overlap
+
+            // 3. Financial Summary (Calculated from Filtered Data)
+            // We calculate this on the fly to ensure it matches the selected date range perfectly
+            const pdfStats = Array.isArray(filteredOrders) ? filteredOrders.reduce((acc, order) => {
+                // Ensure we parse as float to avoid string concatenation if API returns strings
+                const orderTotal = Number(order.totalAmount) || 0;
+                return {
+                    revenue: acc.revenue + orderTotal,
+                    orders: acc.orders + 1
+                };
+            }, { revenue: 0, orders: 0 }) : { revenue: 0, orders: 0 };
+
+            // Calculate Net Profit for this specific range
+            // Use safe fallbacks for potentially undefined expense variables
+            const safeDailyExpense = typeof dailyExpense !== 'undefined' ? dailyExpense : 0;
+            const safeMonthlyExpense = typeof monthlyExpense !== 'undefined' ? monthlyExpense : 0;
+            
+            let totalExpenses = 0;
+            if (dateRange.start && dateRange.end) {
+                const start = new Date(dateRange.start);
+                const end = new Date(dateRange.end);
+                const daysDiff = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
+                totalExpenses = safeDailyExpense * daysDiff;
+            } else {
+                 totalExpenses = safeMonthlyExpense; // Fallback
+            }
+            
+            const pdfRevenue = pdfStats.revenue;
+            const pdfOrders = pdfStats.orders;
+            const pdfAov = pdfOrders > 0 ? (pdfRevenue / pdfOrders) : 0;
+            // Profit is Revenue - Expenses
+            const pdfProfit = pdfRevenue - totalExpenses;
+
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(...textDark);
+            doc.text("Financial Overview", margin, yPos - 5);
+
+            const summaryData = [
+                [
+                    { content: 'TOTAL REVENUE', styles: { fontStyle: 'bold', textColor: textGray, fontSize: 8 } },
+                    { content: 'NET PROFIT', styles: { fontStyle: 'bold', textColor: textGray, fontSize: 8 } },
+                    { content: 'TOTAL ORDERS', styles: { fontStyle: 'bold', textColor: textGray, fontSize: 8 } },
+                    { content: 'AVG ORDER VALUE', styles: { fontStyle: 'bold', textColor: textGray, fontSize: 8 } },
+                ],
+                [
+                    { content: formatCurrencyPDF(pdfRevenue), styles: { fontSize: 16, fontStyle: 'bold', textColor: textDark } },
+                    { content: formatCurrencyPDF(pdfProfit), styles: { fontSize: 16, fontStyle: 'bold', textColor: brandOrange } },
+                    { content: pdfOrders.toString(), styles: { fontSize: 16, fontStyle: 'bold', textColor: textDark } },
+                    { content: formatCurrencyPDF(pdfAov), styles: { fontSize: 16, fontStyle: 'bold', textColor: textDark } },
+                ]
+            ];
+
+            autoTable(doc, {
+                startY: yPos,
+                body: summaryData,
+                theme: 'plain',
+                styles: { 
+                    cellPadding: 4, 
+                    halign: 'center',
+                    font: "helvetica"
+                },
+                columnStyles: {
+                    0: { cellWidth: (pageWidth - margin * 2) / 4 },
+                    1: { cellWidth: (pageWidth - margin * 2) / 4 },
+                    2: { cellWidth: (pageWidth - margin * 2) / 4 },
+                    3: { cellWidth: (pageWidth - margin * 2) / 4 }
+                },
+                margin: { left: margin, right: margin },
+                didParseCell: function(data) {
+                    // Background for the whole "card" area
+                     data.cell.styles.fillColor = bgLight;
+                }
+            });
+            
+            yPos = doc.lastAutoTable.finalY + 10;
+
+            // 4. Detailed Transactions
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(...textDark);
+            doc.text("Transaction History", margin, yPos);
+            yPos += 8;
+
+            const tableColumn = ["Date", "Time", "Order ID", "Customer", "Pay Mode", "Items", "Total"];
+            
             const tableRows = tableData.map(order => [
                 new Date(order.createdAt).toLocaleDateString(),
-                order.dailySequence || order._id.slice(-6),
+                new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id.slice(-6),
                 order.customerInfo?.name || 'Guest',
                 order.paymentMethod || 'Cash',
                 order.items?.length || 0,
-                `${currencySymbol}${(order.totalAmount || 0).toFixed(2)}`
+                formatCurrencyPDF(order.totalAmount || 0)
             ]);
-
-            // Use functional autoTable
+            
             autoTable(doc, {
+                startY: yPos,
                 head: [tableColumn],
                 body: tableRows,
-                startY: 50,
                 theme: 'grid',
-                styles: { fontSize: 9 },
-                headStyles: { fillColor: [0, 0, 0] }
+                headStyles: { 
+                    fillColor: bgLight, 
+                    textColor: textGray,
+                    fontStyle: 'bold',
+                    lineWidth: 0,
+                    fontSize: 9,
+                    halign: 'center',
+                    cellPadding: 3
+                },
+                styles: { 
+                    fontSize: 9, 
+                    cellPadding: 3, 
+                    textColor: textDark, 
+                    lineColor: [230, 230, 230], 
+                    lineWidth: 0.1,
+                    font: "helvetica",
+                    valign: 'middle',
+                    halign: 'center'
+                },
+                alternateRowStyles: { 
+                    fillColor: [255, 255, 255] 
+                },
+                columnStyles: {
+                    0: { cellWidth: 25 },
+                    1: { cellWidth: 20 },
+                    2: { cellWidth: 25, fontStyle: 'bold' },
+                    6: { fontStyle: 'bold' } 
+                },
+                margin: { left: margin, right: margin, bottom: 25 }
             });
 
-            doc.save(`sales_report_${new Date().toISOString().slice(0, 10)}.pdf`);
+            // Footer
+            const totalPages = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                doc.setPage(i);
+                doc.setFontSize(8);
+                doc.setTextColor(150);
+                doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
+                if (footerLogoImg) {
+                    const props = doc.getImageProperties(footerLogoImg);
+                    const fw = 20; 
+                    const fh = (props.height / props.width) * fw;
+                    doc.addImage(footerLogoImg, 'PNG', margin, pageHeight - 15, fw, fh);
+                } else {
+                    doc.text("EatGreet", margin, pageHeight - 10);
+                }
+            }
+
+            const fileName = `Sales_${periodText.replace(/\s+/g, '_').replace(/[:\/,]/g, '')}.pdf`;
+            doc.save(fileName);
+            toast.success('Report downloaded successfully', { id: toastId });
+
         } catch (error) {
             console.error("PDF Generation Error:", error);
-            alert(`Failed to generate PDF: ${error.message}`);
+            toast.error(`Failed to generate PDF: ${error.message}`, { id: toastId });
+        }
+    };
+
+    // Download Excel Handler
+    const handleDownloadExcel = () => {
+        const toastId = toast.loading('Generating Excel report...');
+        try {
+            // 1. Calculate Stats (Same logic as PDF)
+            const pdfStats = Array.isArray(filteredOrders) ? filteredOrders.reduce((acc, order) => {
+                const orderTotal = Number(order.totalAmount) || 0;
+                return {
+                    revenue: acc.revenue + orderTotal,
+                    orders: acc.orders + 1
+                };
+            }, { revenue: 0, orders: 0 }) : { revenue: 0, orders: 0 };
+            
+            const safeDailyExpense = typeof dailyExpense !== 'undefined' ? dailyExpense : 0;
+            const safeMonthlyExpense = typeof monthlyExpense !== 'undefined' ? monthlyExpense : 0;
+            
+            let totalExpenses = 0;
+            if (dateRange.start && dateRange.end) {
+                const start = new Date(dateRange.start);
+                const end = new Date(dateRange.end);
+                const diffDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
+                totalExpenses = safeDailyExpense * diffDays;
+            } else {
+                 totalExpenses = safeMonthlyExpense; 
+            }
+            const pdfProfit = pdfStats.revenue - totalExpenses;
+            
+            // 2. Prepare Data
+            const periodText = (dateRange.start || dateRange.end) ? 
+                `${new Date(dateRange.start).toLocaleDateString()} to ${new Date(dateRange.end || new Date()).toLocaleDateString()}` : "All Time History";
+            const fileName = `Sales_${periodText.replace(/\s+/g, '_').replace(/[:\/,]/g, '')}.xlsx`;
+
+            const ws_data = [
+                [restaurant?.name || 'EatGreet Restaurant'],
+                ['Sales Performance Report'],
+                [`Report Date: ${new Date().toLocaleString()}`],
+                [`Period: ${periodText}`],
+                [],
+                ['FINANCIAL OVERVIEW'],
+                ['Total Revenue', 'Net Profit', 'Total Orders', 'Avg Order Value'],
+                [
+                    pdfStats.revenue,
+                    pdfProfit,
+                    pdfStats.orders,
+                    pdfStats.orders > 0 ? (pdfStats.revenue / pdfStats.orders) : 0
+                ],
+                [],
+                ['TRANSACTION HISTORY'],
+                ['Date', 'Time', 'Order ID', 'Customer', 'Pay Mode', 'Items', 'Total']
+            ];
+
+            filteredOrders.forEach(order => {
+                ws_data.push([
+                    new Date(order.createdAt).toLocaleDateString(),
+                    new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                    order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id,
+                    order.customerInfo?.name || 'Guest',
+                    order.paymentMethod || 'Cash',
+                    order.items?.length || 0,
+                    Number(order.totalAmount) || 0
+                ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            
+            // Column Widths
+            ws['!cols'] = [
+                { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 20 }, { wch: 10 }, { wch: 8 }, { wch: 15 }
+            ];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Sales Report");
+            
+            XLSX.writeFile(wb, fileName);
+            toast.success('Excel report downloaded', { id: toastId });
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to generate Excel', { id: toastId });
         }
     };
 
@@ -858,18 +1226,22 @@ const AdminSales = () => {
                                 </span>
                             ) : (
                                 <span className="text-gray-400">Select Date Range</span>
-                            )}
-                            <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 ml-1" />
-                        </button>
-
-                        {isDatePickerOpen && (
-                            <DateRangePicker
-                                range={dateRange}
-                                onChange={setDateRange}
-                                onClose={() => setIsDatePickerOpen(false)}
-                            />
-                        )}
+                            )}                <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 ml-1" />
+                </button>
+            
                     </div>
+                    
+                    {/* Render DatePicker conditionally outside the button but relative to it if needed, or just as a modal */}
+                    {isDatePickerOpen && (
+                        <DateRangePicker
+                            range={dateRange}
+                            onChange={(newRange) => {
+                                setDateRange(newRange);
+                            }}
+                            onClose={() => setIsDatePickerOpen(false)}
+                        />
+                    )}
+
                     <button
                         onClick={handleDownloadPDF}
                         className="bg-[#FD6941] hover:bg-orange-600 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-medium flex items-center justify-center shrink-0 group transition-all duration-300 shadow-sm shadow-orange-100 text-sm overflow-hidden hover:sm:w-auto hover:sm:px-6"
@@ -878,6 +1250,17 @@ const AdminSales = () => {
                         <Download className="w-4 h-4 sm:w-5 sm:h-5" />
                         <span className="hidden sm:group-hover:inline-block transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden">
                             Download PDF
+                        </span>
+                    </button>
+                    
+                    <button
+                        onClick={handleDownloadExcel}
+                        className="bg-green-600 hover:bg-green-700 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-medium flex items-center justify-center shrink-0 group transition-all duration-300 shadow-sm shadow-green-100 text-sm overflow-hidden hover:sm:w-auto hover:sm:px-6"
+                        title="Download Excel Report"
+                    >
+                        <FileSpreadsheet className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <span className="hidden sm:group-hover:inline-block transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden">
+                            Download Excel
                         </span>
                     </button>
                 </div>

@@ -1,0 +1,10 @@
+# GSD & Project specific ignores
+.agent/
+.gemini/
+adapters/
+.gsd/
+docs/
+scripts/
+GSD-STYLE.md
+model_capabilities.yaml
+PROJECT_RULES.md

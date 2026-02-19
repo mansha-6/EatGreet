@@ -193,8 +193,8 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
     };
 
     return (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
-            <div className="bg-white w-full max-w-[420px] rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden flex flex-col p-6 sm:p-8 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
+            <div className="bg-white/95 backdrop-blur-xl w-full max-w-[420px] rounded-[2.5rem] shadow-2xl border border-white/50 overflow-hidden flex flex-col p-6 sm:p-8 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center mb-6">
                     <h3 className="text-xl font-medium text-black">Select Date Range</h3>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -246,8 +246,8 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
                                 key={day}
                                 onClick={() => handleDateClick(day)}
                                 className={`h-10 w-10 sm:h-11 sm:w-11 flex items-center justify-center text-sm rounded-full transition-all relative
-                                    ${active ? 'bg-black text-white shadow-lg z-10' : ''}
-                                    ${range ? 'bg-gray-100 text-black' : 'text-gray-700 hover:bg-gray-50'}
+                                    ${active ? 'bg-[#FD6941] text-white shadow-lg shadow-orange-200 z-10' : ''}
+                                    ${range ? 'bg-orange-50 text-orange-900' : 'text-gray-700 hover:bg-white/50'}
                                 `}
                             >
                                 {day}
@@ -266,7 +266,7 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
                     </button>
                     <button
                         onClick={applySelection}
-                        className="flex-[2] py-4 bg-black hover:bg-gray-800 text-white rounded-2xl text-sm font-medium transition-all shadow-lg shadow-black/10"
+                        className="flex-[2] py-4 bg-[#FD6941] hover:bg-orange-600 text-white rounded-2xl text-sm font-medium transition-all shadow-lg shadow-orange-200"
                     >
                         Apply Range
                     </button>
@@ -872,7 +872,7 @@ const AdminSales = () => {
                     </div>
                     <button
                         onClick={handleDownloadPDF}
-                        className="bg-black hover:bg-gray-800 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-medium flex items-center justify-center shrink-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden hover:sm:w-auto hover:sm:px-6"
+                        className="bg-[#FD6941] hover:bg-orange-600 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-medium flex items-center justify-center shrink-0 group transition-all duration-300 shadow-sm shadow-orange-100 text-sm overflow-hidden hover:sm:w-auto hover:sm:px-6"
                         title="Download PDF Report"
                     >
                         <Download className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -935,12 +935,12 @@ const AdminSales = () => {
                             <AreaChart data={graphData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#0F172A" stopOpacity={0.1} />
-                                        <stop offset="95%" stopColor="#0F172A" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#FD6941" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#FD6941" stopOpacity={0} />
                                     </linearGradient>
                                     <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.1} />
-                                        <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#000000" stopOpacity={0.1} />
+                                        <stop offset="95%" stopColor="#000000" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f3f3" />
@@ -973,7 +973,7 @@ const AdminSales = () => {
                                     type="monotone"
                                     dataKey="totalRevenue"
                                     name="Total Revenue"
-                                    stroke="#0F172A"
+                                    stroke="#FD6941"
                                     fillOpacity={1}
                                     fill="url(#colorRevenue)"
                                     strokeWidth={3}
@@ -983,7 +983,7 @@ const AdminSales = () => {
                                     type="monotone"
                                     dataKey="netProfit"
                                     name="Net Profit"
-                                    stroke="#10B981"
+                                    stroke="#000000"
                                     fillOpacity={1}
                                     fill="url(#colorProfit)"
                                     strokeWidth={3}
@@ -1009,7 +1009,7 @@ const AdminSales = () => {
                                     cursor={{ fill: '#F3F4F6' }}
                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                                 />
-                                <Bar dataKey="volume" name="Orders" fill="#000000" radius={[4, 4, 0, 0]} barSize={40} />
+                                <Bar dataKey="volume" name="Orders" fill="#FD6941" radius={[4, 4, 0, 0]} barSize={40} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -1042,7 +1042,7 @@ const AdminSales = () => {
                         <div className="relative">
                             <button
                                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                className={`flex items-center justify-center w-9 h-9 sm:w-auto sm:px-4 sm:py-2.5 rounded-full border text-xs sm:text-sm font-medium transition-all ${paymentFilter !== 'All' ? 'bg-black text-white border-black' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                                className={`flex items-center justify-center w-9 h-9 sm:w-auto sm:px-4 sm:py-2.5 rounded-full border text-xs sm:text-sm font-medium transition-all ${paymentFilter !== 'All' ? 'bg-[#FD6941] text-white border-[#FD6941]' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                                 title="Filter Transactions"
                             >
                                 <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -1062,7 +1062,7 @@ const AdminSales = () => {
                                                     setPaymentFilter(mode);
                                                     setIsFilterOpen(false);
                                                 }}
-                                                className={`w-full text-left px-4 py-2 text-xs sm:text-sm font-medium hover:bg-gray-50 transition-colors ${paymentFilter === mode ? 'text-black bg-gray-50' : 'text-gray-600'}`}
+                                                className={`w-full text-left px-4 py-2 text-xs sm:text-sm font-medium hover:bg-orange-50 transition-colors ${paymentFilter === mode ? 'text-[#FD6941] bg-orange-50' : 'text-gray-600'}`}
                                             >
                                                 {mode}
                                             </button>
@@ -1104,7 +1104,7 @@ const AdminSales = () => {
                                     <p className="text-sm font-bold text-gray-900 leading-none">{formatCurrency(order.totalAmount, currencySymbol)}</p>
                                     <button
                                         onClick={() => setSelectedOrder(order)}
-                                        className="px-4 py-1.5 bg-gray-900 text-white rounded-lg text-xs font-medium hover:bg-black transition-all active:scale-95 shadow-sm"
+                                        className="px-4 py-1.5 bg-[#FD6941] text-white rounded-lg text-xs font-medium hover:bg-orange-600 transition-all active:scale-95 shadow-sm shadow-orange-100"
                                     >
                                         View
                                     </button>
@@ -1164,7 +1164,7 @@ const AdminSales = () => {
                                         <td className="px-6 py-4 text-center">
                                             <button
                                                 onClick={() => setSelectedOrder(order)}
-                                                className="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center hover:bg-black transition-all active:scale-95 shadow-md hover:shadow-lg mx-auto"
+                                                className="w-8 h-8 rounded-full bg-[#FD6941] text-white flex items-center justify-center hover:bg-orange-600 transition-all active:scale-95 shadow-md hover:shadow-lg hover:shadow-orange-200 mx-auto"
                                                 title="View Invoice"
                                             >
                                                 <FileText size={16} />

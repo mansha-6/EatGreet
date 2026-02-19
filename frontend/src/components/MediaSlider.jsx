@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import '@google/model-viewer';
 import { ChevronLeft, ChevronRight, Box } from 'lucide-react';
 
+import arIcon from '../assets/ar-icon.svg';
+
 const MediaSlider = ({ media, interval = 30000, className = "", showArButton = true, modelCheckId = null }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showControls, setShowControls] = useState(false);
@@ -148,15 +150,20 @@ const MediaSlider = ({ media, interval = 30000, className = "", showArButton = t
                                 auto-rotate
                                 ar
                                 ar-modes="webxr scene-viewer quick-look"
+                                ar-scale="auto"
                                 disable-zoom
-                                style={{ width: '100%', height: '100%', backgroundColor: '#f9fafb' }}
+                                loading="eager"
+                                reveal="auto"
+                                shadow-intensity="1"
+                                touch-action="pan-y"
+                                style={{ width: '100%', height: '100%', backgroundColor: '#f9fafb', '--poster-color': '#f9fafb' }}
                                 className="w-full h-full object-cover"
                             >
                                 <button
                                     slot="ar-button"
                                     className={`absolute top-2 right-2 md:top-4 md:right-4 z-20 w-7 h-7 md:w-9 md:h-9 backdrop-blur rounded-full items-center justify-center shadow-sm bg-white/90 text-gray-800 ${!showArButton ? 'hidden' : 'hidden md:flex'}`}
                                 >
-                                    <Box className="w-3.5 h-3.5 md:w-5 md:h-5 text-black" />
+                                    <img src={arIcon} alt="View in AR" className="w-4 h-4 md:w-6 md:h-6" />
                                 </button>
                             </model-viewer>
                         ) : (

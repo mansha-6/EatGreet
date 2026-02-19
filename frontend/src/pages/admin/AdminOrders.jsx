@@ -1308,8 +1308,8 @@ const AdminOrders = () => {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6">
                 <div className="bg-white p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col justify-center h-32 sm:h-40 relative group hover:shadow-md transition-all">
                     <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-3">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
-                            <img src={clockIcon} alt="Pending" className="w-full h-full object-contain" />
+                        <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#F3F3F3] rounded-full flex items-center justify-center shrink-0">
+                            <img src={clockIcon} alt="Pending" className="w-4.5 h-4.5 sm:w-6 sm:h-6 opacity-60" />
                         </div>
                         <span className="text-2xl sm:text-4xl text-gray-900">{stats.pending}</span>
                     </div>
@@ -1318,8 +1318,8 @@ const AdminOrders = () => {
 
                 <div className="bg-white p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col justify-center h-32 sm:h-40 relative group hover:shadow-md transition-all">
                     <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-3">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
-                            <img src={chefHatIcon} alt="Preparing" className="w-full h-full object-contain" />
+                        <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#F3F3F3] rounded-full flex items-center justify-center shrink-0">
+                            <img src={chefHatIcon} alt="Preparing" className="w-4.5 h-4.5 sm:w-6 sm:h-6 opacity-60" />
                         </div>
                         <span className="text-2xl sm:text-4xl text-gray-900">{stats.preparing}</span>
                     </div>
@@ -1328,8 +1328,8 @@ const AdminOrders = () => {
 
                 <div className="bg-white p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col justify-center h-32 sm:h-40 relative group hover:shadow-md transition-all">
                     <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-3">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
-                            <img src={bellIcon} alt="Ready" className="w-full h-full object-contain" />
+                        <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#F3F3F3] rounded-full flex items-center justify-center shrink-0">
+                            <img src={bellIcon} alt="Ready" className="w-4.5 h-4.5 sm:w-6 sm:h-6 opacity-60" />
                         </div>
                         <span className="text-2xl sm:text-4xl text-gray-900">{stats.ready}</span>
                     </div>

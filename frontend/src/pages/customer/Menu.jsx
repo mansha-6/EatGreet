@@ -19,6 +19,7 @@ import ketoIcon from '../../assets/Pear--Streamline-Atlas.svg';
 import vegIcon from '../../assets/veg.svg';
 import nonVegIcon from '../../assets/non-veg.svg';
 import arVideo from '../../assets/AR_Menu_Experience_Video_Generation.mp4';
+import arIcon from '../../assets/ar-icon.svg';
 import { useSocket } from '../../context/SocketContext';
 
 const dietaryIcons = {
@@ -395,7 +396,7 @@ const Menu = () => {
                 className="mt-4 md:mt-6 px-2 md:px-4 overflow-x-auto no-scrollbar flex gap-2 md:gap-4 snap-x snap-mandatory w-full touch-pan-x overscroll-x-contain cursor-grab active:cursor-grabbing"
             >
                 {extendedOffers.map((offer, index) => (
-                    <div key={offer.uniqueId} className={`snap-center shrink-0 w-full md:w-[350px] h-44 md:h-48 rounded-[2rem] flex flex-col justify-center relative shadow-lg overflow-hidden ${offer.bg} ${!offer.type ? 'p-5 md:p-6' : ''}`}>
+                    <div key={offer.uniqueId} style={{ scrollSnapStop: 'always' }} className={`snap-center snap-always shrink-0 w-full md:w-[350px] h-44 md:h-48 rounded-[2rem] flex flex-col justify-center relative shadow-lg overflow-hidden ${offer.bg} ${!offer.type ? 'p-5 md:p-6' : ''}`}>
                         {offer.type === 'video' ? (
                             <video
                                 ref={el => videoRefs.current[index] = el}
@@ -606,14 +607,30 @@ const Menu = () => {
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    const viewer = document.getElementById(`model-${item._id}`);
-                                                    if (viewer) viewer.activateAR();
+                                                    // The ID is constructed as `model-${item._id}` in MediaSlider.jsx. 
+                                                    // HOWEVER, in Menu.jsx we pass `modelCheckId` prop to MediaSlider.
+                                                    // Let's verify what ID is actually assigned.
+                                                    // Looking at line 495: modelCheckId={`model-${item._id}`}
+                                                    // Looking at MediaSlider.jsx: id={modelCheckId}
+                                                    // So the ID should be correct.
+                                                    const viewerId = `model-${item._id}`;
+                                                    const viewer = document.getElementById(viewerId);
+                                                    if (viewer) {
+                                                        if (viewer.activateAR) {
+                                                            viewer.activateAR();
+                                                        } else {
+                                                            // Fallback or error if method doesn't exist (e.g. older browser/module)
+                                                            console.warn("activateAR method not found on model-viewer element");
+                                                        }
+                                                    } else {
+                                                        console.error(`Model viewer with ID ${viewerId} not found`);
+                                                    }
                                                 }}
                                                 disabled={isPreviewMode}
                                                 className={`flex w-8 h-8 md:w-14 md:h-14 rounded-full items-center justify-center transition-all shadow-sm border bg-white border-gray-200 text-blue-600 hover:bg-gray-50 ${isPreviewMode ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
                                                 title="View in AR"
                                             >
-                                                <Box className="w-4 h-4 md:w-7 md:h-7" />
+                                                <img src={arIcon} alt="AR" className="w-5 h-5 md:w-8 md:h-8" />
                                             </button>
                                         )}
 
@@ -1028,7 +1045,7 @@ const Menu = () => {
                                             }}
                                             className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors shadow-sm"
                                         >
-                                            <Box className="w-6 h-6 md:w-7 md:h-7 text-blue-600" />
+                                            <img src={arIcon} alt="AR" className="w-6 h-6 md:w-8 md:h-8" />
                                         </button>
                                     )}
 

@@ -273,8 +273,8 @@ const AdminCategory = () => {
 
                                 {/* Left Column (Mobile) / Top Area (Desktop) */}
                                 <div className="flex flex-col justify-between shrink-0 mb-0 sm:mb-6">
-                                    <div className={`w-14 h-14 sm:w-14 sm:h-14 rounded-2xl bg-orange-50 text-orange-500 bg-opacity-10 flex items-center justify-center shrink-0`}>
-                                        <DisplayIcon className="w-7 h-7 sm:w-7 sm:h-7" />
+                                    <div className={`w-14 h-14 sm:w-14 sm:h-14 rounded-2xl bg-[#F3F3F3] text-black flex items-center justify-center shrink-0`}>
+                                        <DisplayIcon className="w-7 h-7 sm:w-7 sm:h-7 opacity-60" />
                                     </div>
 
                                     {/* Mobile ONLY: Actions at bottom-left */}

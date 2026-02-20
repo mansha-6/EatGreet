@@ -151,11 +151,12 @@ const MediaSlider = ({ media, interval = 30000, className = "", showArButton = t
                                 ar
                                 ar-modes="webxr scene-viewer quick-look"
                                 ar-scale="auto"
-                                disable-zoom
                                 loading="eager"
                                 reveal="auto"
                                 shadow-intensity="1"
-                                touch-action="pan-y"
+                                shadow-softness="1"
+                                touch-action="none"
+                                data-js-focus-visible
                                 style={{ width: '100%', height: '100%', backgroundColor: '#f9fafb', '--poster-color': '#f9fafb' }}
                                 className="w-full h-full object-cover"
                             >

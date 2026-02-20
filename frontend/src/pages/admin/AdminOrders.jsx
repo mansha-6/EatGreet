@@ -1850,7 +1850,9 @@ const AdminOrders = () => {
                                                                                     src={models[0].url}
                                                                                     alt={item.name}
                                                                                     camera-controls
-                                                                                    disable-zoom
+                                                                                    shadow-softness="1"
+                                                                                    touch-action="none"
+                                                                                    data-js-focus-visible
                                                                                     auto-rotate
                                                                                     shadow-intensity="1"
                                                                                     style={{ width: '100%', height: '100%', backgroundColor: '#f9fafb' }}

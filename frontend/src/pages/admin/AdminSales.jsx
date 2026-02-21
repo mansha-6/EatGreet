@@ -12,7 +12,7 @@ import { orderAPI, restaurantAPI, statsAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
+
 import { useSocket } from '../../context/SocketContext';
 import toast from 'react-hot-toast';
 import EatGreetLogo from '../../assets/logo-full.png';
@@ -830,9 +830,9 @@ const AdminSales = () => {
                 const val = Number(amount) || 0;
                 return `${currencySymbol === '₹' ? 'Rs.' : currencySymbol} ${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             };
-
-            // Helper to load image
-            const loadImage = (url) => {
+            
+            // Moved loadImage helper to component scope for reuse
+            const innerLoadImage = (url) => {
                 return new Promise((resolve) => {
                     const img = new Image();
                     img.crossOrigin = 'Anonymous';
@@ -847,8 +847,7 @@ const AdminSales = () => {
                             const dataUrl = canvas.toDataURL('image/png');
                             resolve(dataUrl);
                         } catch (e) {
-                            // Fallback to image element if canvas fails (e.g. taint)
-                            resolve(img);
+                            resolve(null);
                         }
                     };
                     img.onerror = () => resolve(null);
@@ -884,11 +883,11 @@ const AdminSales = () => {
 
             // Restaurant Logo & Info
             let logoImg = null;
-            const footerLogoImg = await loadImage(EatGreetLogo);
+            const footerLogoImg = await innerLoadImage(EatGreetLogo);
             const logoUrl = restaurant?.logo || restaurant?.image || restaurant?.restaurantDetails?.logo;
             
             if (logoUrl) {
-                logoImg = await loadImage(logoUrl);
+                logoImg = await innerLoadImage(logoUrl);
             }
 
             if (logoImg) {
@@ -1123,10 +1122,38 @@ const AdminSales = () => {
     };
 
     // Download Excel Handler
-    const handleDownloadExcel = () => {
-        const toastId = toast.loading('Generating Excel report...');
+    const handleDownloadExcel = async () => {
+        const toastId = toast.loading('Generating branded Excel report...');
         try {
-            // 1. Calculate Stats (Same logic as PDF)
+            // Helper to load image for ExcelJS
+            const excelLoadImage = (url) => {
+                return new Promise((resolve) => {
+                    const img = new Image();
+                    img.crossOrigin = 'Anonymous';
+                    img.src = url;
+                    img.onload = () => {
+                        try {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0);
+                            resolve(canvas.toDataURL('image/png').split(',')[1]); // Base64 without header
+                        } catch (e) { resolve(null); }
+                    };
+                    img.onerror = () => resolve(null);
+                });
+            };
+
+            const ExcelJS = await import('exceljs');
+            const workbook = new ExcelJS.Workbook();
+            const worksheet = workbook.addWorksheet('Sales Report');
+
+            // 1. Load Images
+            const restaurantLogoBase64 = await excelLoadImage(restaurant?.logo || restaurant?.image || restaurant?.restaurantDetails?.logo);
+            const eatGreetLogoBase64 = await excelLoadImage(EatGreetLogo);
+
+            // 2. Calculate Stats (Same logic as PDF)
             const pdfStats = Array.isArray(filteredOrders) ? filteredOrders.reduce((acc, order) => {
                 const orderTotal = Number(order.totalAmount) || 0;
                 return {
@@ -1148,58 +1175,255 @@ const AdminSales = () => {
                  totalExpenses = safeMonthlyExpense; 
             }
             const pdfProfit = pdfStats.revenue - totalExpenses;
-            
-            // 2. Prepare Data
-            const periodText = (dateRange.start || dateRange.end) ? 
-                `${new Date(dateRange.start).toLocaleDateString()} to ${new Date(dateRange.end || new Date()).toLocaleDateString()}` : "All Time History";
-            const fileName = `Sales_${periodText.replace(/\s+/g, '_').replace(/[:\/,]/g, '')}.xlsx`;
+            const pdfAov = pdfStats.orders > 0 ? (pdfStats.revenue / pdfStats.orders) : 0;
 
-            const ws_data = [
-                [restaurant?.name || 'EatGreet Restaurant'],
-                ['Sales Performance Report'],
-                [`Report Date: ${new Date().toLocaleString()}`],
-                [`Period: ${periodText}`],
-                [],
-                ['FINANCIAL OVERVIEW'],
-                ['Total Revenue', 'Net Profit', 'Total Orders', 'Avg Order Value'],
-                [
-                    pdfStats.revenue,
-                    pdfProfit,
-                    pdfStats.orders,
-                    pdfStats.orders > 0 ? (pdfStats.revenue / pdfStats.orders) : 0
-                ],
-                [],
-                ['TRANSACTION HISTORY'],
-                ['Date', 'Time', 'Order ID', 'Customer', 'Pay Mode', 'Items', 'Total']
+            // 3. Setup Columns & Styling Constants
+            const brandOrange = 'FD6941';
+            const textDark = '1E1E1E';
+            const textGray = '646464';
+            const bgLight = 'F9FAFB';
+
+            // Define columns with a balanced buffer A column to push content to the middle
+            worksheet.columns = [
+                { key: 'buffer', width: 22 },  
+                { key: 'date', width: 20 },    
+                { key: 'time', width: 20 },    
+                { key: 'orderId', width: 20 }, 
+                { key: 'customer', width: 30 },
+                { key: 'payMode', width: 20 }, 
+                { key: 'items', width: 15 },   
+                { key: 'total', width: 25 }    
             ];
 
+            // 3. Header Section (Premium Branding matching PDF)
+            // Row 1: Brand Top Bar
+            const topBarRow = worksheet.addRow(['', '']);
+            worksheet.mergeCells('B1:H1');
+            topBarRow.height = 8;
+            worksheet.getCell('B1').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: brandOrange } };
+
+            // Row 2: Logo and Name
+            const restaurantTitleRow = worksheet.addRow(['', restaurant?.name || 'EatGreet Restaurant']);
+            worksheet.mergeCells('B2:H2');
+            const titleCell = worksheet.getCell('B2');
+            titleCell.font = { size: 32, bold: true, color: { argb: textDark } };
+            titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+            restaurantTitleRow.height = 90;
+
+            if (restaurantLogoBase64) {
+                const logoId = workbook.addImage({ base64: restaurantLogoBase64, extension: 'png' });
+                // Position logo closer to the centered title for a unified look
+                worksheet.addImage(logoId, {
+                    tl: { col: 3.2, row: 1.1 }, // Moved to 3.2 to sit just left of the center
+                    ext: { width: 80, height: 80 },
+                    editAs: 'oneCell'
+                });
+            }
+
+            // Row 3: Address
+            const address = restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address';
+            const addressRow = worksheet.addRow(['', address]);
+            worksheet.mergeCells('B3:H3');
+            const addressCell = worksheet.getCell('B3');
+            addressCell.font = { size: 12, color: { argb: textGray } };
+            addressCell.alignment = { vertical: 'middle', horizontal: 'center' };
+            addressRow.height = 25;
+
+            // Row 4: Contact Details
+            const contactParts = [];
+            const tel = restaurant?.contactNumber || restaurant?.restaurantDetails?.contactNumber;
+            const email = restaurant?.businessEmail || restaurant?.restaurantDetails?.businessEmail;
+            const gst = restaurant?.gstNumber || restaurant?.restaurantDetails?.gstNumber;
+            
+            if (tel) contactParts.push(`Tel: ${tel}`);
+            if (email) contactParts.push(`Email: ${email}`);
+            if (gst) contactParts.push(`GST: ${gst}`);
+            
+            const contactRow = worksheet.addRow(['', contactParts.join('   |   ') || 'Contact details not available']);
+            worksheet.mergeCells('B4:H4');
+            const contactCell = worksheet.getCell('B4');
+            contactCell.font = { size: 10, color: { argb: textGray } };
+            contactCell.alignment = { vertical: 'middle', horizontal: 'center' };
+            contactRow.height = 20;
+
+            worksheet.addRow([]); // Spacer Row 5
+
+            // Row 6: Report Title 
+            const reportSubtitle = worksheet.addRow(['', 'Sales Performance Report']);
+            worksheet.mergeCells('B6:H6');
+            const subtitleCell = worksheet.getCell('B6');
+            subtitleCell.font = { size: 22, bold: true, color: { argb: textDark } };
+            subtitleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+            reportSubtitle.height = 40;
+
+            // Row 7: Report Date & Period
+            const periodText = (dateRange.start || dateRange.end) ? 
+                `${new Date(dateRange.start).toLocaleDateString()} - ${new Date(dateRange.end || new Date()).toLocaleDateString()}` : "All Time History";
+            const metaInfo = worksheet.addRow(['', `Generated: ${new Date().toLocaleString()}   |   Period: ${periodText}`]);
+            worksheet.mergeCells('B7:H7');
+            const metaCell = worksheet.getCell('B7');
+            metaCell.font = { size: 11, italic: true, color: { argb: textGray } };
+            metaCell.alignment = { vertical: 'middle', horizontal: 'center' };
+            metaInfo.height = 30;
+
+            worksheet.addRow([]); // Spacer Row 8
+
+            // 4. Financial Overview Section
+            const overviewHeader = worksheet.addRow(['', 'FINANCIAL OVERVIEW']);
+            worksheet.mergeCells(`B${overviewHeader.number}:H${overviewHeader.number}`);
+            const oHeaderCell = worksheet.getCell(`B${overviewHeader.number}`);
+            oHeaderCell.font = { size: 14, bold: true, color: { argb: textDark } };
+            oHeaderCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgLight } };
+            oHeaderCell.alignment = { horizontal: 'center', vertical: 'middle' };
+            overviewHeader.height = 35;
+            
+            // Distribute stats across B:H
+            const statsLabels = worksheet.addRow(['', 'TOTAL REVENUE', '', 'NET PROFIT', '', 'TOTAL ORDERS', 'AVG ORDER VALUE']);
+            worksheet.mergeCells(`B${statsLabels.number}:C${statsLabels.number}`);
+            worksheet.mergeCells(`D${statsLabels.number}:E${statsLabels.number}`);
+            statsLabels.font = { size: 11, bold: true, color: { argb: textGray } };
+            statsLabels.alignment = { horizontal: 'center' };
+            statsLabels.height = 25;
+            
+            const statsValues = worksheet.addRow([
+                '',
+                pdfStats.revenue,
+                '',
+                pdfProfit,
+                '',
+                pdfStats.orders,
+                pdfAov
+            ]);
+            worksheet.mergeCells(`B${statsValues.number}:C${statsValues.number}`);
+            worksheet.mergeCells(`D${statsValues.number}:E${statsValues.number}`);
+            statsValues.height = 45;
+            
+            statsValues.eachCell((cell, colNumber) => {
+                if (colNumber > 1) {
+                    cell.font = { size: 18, bold: true };
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                }
+            });
+            
+            statsValues.getCell(2).font = { color: { argb: textDark }, size: 18, bold: true };
+            statsValues.getCell(4).font = { color: { argb: brandOrange }, size: 18, bold: true };
+            
+            // Format Currency for B (2), D (4), and G (7)
+            [2, 4, 7].forEach(col => {
+                statsValues.getCell(col).numFmt = `${currencySymbol === '₹' ? '₹' : '"'+currencySymbol+'"'}#,##0.00`;
+            });
+
+            worksheet.addRow([]); // Spacer
+
+            // 5. Transaction History Section
+            const transHeader = worksheet.addRow(['', 'TRANSACTION HISTORY']);
+            worksheet.mergeCells(`B${transHeader.number}:H${transHeader.number}`);
+            const tHeaderCell = worksheet.getCell(`B${transHeader.number}`);
+            tHeaderCell.font = { size: 14, bold: true, color: { argb: textDark } };
+            tHeaderCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgLight } };
+            tHeaderCell.alignment = { horizontal: 'center', vertical: 'middle' };
+            transHeader.height = 35;
+
+            const tableHeaderRow = worksheet.addRow(['', 'Date', 'Time', 'Order ID', 'Customer', 'Pay Mode', 'Items', 'Total']);
+            tableHeaderRow.eachCell((cell, colNumber) => {
+                if (colNumber > 1) {
+                    cell.font = { bold: true, color: { argb: 'FFFFFF' }, size: 12 };
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: brandOrange } };
+                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                    cell.border = { 
+                        top: { style: 'thin', color: { argb: 'FFFFFF' } },
+                        bottom: { style: 'thin', color: { argb: 'E5E7EB' } } 
+                    };
+                }
+            });
+            tableHeaderRow.height = 40;
+
+            // 6. Add Data Rows
             filteredOrders.forEach(order => {
-                ws_data.push([
+                const row = worksheet.addRow([
+                    '',
                     new Date(order.createdAt).toLocaleDateString(),
                     new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
-                    order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id,
+                    order.dailySequence ? String(order.dailySequence).padStart(3, '0') : (order._id || '').slice(-6).toUpperCase(),
                     order.customerInfo?.name || 'Guest',
                     order.paymentMethod || 'Cash',
                     order.items?.length || 0,
                     Number(order.totalAmount) || 0
                 ]);
+                row.height = 30;
+
+                // Explicitly center all cells in the row starting from col 2
+                row.eachCell((cell, colNumber) => {
+                    if (colNumber > 1) {
+                        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+                        if (colNumber === 8) {
+                             cell.numFmt = `${currencySymbol === '₹' ? '₹' : '"'+currencySymbol+'"'}#,##0.00`;
+                        }
+                        if (colNumber === 4) {
+                            cell.font = { bold: true };
+                        }
+                    }
+                });
             });
 
-            const ws = XLSX.utils.aoa_to_sheet(ws_data);
-            
-            // Column Widths
-            ws['!cols'] = [
-                { wch: 15 }, { wch: 12 }, { wch: 15 }, { wch: 20 }, { wch: 10 }, { wch: 8 }, { wch: 15 }
-            ];
+            // Alternate Row Styling
+            worksheet.eachRow((row, rowNumber) => {
+                if (rowNumber > tableHeaderRow.number) {
+                    if (rowNumber % 2 === 0) {
+                        row.eachCell((cell, colNumber) => {
+                            if (colNumber > 1) {
+                                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'F9FAFB' } };
+                            }
+                        });
+                    }
+                }
+            });
 
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Sales Report");
+            // 7. Footer Branding (Powered by EatGreet)
+            worksheet.addRow([]); // Minimal spacer
             
-            XLSX.writeFile(wb, fileName);
-            toast.success('Excel report downloaded', { id: toastId });
+            const footerRow = worksheet.addRow(['', '', '', 'Powered by', '']); 
+            footerRow.height = 60;
+
+            // Apply background and borders to the whole footer area (B:H)
+            ['B', 'C', 'D', 'E', 'F', 'G', 'H'].forEach(col => {
+                const cell = footerRow.getCell(col);
+                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F3' } };
+                cell.border = {
+                    top: { style: 'thin', color: { argb: 'FEDFD7' } },
+                    bottom: { style: 'thin', color: { argb: 'FEDFD7' } }
+                };
+            });
+
+            // Style the "Powered by" text to sit left of center
+            const pByCell = footerRow.getCell(4); // Column D
+            pByCell.font = { size: 12, italic: true, color: { argb: textGray } };
+            pByCell.alignment = { horizontal: 'right', vertical: 'middle' };
+
+            if (eatGreetLogoBase64) {
+                const eatGreetLogoId = workbook.addImage({ base64: eatGreetLogoBase64, extension: 'png' });
+                // Place logo starting from Column E (index 4.1 in 0-indexed terms but col 5 in 1-indexed)
+                // tl.col: 4 means Column E
+                worksheet.addImage(eatGreetLogoId, {
+                    tl: { col: 4.1, row: footerRow.number - 0.9 }, 
+                    ext: { width: 140, height: 45 },
+                    editAs: 'oneCell'
+                });
+            }
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url = window.URL.createObjectURL(blob);
+            const anchor = document.createElement('a');
+            anchor.href = url;
+            const safeFileName = `Sales_${periodText.replace(/\s+/g, '_').replace(/[:\/,]/g, '')}.xlsx`;
+            anchor.download = safeFileName;
+            anchor.click();
+            window.URL.revokeObjectURL(url);
+
+            toast.success('Branded Excel report downloaded', { id: toastId });
         } catch (error) {
             console.error(error);
-            toast.error('Failed to generate Excel', { id: toastId });
+            toast.error('Failed to generate branded Excel', { id: toastId });
         }
     };
 

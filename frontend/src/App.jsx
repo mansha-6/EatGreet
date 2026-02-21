@@ -21,6 +21,7 @@ import AdminLayout from './layouts/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminMenu from './pages/admin/AdminMenu';
 import AdminCategory from './pages/admin/AdminCategory';
+import AdminOffers from './pages/admin/AdminOffers';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminTable from './pages/admin/AdminTable';
 import AdminProfile from './pages/admin/AdminProfile';
@@ -149,6 +150,7 @@ function App() {
             <Route index element={<AdminDashboard />} />
             <Route path="menu" element={<AdminMenu />} />
             <Route path="category" element={<AdminCategory />} />
+            <Route path="offers" element={<AdminOffers />} />
             <Route path="orders" element={<AdminOrders />} />
             <Route path="table" element={<AdminTable />} />
             <Route path="sales" element={<AdminSales />} />

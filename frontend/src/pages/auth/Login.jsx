@@ -51,7 +51,7 @@ export default function Login() {
                     <div className="mb-2">
                         <img src="/logo-v.svg" alt="EatGreet Logo" className="w-[180px]" />
                     </div>
-                    <p className="text-gray-500 text-sm mt-2 font-medium text-center">
+                    <p className="text-gray-500 text-sm mt-2 font-normal text-center">
                         Sign in to manage your restaurant
                     </p>
                 </div>

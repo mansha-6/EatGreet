@@ -54,7 +54,7 @@ const CustomerProfile = () => {
 
             {/* Avatar Section */}
             <div className="flex flex-col items-center">
-                <div className="w-24 h-24 bg-gradient-to-tr from-orange-400 to-red-500 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg mb-3">
+                <div className="w-24 h-24 bg-gradient-to-tr from-[#FD6941] to-red-500 rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg mb-3">
                     {profile.fullName.charAt(0)}
                 </div>
                 <h2 className="text-xl font-bold text-gray-800">{profile.fullName}</h2>
@@ -63,8 +63,8 @@ const CustomerProfile = () => {
 
             {/* Stats */}
             <div className="grid grid-cols-2 gap-4">
-                <div className="bg-orange-50 p-4 rounded-2xl flex flex-col items-center text-center">
-                    <Heart className="w-6 h-6 text-orange-500 mb-2" />
+                <div className="bg-[#FD6941] p-4 rounded-2xl flex flex-col items-center text-center">
+                    <Heart className="w-6 h-6 text-[#FD6941] mb-2" />
                     <span className="text-xl font-bold text-gray-800">{Object.keys(favorites).length}</span>
                     <span className="text-xs text-gray-500 font-bold uppercase">Favorites</span>
                 </div>

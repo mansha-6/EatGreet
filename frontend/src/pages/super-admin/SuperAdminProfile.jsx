@@ -48,7 +48,7 @@ const SuperAdminProfile = () => {
     const handleLogout = () => {
         toast((t) => (
             <div className="flex flex-col gap-3">
-                <p className="font-medium text-gray-800">Are you sure you want to log out?</p>
+                <p className="font-normal text-gray-800">Are you sure you want to log out?</p>
                 <div className="flex gap-2">
                     <button
                         onClick={() => {
@@ -78,7 +78,7 @@ const SuperAdminProfile = () => {
                 <h1 className="text-2xl font-bold text-gray-800">My Profile</h1>
                 <button
                     onClick={() => isEditing ? handleSaveProfile() : setIsEditing(true)}
-                    className={`px-6 py-2.5 rounded-full font-medium flex items-center gap-2 transition-colors shadow-sm ${isEditing
+                    className={`px-6 py-2.5 rounded-full font-normal flex items-center gap-2 transition-colors shadow-sm ${isEditing
                         ? 'bg-green-500 hover:bg-green-600 text-white'
                         : 'bg-black hover:bg-gray-800 text-white'
                         }`}
@@ -102,7 +102,7 @@ const SuperAdminProfile = () => {
                     <h2 className="text-xl font-bold text-gray-800 mb-1">{profile.fullName}</h2>
                     <div className="flex items-center gap-1 text-gray-500 mb-6">
                         <Shield className="w-4 h-4 text-blue-500" />
-                        <p className="text-sm font-medium text-blue-500">{profile.role}</p>
+                        <p className="text-sm font-normal text-blue-500">{profile.role}</p>
                     </div>
 
                     <div className="w-full space-y-4">

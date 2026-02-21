@@ -22,9 +22,9 @@ const KitchenProfile = () => {
                 <h1 className="text-2xl font-bold text-gray-800">Kitchen Staff Profile</h1>
                 <button
                     onClick={() => setIsEditing(!isEditing)}
-                    className={`px-6 py-2.5 rounded-full font-medium flex items-center gap-2 transition-colors shadow-sm ${isEditing
-                            ? 'bg-green-500 hover:bg-green-600 text-white'
-                            : 'bg-orange-500 hover:bg-orange-600 text-white'
+                    className={`px-6 py-2.5 rounded-full font-normal flex items-center gap-2 transition-colors shadow-sm ${isEditing
+                        ? 'bg-green-500 hover:bg-green-600 text-white'
+                        : 'bg-[#FD6941] hover:bg-[#FD6941]/90 text-white'
                         }`}
                 >
                     {isEditing ? <Save className="w-4 h-4" /> : <User className="w-4 h-4" />}
@@ -36,12 +36,12 @@ const KitchenProfile = () => {
 
                 {/* Left Column */}
                 <div className="flex flex-col items-center justify-center text-center">
-                    <div className="w-32 h-32 rounded-full bg-orange-100 flex items-center justify-center mb-4 text-orange-500 text-4xl font-bold border-4 border-white shadow-sm">
+                    <div className="w-32 h-32 rounded-full bg-[#FD6941] flex items-center justify-center mb-4 text-[#FD6941] text-4xl font-bold border-4 border-white shadow-sm">
                         {profile.fullName.charAt(0)}
                     </div>
                     <h2 className="text-xl font-bold text-gray-800">{profile.fullName}</h2>
                     <p className="text-gray-500 text-sm">{profile.role}</p>
-                    <div className="mt-4 px-4 py-1 bg-orange-50 text-orange-600 rounded-full text-xs font-bold flex items-center gap-2">
+                    <div className="mt-4 px-4 py-1 bg-[#FD6941] text-[#FD6941] rounded-full text-xs font-bold flex items-center gap-2">
                         <ChefHat className="w-3 h-3" />
                         {profile.specialty}
                     </div>
@@ -59,7 +59,7 @@ const KitchenProfile = () => {
                             value={profile.fullName}
                             onChange={handleChange}
                             disabled={!isEditing}
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#FD6941] focus:border-transparent transition-all outline-none disabled:opacity-70 disabled:cursor-not-allowed"
                         />
                     </div>
 
@@ -73,7 +73,7 @@ const KitchenProfile = () => {
                                 value={profile.email}
                                 onChange={handleChange}
                                 disabled={!isEditing}
-                                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:opacity-70 disabled:cursor-not-allowed"
+                                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#FD6941] focus:border-transparent transition-all outline-none disabled:opacity-70 disabled:cursor-not-allowed"
                             />
                         </div>
                     </div>
@@ -88,7 +88,7 @@ const KitchenProfile = () => {
                                 value={profile.phone}
                                 onChange={handleChange}
                                 disabled={!isEditing}
-                                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all outline-none disabled:opacity-70 disabled:cursor-not-allowed"
+                                className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#FD6941] focus:border-transparent transition-all outline-none disabled:opacity-70 disabled:cursor-not-allowed"
                             />
                         </div>
                     </div>

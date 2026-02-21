@@ -139,7 +139,7 @@ export default function KitchenDashboard() {
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[50vh]">
             <Clock className="w-10 h-10 text-gray-200 animate-spin mb-4" />
-            <p className="text-gray-400 font-medium">Getting kitchen ready...</p>
+            <p className="text-gray-400 font-normal">Getting kitchen ready...</p>
         </div>
     );
 
@@ -208,7 +208,7 @@ export default function KitchenDashboard() {
                                     <div className="px-1 flex justify-between items-end">
                                         <div className="max-w-[70%]">
                                             <h4 className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-[0.1em] mb-2 sm:mb-3">Notes</h4>
-                                            <p className="text-[12px] sm:text-[13px] text-gray-500 leading-relaxed font-medium line-clamp-2 italic">
+                                            <p className="text-[12px] sm:text-[13px] text-gray-500 leading-relaxed font-normal line-clamp-2 italic">
                                                 {round.instruction || "Standard preparation"}
                                             </p>
                                         </div>
@@ -220,7 +220,7 @@ export default function KitchenDashboard() {
 
                                 {/* Status Pulse Badge (Always Visible when preparing) */}
                                 {round.status === 'preparing' && (
-                                    <div className="absolute bottom-10 right-10 flex items-center gap-2 bg-orange-500 px-4 py-2 rounded-full shadow-lg shadow-orange-200">
+                                    <div className="absolute bottom-10 right-10 flex items-center gap-2 bg-[#FD6941] px-4 py-2 rounded-full shadow-lg ">
                                         <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
                                         <span className="text-[10px] font-black text-white uppercase tracking-widest">Cooking</span>
                                     </div>
@@ -235,7 +235,7 @@ export default function KitchenDashboard() {
                                 <Check size={40} />
                             </div>
                             <h3 className="text-2xl font-bold text-gray-800 mb-2">No active orders</h3>
-                            <p className="text-gray-400 font-medium">The kitchen is all caught up!</p>
+                            <p className="text-gray-400 font-normal">The kitchen is all caught up!</p>
                         </div>
                     )}
                 </div>

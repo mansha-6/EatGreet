@@ -14,11 +14,11 @@ export default function Reports() {
                     <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center mb-6">
                         <Construction className="w-12 h-12 text-blue-500" />
                     </div>
-                    <h1 className="text-3xl font-medium text-gray-900 mb-3">Reports Module</h1>
-                    <p className="text-gray-500 font-medium leading-relaxed">
+                    <h1 className="text-3xl font-normal text-gray-900 mb-3">Reports Module</h1>
+                    <p className="text-gray-500 font-normal leading-relaxed">
                         The Advanced Reporting & Analytics engine is currently offline for maintenance. Please check back later for financial insights and performance metrics.
                     </p>
-                    <div className="mt-8 px-6 py-2 bg-gray-100 rounded-full text-[10px] font-medium uppercase tracking-widest text-gray-400">
+                    <div className="mt-8 px-6 py-2 bg-gray-100 rounded-full text-[10px] font-normal uppercase tracking-widest text-gray-400">
                         Currently Offline
                     </div>
                 </motion.div>

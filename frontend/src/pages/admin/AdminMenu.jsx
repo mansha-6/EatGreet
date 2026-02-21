@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import '@google/model-viewer';
 import { createPortal } from 'react-dom';
-import { Search, Filter, Plus, Pencil, Trash2, Image as ImageIcon, X, Upload, Eye, Box, Camera, Clock, Flame, AlertCircle } from 'lucide-react';
+import { Search, Filter, Plus, Pencil, Trash2, Image as ImageIcon, X, Upload, Eye, Box, Camera, Clock, Flame, AlertCircle, Tag } from 'lucide-react';
 import MediaSlider from '../../components/MediaSlider';
 import { MENU_ITEMS_KEY } from '../../constants';
 import { menuAPI, categoryAPI, uploadAPI, restaurantAPI } from '../../utils/api';
@@ -396,7 +396,7 @@ const AdminMenu = () => {
     const handleDelete = (id) => {
         toast((t) => (
             <div className="flex flex-col gap-3">
-                <p className="font-medium text-gray-800 text-sm">Delete this item?</p>
+                <p className="font-normal text-gray-800 text-sm">Delete this item?</p>
                 <div className="flex gap-2">
                     <button
                         onClick={async () => {
@@ -413,13 +413,13 @@ const AdminMenu = () => {
                                 setMenuItems(previousItems); // Rollback
                             }
                         }}
-                        className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs font-medium hover:bg-red-600 transition-colors"
+                        className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs font-normal hover:bg-red-600 transition-colors"
                     >
                         Delete
                     </button>
                     <button
                         onClick={() => toast.dismiss(t.id)}
-                        className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200 transition-colors"
+                        className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-normal hover:bg-gray-200 transition-colors"
                     >
                         Cancel
                     </button>
@@ -709,7 +709,7 @@ const AdminMenu = () => {
         <div className="space-y-4 relative">
             {/* Header */}
             <div className="flex justify-between items-center gap-4">
-                <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-medium text-black tracking-tight leading-none">Menu Management</h1>
+                <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-normal text-black tracking-tight leading-none">Menu Management</h1>
                 <div className="flex gap-2 items-center">
                     <button
                         onClick={() => {
@@ -720,7 +720,7 @@ const AdminMenu = () => {
                                 toast.error("Restaurant details not loaded yet");
                             }
                         }}
-                        className="bg-white hover:bg-gray-50 text-gray-600 hover:text-black p-2.5 sm:p-3 rounded-full font-medium flex items-center justify-center gap-0 group/preview transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-gray-100 text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2"
+                        className="bg-white hover:bg-gray-50 text-gray-600 hover:text-black p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group/preview transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-gray-100 text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2"
                         title="Preview"
                     >
                         <Eye className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
@@ -728,9 +728,20 @@ const AdminMenu = () => {
                             Preview
                         </span>
                     </button>
+                    {/* Offers Button */}
+                    <button
+                        onClick={() => window.open(`/${encodeURIComponent(restaurantName)}/admin/offers`, '_self')}
+                        className="bg-white hover:bg-gray-50 text-gray-600 hover:text-black p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-gray-100 text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2"
+                        title="Manage Offers"
+                    >
+                        <Tag className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
+                        <span className="max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                            Offers
+                        </span>
+                    </button>
                     <button
                         onClick={openModal}
-                        className="bg-[#FD6941] hover:bg-orange-600 text-white p-2.5 sm:p-3 rounded-full font-medium flex items-center justify-center gap-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2"
+                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2"
                     >
                         <Plus className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
                         <span className="max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
@@ -745,7 +756,7 @@ const AdminMenu = () => {
 
                 {/* Filter and Search Bar */}
                 <div className="flex flex-row items-center mb-5 gap-2 sm:gap-4 justify-between">
-                    <h2 className="text-[14px] sm:text-[22px] font-medium text-black shrink-0">All Menu</h2>
+                    <h2 className="text-[14px] sm:text-[22px] font-normal text-black shrink-0">All Menu</h2>
 
                     <div className="flex items-center gap-1.5 sm:gap-3 flex-1 justify-end min-w-0">
                         <div className="relative flex-1 sm:flex-none max-w-[200px] sm:w-64">
@@ -763,7 +774,7 @@ const AdminMenu = () => {
                         <div className="relative shrink-0" ref={filterRef}>
                             <button
                                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                className={`p-2 sm:p-3 rounded-full transition-colors border ${selectedCategoryFilter ? 'bg-orange-50 border-[#FD6941] text-[#FD6941]' : 'bg-gray-50 border-transparent text-gray-500 hover:bg-gray-100'}`}
+                                className={`p-2 sm:p-3 rounded-full transition-colors border ${selectedCategoryFilter ? 'bg-[#FD6941] border-[#FD6941] text-[#FD6941]' : 'bg-gray-50 border-transparent text-gray-500 hover:bg-gray-100'}`}
                                 title="Filter Categories"
                             >
                                 <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -778,7 +789,7 @@ const AdminMenu = () => {
                                                 setSelectedCategoryFilter('');
                                                 setIsFilterOpen(false);
                                             }}
-                                            className={`w-full text-left px-4 py-3 text-sm font-medium hover:bg-gray-50 transition-colors ${selectedCategoryFilter === '' ? 'text-[#FD6941] bg-orange-50/50' : 'text-gray-700'}`}
+                                            className={`w-full text-left px-4 py-3 text-sm font-normal hover:bg-gray-50 transition-colors ${selectedCategoryFilter === '' ? 'text-[#FD6941] bg-[#FD6941]/10' : 'text-gray-700'}`}
                                         >
                                             All Categories
                                         </button>
@@ -789,7 +800,7 @@ const AdminMenu = () => {
                                                     setSelectedCategoryFilter(cat._id);
                                                     setIsFilterOpen(false);
                                                 }}
-                                                className={`w-full text-left px-4 py-3 text-sm font-medium hover:bg-gray-50 transition-colors ${selectedCategoryFilter === cat._id ? 'text-[#FD6941] bg-orange-50/50' : 'text-gray-700'}`}
+                                                className={`w-full text-left px-4 py-3 text-sm font-normal hover:bg-gray-50 transition-colors ${selectedCategoryFilter === cat._id ? 'text-[#FD6941] bg-[#FD6941]/10' : 'text-gray-700'}`}
                                             >
                                                 {cat.name}
                                             </button>
@@ -818,7 +829,7 @@ const AdminMenu = () => {
                             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                                 <Search className="w-8 h-8 text-gray-400" />
                             </div>
-                            <h3 className="text-lg font-medium text-gray-800 mb-1">No items found</h3>
+                            <h3 className="text-lg font-normal text-gray-800 mb-1">No items found</h3>
                             <p className="text-sm">Try adding a new item or changing filters.</p>
                         </div>
                     )}
@@ -840,7 +851,7 @@ const AdminMenu = () => {
                                     {/* Availability Tag */}
                                     <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 bg-white/90 backdrop-blur-sm px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-1 sm:gap-1.5 shadow-sm">
                                         <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${item.isAvailable ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                        <span className="text-[8px] sm:text-[10px] font-medium text-gray-700 tracking-wide uppercase">{item.isAvailable ? 'Available' : 'Unavailable'}</span>
+                                        <span className="text-[8px] sm:text-[10px] font-normal text-gray-700 tracking-wide uppercase">{item.isAvailable ? 'Available' : 'Unavailable'}</span>
                                     </div>
 
                                     {/* Veg/Non-Veg Symbol - Top Left */}
@@ -856,16 +867,16 @@ const AdminMenu = () => {
                                 {/* Content */}
                                 <div className="flex-1 flex flex-col pt-1 sm:pt-1.5 pr-1 sm:px-4 sm:pb-3">
                                     <div className="flex flex-col gap-0">
-                                        <span className="text-[8px] sm:text-[10px] font-medium text-[#FD6941] tracking-wider uppercase leading-none mb-1">
+                                        <span className="text-[8px] sm:text-[10px] font-normal text-[#FD6941] tracking-wider uppercase leading-none mb-1">
                                             {categoryName}
                                         </span>
 
                                         <div className="flex justify-between items-start gap-1">
-                                            <h3 className="font-medium text-gray-900 text-xs sm:text-lg leading-tight w-2/3 line-clamp-1 sm:line-clamp-none">{item.name || 'Unnamed'}</h3>
-                                            <span className="font-medium text-sm sm:text-xl text-gray-900 whitespace-nowrap leading-tight">{currencySymbol}{item.price || 0}</span>
+                                            <h3 className="font-normal text-gray-900 text-xs sm:text-lg leading-tight w-2/3 line-clamp-1 sm:line-clamp-none">{item.name || 'Unnamed'}</h3>
+                                            <span className="font-normal text-sm sm:text-xl text-gray-900 whitespace-nowrap leading-tight">{currencySymbol}{item.price || 0}</span>
                                         </div>
 
-                                        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0 text-[8px] sm:text-[10px] font-medium text-gray-400 mt-1 mb-1">
+                                        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0 text-[8px] sm:text-[10px] font-normal text-gray-400 mt-1 mb-1">
                                             <span className="flex items-center gap-0.5">
                                                 <Flame className="w-2 h-2 sm:w-3 sm:h-3 text-[#FD6941]" />
                                                 {item.calories || '- kcal'}
@@ -919,12 +930,12 @@ const AdminMenu = () => {
                     {/* Add New Item Card */}
                     <div
                         onClick={openModal}
-                        className="border-2 border-dashed border-gray-200 rounded-[1.5rem] sm:rounded-3xl p-2.5 sm:p-8 flex flex-row sm:flex-col items-center justify-center text-center cursor-pointer hover:border-[#FD6941] hover:bg-orange-50/10 transition-all h-[150px] sm:h-full group bg-gray-50 gap-3"
+                        className="border-2 border-dashed border-gray-200 rounded-[1.5rem] sm:rounded-3xl p-2.5 sm:p-8 flex flex-row sm:flex-col items-center justify-center text-center cursor-pointer hover:border-[#FD6941] hover:bg-[#FD6941]/5 transition-all h-[150px] sm:h-full group bg-gray-50 gap-3"
                     >
                         <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300 shrink-0">
                             <Plus className="w-6 h-6 sm:w-8 sm:h-8 text-[#FD6941]" />
                         </div>
-                        <h3 className="font-medium text-base sm:text-lg text-gray-800">Add New Item</h3>
+                        <h3 className="font-normal text-base sm:text-lg text-gray-800">Add New Item</h3>
                     </div>
 
                 </div>
@@ -947,7 +958,7 @@ const AdminMenu = () => {
 
                                 {/* Left Column: Media Upload */}
                                 <div className="lg:col-span-4 bg-gray-50 p-4 sm:p-6 lg:p-6 border-b lg:border-b-0 lg:border-r border-gray-200 flex flex-col">
-                                    <h3 className="text-lg sm:text-xl font-medium text-gray-800 mb-2 sm:mb-4">Item Media</h3>
+                                    <h3 className="text-lg sm:text-xl font-normal text-gray-800 mb-2 sm:mb-4">Item Media</h3>
                                     <p className="text-xs sm:text-sm text-gray-400 mb-3">Add up to 5 images or videos.</p>
 
                                     {/* Uploaded Media Items Grid - or Empty State */}
@@ -974,7 +985,7 @@ const AdminMenu = () => {
                                             ))}
 
                                             {mediaItems.length < 5 && (
-                                                <div className="border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center text-center bg-white aspect-square hover:border-[#FD6941] hover:bg-orange-50/10 transition-colors cursor-pointer">
+                                                <div className="border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center text-center bg-white aspect-square hover:border-[#FD6941] hover:bg-[#FD6941]/5 transition-colors cursor-pointer">
                                                     <input
                                                         type="file"
                                                         id="file-upload-small"
@@ -984,17 +995,17 @@ const AdminMenu = () => {
                                                         onChange={handleFileSelection}
                                                     />
                                                     <label htmlFor="file-upload-small" className="w-full h-full flex flex-col items-center justify-center cursor-pointer p-4">
-                                                        <div className="bg-orange-100 rounded-full w-8 h-8 flex items-center justify-center text-[#FD6941] mb-2">
+                                                        <div className="bg-[#FD6941]/10 rounded-full w-8 h-8 flex items-center justify-center text-[#FD6941] mb-2">
                                                             <ImageIcon className="w-4 h-4" />
                                                         </div>
-                                                        <h4 className="text-gray-800 font-medium text-xs mb-0.5">Add More</h4>
+                                                        <h4 className="text-gray-800 font-normal text-xs mb-0.5">Add More</h4>
                                                     </label>
                                                 </div>
                                             )}
                                         </div>
                                     ) : (
                                         /* Large Empty State Board */
-                                        <div className="border-2 border-dashed border-gray-300 rounded-3xl flex flex-col items-center justify-center text-center bg-white w-full aspect-square hover:border-[#FD6941] hover:bg-orange-50/10 transition-colors cursor-pointer group">
+                                        <div className="border-2 border-dashed border-gray-300 rounded-3xl flex flex-col items-center justify-center text-center bg-white w-full aspect-square hover:border-[#FD6941] hover:bg-[#FD6941]/5 transition-colors cursor-pointer group">
                                             <input
                                                 type="file"
                                                 id="file-upload-large"
@@ -1004,12 +1015,12 @@ const AdminMenu = () => {
                                                 onChange={handleFileSelection}
                                             />
                                             <label htmlFor="file-upload-large" className="w-full h-full flex flex-col items-center justify-center cursor-pointer p-4">
-                                                <div className="bg-orange-50 rounded-full w-12 h-12 flex items-center justify-center text-[#FD6941] mb-3 group-hover:scale-110 transition-transform duration-300">
+                                                <div className="bg-[#FD6941]/10 rounded-full w-12 h-12 flex items-center justify-center text-[#FD6941] mb-3 group-hover:scale-110 transition-transform duration-300">
                                                     <ImageIcon className="w-6 h-6" />
                                                 </div>
-                                                <h4 className="text-gray-800 font-medium text-base sm:text-lg mb-2">Upload Media</h4>
+                                                <h4 className="text-gray-800 font-normal text-base sm:text-lg mb-2">Upload Media</h4>
                                                 <p className="text-sm text-gray-400 mb-6 max-w-[200px]">Browse images or videos</p>
-                                                <span className="bg-[#FD6941] text-white px-6 py-2.5 rounded-full font-medium text-sm sm:text-base shadow-md shadow-orange-200 group-hover:shadow-lg group-hover:translate-y-[-2px] transition-all">
+                                                <span className="bg-[#FD6941] text-white px-6 py-2.5 rounded-full font-normal text-sm sm:text-base shadow-md  group-hover:shadow-lg group-hover:translate-y-[-2px] transition-all">
                                                     Select Files
                                                 </span>
                                             </label>
@@ -1018,11 +1029,11 @@ const AdminMenu = () => {
 
                                     {/* 3D Models Upload Section */}
                                     <div className="mt-4">
-                                        <h3 className="text-lg sm:text-xl font-medium text-gray-800 mb-2 sm:mb-4">3D Models</h3>
+                                        <h3 className="text-lg sm:text-xl font-normal text-gray-800 mb-2 sm:mb-4">3D Models</h3>
                                         <p className="text-xs sm:text-sm text-gray-400 mb-3">Add 3D model (.glb, .gltf, .obj).</p>
 
                                         {modelError && (
-                                            <div className="mb-4 text-red-600 text-sm font-medium bg-red-50 px-3 py-2 rounded-xl border border-red-100 flex items-center gap-2">
+                                            <div className="mb-4 text-red-600 text-sm font-normal bg-red-50 px-3 py-2 rounded-xl border border-red-100 flex items-center gap-2">
                                                 <AlertCircle className="w-4 h-4 shrink-0" />
                                                 {modelError}
                                             </div>
@@ -1074,7 +1085,7 @@ const AdminMenu = () => {
 
                                                 {/* Small Add Button for Models */}
                                                 {modelItems.length < 1 && (
-                                                    <div className="border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center text-center bg-white aspect-square hover:border-[#FD6941] hover:bg-orange-50/10 transition-colors cursor-pointer">
+                                                    <div className="border-2 border-dashed border-gray-300 rounded-2xl flex flex-col items-center justify-center text-center bg-white aspect-square hover:border-[#FD6941] hover:bg-[#FD6941]/5 transition-colors cursor-pointer">
                                                         <input
                                                             type="file"
                                                             id="model-upload-small"
@@ -1083,17 +1094,17 @@ const AdminMenu = () => {
                                                             onChange={handleModelSelection}
                                                         />
                                                         <label htmlFor="model-upload-small" className="w-full h-full flex flex-col items-center justify-center cursor-pointer p-4">
-                                                            <div className="bg-orange-100 rounded-full w-8 h-8 flex items-center justify-center text-[#FD6941] mb-2">
+                                                            <div className="bg-[#FD6941]/10 rounded-full w-8 h-8 flex items-center justify-center text-[#FD6941] mb-2">
                                                                 <Box className="w-4 h-4" />
                                                             </div>
-                                                            <h4 className="text-gray-800 font-medium text-xs mb-0.5">Add More</h4>
+                                                            <h4 className="text-gray-800 font-normal text-xs mb-0.5">Add More</h4>
                                                         </label>
                                                     </div>
                                                 )}
                                             </div>
                                         ) : (
                                             /* Large Empty State for Models */
-                                            <div className="border-2 border-dashed border-gray-300 rounded-3xl flex flex-col items-center justify-center text-center bg-white w-full aspect-video hover:border-[#FD6941] hover:bg-orange-50/10 transition-colors cursor-pointer group">
+                                            <div className="border-2 border-dashed border-gray-300 rounded-3xl flex flex-col items-center justify-center text-center bg-white w-full aspect-video hover:border-[#FD6941] hover:bg-[#FD6941]/5 transition-colors cursor-pointer group">
                                                 <input
                                                     type="file"
                                                     id="model-upload-large"
@@ -1102,12 +1113,12 @@ const AdminMenu = () => {
                                                     onChange={handleModelSelection}
                                                 />
                                                 <label htmlFor="model-upload-large" className="w-full h-full flex flex-col items-center justify-center cursor-pointer p-4">
-                                                    <div className="bg-orange-50 rounded-full w-12 h-12 flex items-center justify-center text-[#FD6941] mb-3 group-hover:scale-110 transition-transform duration-300">
+                                                    <div className="bg-[#FD6941]/10 rounded-full w-12 h-12 flex items-center justify-center text-[#FD6941] mb-3 group-hover:scale-110 transition-transform duration-300">
                                                         <Box className="w-6 h-6" />
                                                     </div>
-                                                    <h4 className="text-gray-800 font-medium text-base sm:text-lg mb-2">Upload 3D Model</h4>
+                                                    <h4 className="text-gray-800 font-normal text-base sm:text-lg mb-2">Upload 3D Model</h4>
                                                     <p className="text-sm text-gray-400 mb-6 max-w-[200px]">Browse .glb, .gltf files</p>
-                                                    <span className="bg-[#FD6941] text-white px-6 py-2.5 rounded-full font-medium text-sm sm:text-base shadow-md shadow-orange-200 group-hover:shadow-lg group-hover:translate-y-[-2px] transition-all">
+                                                    <span className="bg-[#FD6941] text-white px-6 py-2.5 rounded-full font-normal text-sm sm:text-base shadow-md  group-hover:shadow-lg group-hover:translate-y-[-2px] transition-all">
                                                         Select Models
                                                     </span>
                                                 </label>
@@ -1119,14 +1130,14 @@ const AdminMenu = () => {
                                 {/* Right Column: Form Details */}
                                 <div className="lg:col-span-8 p-4 sm:p-6 lg:p-6 flex flex-col gap-4 sm:gap-6 h-full">
                                     <div className="flex justify-between items-center mb-2">
-                                        <h3 className="text-xl font-medium text-gray-800">Item Details</h3>
+                                        <h3 className="text-xl font-normal text-gray-800">Item Details</h3>
                                         <button onClick={handleCloseModal} className="p-2 hover:bg-gray-100 rounded-full transition-colors lg:hidden">
                                             <X className="w-5 h-5 text-gray-500" />
                                         </button>
                                     </div>
                                     <div className="space-y-6">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Item Name</label>
+                                            <label className="block text-sm font-normal text-gray-700 mb-2">Item Name</label>
                                             <input
                                                 type="text"
                                                 placeholder="e.g. Tandoor Burger"
@@ -1137,7 +1148,7 @@ const AdminMenu = () => {
                                         </div>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                                                <label className="block text-sm font-normal text-gray-700 mb-2">Category</label>
                                                 <div className="relative" ref={catDropdownRef}>
                                                     <button
                                                         type="button"
@@ -1180,7 +1191,7 @@ const AdminMenu = () => {
                                                                                 setIsCatDropdownOpen(false);
                                                                                 setCatSearchTerm('');
                                                                             }}
-                                                                            className={`w-full text-left px-5 py-3 text-sm hover:bg-orange-50 transition-colors flex items-center justify-between ${newItemCategory === cat._id ? 'bg-orange-50 text-[#FD6941] font-medium' : 'text-gray-700'}`}
+                                                                            className={`w-full text-left px-5 py-3 text-sm hover:bg-[#FD6941]/5 transition-colors flex items-center justify-between ${newItemCategory === cat._id ? 'bg-[#FD6941]/10 text-[#FD6941] font-normal' : 'text-gray-700'}`}
                                                                         >
                                                                             {cat.name}
                                                                             {newItemCategory === cat._id && (
@@ -1201,7 +1212,7 @@ const AdminMenu = () => {
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">Price</label>
+                                                <label className="block text-sm font-normal text-gray-700 mb-2">Price</label>
                                                 <div className="relative">
                                                     <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 text-base">{currencySymbol}</span>
                                                     <input
@@ -1222,7 +1233,7 @@ const AdminMenu = () => {
 
                                         <div className="grid grid-cols-2 gap-4 sm:gap-6">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">Calories</label>
+                                                <label className="block text-sm font-normal text-gray-700 mb-2">Calories</label>
                                                 <div className="relative">
                                                     <input
                                                         type="text"
@@ -1234,11 +1245,11 @@ const AdminMenu = () => {
                                                             setNewItemCalories(val);
                                                         }}
                                                     />
-                                                    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium pointer-events-none">kcal</span>
+                                                    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-normal pointer-events-none">kcal</span>
                                                 </div>
                                             </div>
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">Time</label>
+                                                <label className="block text-sm font-normal text-gray-700 mb-2">Time</label>
                                                 <div className="relative">
                                                     <input
                                                         type="text"
@@ -1250,33 +1261,33 @@ const AdminMenu = () => {
                                                             setNewItemTime(val);
                                                         }}
                                                     />
-                                                    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium pointer-events-none">min</span>
+                                                    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-normal pointer-events-none">min</span>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Item Type (Veg / Non-Veg)</label>
+                                            <label className="block text-sm font-normal text-gray-700 mb-2">Item Type (Veg / Non-Veg)</label>
                                             <div className="flex gap-4">
                                                 <label className={`flex-1 cursor-pointer border rounded-xl p-3 flex items-center justify-center gap-2 transition-all ${newItemIsVeg ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-gray-300'}`}>
                                                     <input type="radio" name="isVeg" className="hidden" checked={newItemIsVeg} onChange={() => setNewItemIsVeg(true)} />
                                                     <div className="w-4 h-4 border-2 border-green-600 rounded-sm flex items-center justify-center">
                                                         <div className="w-2 h-2 bg-green-600 rounded-full"></div>
                                                     </div>
-                                                    <span className="text-sm font-medium">Veg</span>
+                                                    <span className="text-sm font-normal">Veg</span>
                                                 </label>
                                                 <label className={`flex-1 cursor-pointer border rounded-xl p-3 flex items-center justify-center gap-2 transition-all ${!newItemIsVeg ? 'border-red-500 bg-red-50 text-red-700' : 'border-gray-200 hover:border-gray-300'}`}>
                                                     <input type="radio" name="isVeg" className="hidden" checked={!newItemIsVeg} onChange={() => setNewItemIsVeg(false)} />
                                                     <div className="w-4 h-4 border-2 border-red-600 rounded-sm flex items-center justify-center">
                                                         <div className="w-2 h-2 bg-red-600 rounded-full"></div>
                                                     </div>
-                                                    <span className="text-sm font-medium">Non-Veg</span>
+                                                    <span className="text-sm font-normal">Non-Veg</span>
                                                 </label>
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                                            <label className="block text-sm font-normal text-gray-700 mb-2">Description</label>
                                             <textarea
                                                 rows="3"
                                                 placeholder="Describe the ingredients..."
@@ -1288,7 +1299,7 @@ const AdminMenu = () => {
 
                                         <div className="flex items-center justify-between py-1">
                                             <div>
-                                                <label className="block text-sm font-medium text-gray-800">Active Status</label>
+                                                <label className="block text-sm font-normal text-gray-800">Active Status</label>
                                                 <p className="text-xs text-gray-400">Make this item visible on the menu</p>
                                             </div>
                                             <div
@@ -1301,15 +1312,15 @@ const AdminMenu = () => {
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Dietary Labels</label>
+                                            <label className="block text-sm font-normal text-gray-700 mb-2">Dietary Labels</label>
                                             <div className="flex flex-wrap gap-1.5">
                                                 {['Vegan', 'Gluten-Free', 'Spicy', 'Egg', 'Seafood', 'Dairy', 'Sugar-Free', 'Low-Calorie', 'Keto', 'Jain'].map((label) => (
                                                     <button
                                                         key={label}
                                                         onClick={() => toggleLabel(label)}
-                                                        className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all flex items-center gap-1.5 
+                                                        className={`px-3 py-1.5 rounded-full border text-xs font-normal transition-all flex items-center gap-1.5 
                                                     ${selectedLabels.includes(label)
-                                                                ? 'border-[#FD6941] text-[#FD6941] bg-orange-50'
+                                                                ? 'border-[#FD6941] text-[#FD6941] bg-[#FD6941]/10'
                                                                 : 'border-gray-200 text-gray-600 hover:border-gray-300'
                                                             }`}
                                                     >
@@ -1331,14 +1342,14 @@ const AdminMenu = () => {
                                     <div className="mt-auto pt-4 flex justify-end gap-3 border-t border-gray-100">
                                         <button
                                             onClick={handleCloseModal}
-                                            className="px-6 py-2.5 rounded-full border border-gray-200 text-gray-600 text-base font-medium hover:bg-gray-50 transition-colors"
+                                            className="px-6 py-2.5 rounded-full border border-gray-200 text-gray-600 text-sm sm:text-base font-normal hover:bg-gray-50 transition-colors"
                                         >
                                             Cancel
                                         </button>
                                         {uploadProgress === 0 ? (
                                             <button
                                                 onClick={handleSave}
-                                                className="px-8 py-2.5 rounded-full bg-[#FD6941] text-white text-base font-medium shadow-lg shadow-orange-200 hover:shadow-orange-300 hover:scale-105 transition-all"
+                                                className="px-8 py-2.5 rounded-full bg-[#FD6941] text-white text-sm sm:text-base font-normal shadow-lg   hover:scale-105 hover:bg-[#FD6941]/90 transition-all"
                                             >
                                                 Save Item
                                             </button>

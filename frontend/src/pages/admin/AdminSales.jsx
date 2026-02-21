@@ -31,10 +31,10 @@ const SalesCard = ({ title, value, subValue, icon: Icon, isCurrency, mobileTitle
                     <Icon className="w-4.5 h-4.5 sm:w-6 sm:h-6 opacity-60 text-black" />
                 </div>
                 <div className="flex flex-col min-w-0">
-                    <h3 className="text-[16px] sm:text-[28px] lg:text-[32px] font-medium text-black leading-none flex items-baseline tracking-tight">
+                    <h3 className="text-[16px] sm:text-[28px] lg:text-[32px] font-normal text-black leading-none flex items-baseline tracking-tight">
                         {value}
                     </h3>
-                    <p className="text-[10px] sm:text-[13px] lg:text-[14px] text-gray-400 mt-1 sm:mt-2 font-medium tracking-tight truncate w-full">
+                    <p className="text-[10px] sm:text-[13px] lg:text-[14px] text-gray-400 mt-1 sm:mt-2 font-normal tracking-tight truncate w-full">
                         <span className="inline sm:hidden">{mobileTitle || title}</span>
                         <span className="hidden sm:inline">{title}</span>
                         {subValue && <span className="opacity-60 ml-1 font-normal hidden sm:inline">- {subValue}</span>}
@@ -62,7 +62,7 @@ const DynamicEbitdaCard = ({ stats, currencySymbol }) => {
     return (
         <div className="bg-white rounded-[1.5rem] p-6 shadow-sm border border-transparent hover:border-gray-100 transition-all relative">
             <div className="flex justify-between items-start mb-4">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center text-orange-600 bg-orange-50">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center text-[#FD6941] bg-[#FD6941]">
                     <Wallet className="w-6 h-6" />
                 </div>
 
@@ -70,7 +70,7 @@ const DynamicEbitdaCard = ({ stats, currencySymbol }) => {
                 <div className="relative">
                     <button
                         onClick={() => setIsOpen(!isOpen)}
-                        className="flex items-center gap-1 text-xs font-medium bg-gray-50 hover:bg-gray-100 px-2 py-1 rounded-lg text-gray-500 transition-colors"
+                        className="flex items-center gap-1 text-xs font-normal bg-gray-50 hover:bg-gray-100 px-2 py-1 rounded-lg text-gray-500 transition-colors"
                     >
                         {period} <ChevronDown className="w-3 h-3" />
                     </button>
@@ -83,7 +83,7 @@ const DynamicEbitdaCard = ({ stats, currencySymbol }) => {
                                     <button
                                         key={p}
                                         onClick={() => { setPeriod(p); setIsOpen(false); }}
-                                        className={`w-full text-left px-3 py-1.5 text-xs font-medium hover:bg-gray-50 ${period === p ? 'text-black bg-gray-50' : 'text-gray-500'}`}
+                                        className={`w-full text-left px-3 py-1.5 text-xs font-normal hover:bg-gray-50 ${period === p ? 'text-black bg-gray-50' : 'text-gray-500'}`}
                                     >
                                         {p}
                                     </button>
@@ -94,8 +94,8 @@ const DynamicEbitdaCard = ({ stats, currencySymbol }) => {
                 </div>
             </div>
             <div>
-                <p className="text-gray-400 text-sm font-medium mb-1">EBITDA ({period})</p>
-                <h3 className="text-2xl font-medium text-black">{formatCurrency(getData(), currencySymbol)}</h3>
+                <p className="text-gray-400 text-sm font-normal mb-1">EBITDA ({period})</p>
+                <h3 className="text-2xl font-normal text-black">{formatCurrency(getData(), currencySymbol)}</h3>
                 <p className="text-xs text-gray-400 mt-1">Net Earnings (~35%)</p>
             </div>
         </div>
@@ -137,14 +137,14 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
     const handleDateClick = (day) => {
         // Create date at 00:00:00 Local Time
         const clickedDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
-        
+
         // Reset check: if we already have both, or no start, start over
         if (!selection.start || (selection.start && selection.end)) {
             setSelection({ start: clickedDate, end: null });
         } else {
             // We have start, but no end
             if (clickedDate.getTime() >= selection.start.getTime()) {
-                 // If clicking the same date or future date, set as end
+                // If clicking the same date or future date, set as end
                 setSelection({ ...selection, end: clickedDate });
             } else {
                 // If clicking before start, reset as new start
@@ -172,9 +172,9 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
     const setPreset = (type) => {
         const now = new Date();
         // Set time to midnight for consistency
-        now.setHours(0,0,0,0);
+        now.setHours(0, 0, 0, 0);
         let start, end = new Date(now);
-        
+
         switch (type) {
             case 'today':
                 start = new Date(now);
@@ -194,7 +194,7 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
             default:
                 start = null;
         }
-        
+
         if (start) {
             onChange({
                 start: toLocalDateString(start),
@@ -209,7 +209,7 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
     const isSelected = (day) => {
         const d = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
         if (!selection.start) return false;
-        
+
         const t = d.getTime();
         if (t === selection.start.getTime()) return true;
         if (selection.end && t === selection.end.getTime()) return true;
@@ -226,7 +226,7 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-in fade-in duration-200" onClick={onClose}>
             <div className="bg-white/95 backdrop-blur-xl w-full max-w-[420px] rounded-[2.5rem] shadow-2xl border border-white/50 overflow-hidden flex flex-col p-6 sm:p-8 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-medium text-black">Select Date Range</h3>
+                    <h3 className="text-xl font-normal text-black">Select Date Range</h3>
                     <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                         <X className="w-5 h-5 text-gray-400" />
                     </button>
@@ -243,7 +243,7 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
                         <button
                             key={p.id}
                             onClick={() => setPreset(p.id)}
-                            className="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-full text-xs font-medium transition-all"
+                            className="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-full text-xs font-normal transition-all"
                         >
                             {p.label}
                         </button>
@@ -255,7 +255,7 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
                     <button onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1))} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
                         <ChevronLeft className="w-5 h-5" />
                     </button>
-                    <span className="font-medium text-lg text-black">{monthNames[viewDate.getMonth()]} {viewDate.getFullYear()}</span>
+                    <span className="font-normal text-lg text-black">{monthNames[viewDate.getMonth()]} {viewDate.getFullYear()}</span>
                     <button onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1))} className="p-2 hover:bg-gray-50 rounded-full transition-colors">
                         <ChevronRight className="w-5 h-5" />
                     </button>
@@ -271,12 +271,12 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
                         const day = i + 1;
                         const active = isSelected(day);
                         const range = isInRange(day);
-                        
+
                         let stateClasses = "";
                         if (active) {
-                            stateClasses = "bg-[#FD6941] text-white shadow-lg shadow-orange-200 z-10 hover:bg-[#E55A35]";
+                            stateClasses = "bg-[#FD6941] text-white shadow-lg  z-10 hover:bg-[#E55A35]";
                         } else if (range) {
-                            stateClasses = "bg-orange-50 text-orange-900 hover:bg-orange-100";
+                            stateClasses = "bg-[#FD6941] text-[#FD6941] hover:bg-[#FD6941]";
                         } else {
                             stateClasses = "text-gray-700 hover:bg-gray-100";
                         }
@@ -296,14 +296,14 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
                 <div className="flex gap-3">
                     <button
                         onClick={clearSelection}
-                        className="flex-1 py-4 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-2xl text-sm font-medium transition-all flex items-center justify-center gap-2"
+                        className="flex-1 py-4 bg-gray-50 hover:bg-gray-100 text-gray-500 rounded-2xl text-sm sm:text-base font-normal transition-all flex items-center justify-center gap-2"
                     >
-                        <RotateCcw className="w-4 h-4" />
+                        <RotateCcw className="w-4 h-4 sm:w-5 sm:h-5" />
                         Clear
                     </button>
                     <button
                         onClick={applySelection}
-                        className="flex-[2] py-4 bg-[#FD6941] hover:bg-orange-600 text-white rounded-2xl text-sm font-medium transition-all shadow-lg shadow-orange-200"
+                        className="flex-[2] py-4 bg-[#FD6941] hover:bg-[#FD6941]/90 text-white rounded-2xl text-sm sm:text-base font-normal transition-all shadow-lg "
                     >
                         Apply Range
                     </button>
@@ -474,13 +474,13 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                         </button>
 
                         <div className="text-center mb-6">
-                            <h2 className="text-xl font-medium uppercase mb-2 tracking-tight">{restaurant?.name || 'EatGreet Restaurant'}</h2>
-                            <p className="text-[12px] leading-tight mb-1 font-medium italic">{restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</p>
+                            <h2 className="text-xl font-normal uppercase mb-2 tracking-tight">{restaurant?.name || 'EatGreet Restaurant'}</h2>
+                            <p className="text-[12px] leading-tight mb-1 font-normal italic">{restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</p>
                             {(restaurant?.businessEmail || restaurant?.restaurantDetails?.businessEmail) && (
                                 <p className="text-[11px] mb-0.5 opacity-80">Email: {restaurant.businessEmail || restaurant.restaurantDetails.businessEmail}</p>
                             )}
                             {(restaurant?.gstNumber || restaurant?.restaurantDetails?.gstNumber) && (
-                                <p className="text-[11px] font-medium">GST: {restaurant.gstNumber || restaurant.restaurantDetails.gstNumber}</p>
+                                <p className="text-[11px] font-normal">GST: {restaurant.gstNumber || restaurant.restaurantDetails.gstNumber}</p>
                             )}
                             {(restaurant?.contactNumber || restaurant?.restaurantDetails?.contactNumber) && (
                                 <p className="text-[11px] text-gray-500 mt-1">Tel: {restaurant.contactNumber || restaurant.restaurantDetails.contactNumber}</p>
@@ -490,12 +490,12 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                         <div className="border-t border-dashed border-black my-4"></div>
                         <div className="flex justify-between text-[13px] mb-1">
                             <span>Name:</span>
-                            <span className="font-medium">{order.customerInfo?.name || 'Guest'}</span>
+                            <span className="font-normal">{order.customerInfo?.name || 'Guest'}</span>
                         </div>
                         {order.customerInfo?.phone && (
                             <div className="flex justify-between text-[13px] mb-1">
                                 <span>Tel:</span>
-                                <span className="font-medium">{order.customerInfo.phone}</span>
+                                <span className="font-normal">{order.customerInfo.phone}</span>
                             </div>
                         )}
                         <div className="border-t border-dashed border-black my-4"></div>
@@ -517,7 +517,7 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                         </div>
 
                         <div className="border-t border-dashed border-black my-4"></div>
-                        <div className="flex justify-between font-medium text-[13px] mb-2 uppercase">
+                        <div className="flex justify-between font-normal text-[13px] mb-2 uppercase">
                             <span style={{ flex: 1 }}>No.Item</span>
                             <span style={{ width: '30px', textAlign: 'center' }}>Qty</span>
                             <span style={{ width: '60px', textAlign: 'right' }}>Price</span>
@@ -537,7 +537,7 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                         </div>
 
                         <div className="border-t border-dashed border-black my-4"></div>
-                        <div className="flex justify-between font-medium text-[13px] mb-1">
+                        <div className="flex justify-between font-normal text-[13px] mb-1">
                             <span>Total Qty: {order.items?.reduce((acc, it) => acc + (it.quantity || 1), 0)}</span>
                             <span>Sub Total: {currencySymbol}{orderStats?.subtotal.toFixed(2)}</span>
                         </div>
@@ -549,7 +549,7 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                             <span>SGST@2.5%</span>
                             <span>{currencySymbol}{orderStats?.sgst.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between font-medium text-[13px] mb-1">
+                        <div className="flex justify-between font-normal text-[13px] mb-1">
                             <span>Total</span>
                             <span>{currencySymbol}{orderStats?.totalRaw.toFixed(2)}</span>
                         </div>
@@ -558,12 +558,12 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                             <span>{currencySymbol}{orderStats?.roundOff.toFixed(2)}</span>
                         </div>
                         <div className="border-t border-dashed border-black my-4"></div>
-                        <div className="flex justify-between font-medium text-lg mb-4">
+                        <div className="flex justify-between font-normal text-lg mb-4">
                             <span>Grand Total</span>
                             <span>{currencySymbol}{orderStats?.grandTotal.toFixed(2)}</span>
                         </div>
                         <div className="border-t border-dashed border-black my-4"></div>
-                        <div className="text-center font-medium text-[16px] uppercase tracking-widest mt-6">Thank You Visit Again</div>
+                        <div className="text-center font-normal text-[16px] uppercase tracking-widest mt-6">Thank You Visit Again</div>
                     </div>
                 </div>
             </div>
@@ -830,7 +830,7 @@ const AdminSales = () => {
                 const val = Number(amount) || 0;
                 return `${currencySymbol === '₹' ? 'Rs.' : currencySymbol} ${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             };
-            
+
             // Moved loadImage helper to component scope for reuse
             const innerLoadImage = (url) => {
                 return new Promise((resolve) => {
@@ -861,7 +861,7 @@ const AdminSales = () => {
             // Load Custom Font (Urbanist) - We'll use Helvetica as fallback, but set style to match "Urbanist" look
             // Note: jsPDF default fonts are limited. To use actual Urbanist, we'd need to add the font file as base64.
             // For now, we'll stick to standard sans-serif but style it closer to Urbanist with weights.
-            doc.setFont("helvetica"); 
+            doc.setFont("helvetica");
 
             // Layout Constants
             const pageWidth = doc.internal.pageSize.getWidth();
@@ -878,14 +878,14 @@ const AdminSales = () => {
             // 1. Header Bar
             doc.setFillColor(...brandOrange);
             doc.rect(0, 0, pageWidth, 4, 'F'); // Thinner bar
-            
+
             yPos = 12; // Start content higher
 
             // Restaurant Logo & Info
             let logoImg = null;
             const footerLogoImg = await innerLoadImage(EatGreetLogo);
             const logoUrl = restaurant?.logo || restaurant?.image || restaurant?.restaurantDetails?.logo;
-            
+
             if (logoUrl) {
                 logoImg = await innerLoadImage(logoUrl);
             }
@@ -896,17 +896,17 @@ const AdminSales = () => {
                 const w = 24;
                 const h = w / ratio;
                 doc.addImage(logoImg, 'PNG', margin, yPos, w, h);
-                
+
                 const textX = margin + w + 10;
                 doc.setFontSize(22);
                 doc.setFont("helvetica", "bold");
                 doc.setTextColor(...textDark);
                 doc.text(restaurant?.name || 'EatGreet Restaurant', textX, yPos + 8);
-                
+
                 doc.setFontSize(10);
                 doc.setFont("helvetica", "normal");
                 doc.setTextColor(...textGray);
-                
+
                 let detailsY = yPos + 14;
                 if (restaurant?.address) {
                     doc.text(restaurant.address, textX, detailsY);
@@ -918,14 +918,14 @@ const AdminSales = () => {
                 if (contactParts.length > 0) {
                     doc.text(contactParts.join(' | '), textX, detailsY);
                 }
-                
+
                 yPos = Math.max(yPos + h + 10, detailsY + 15);
             } else {
                 doc.setFontSize(22);
                 doc.setFont("helvetica", "bold");
                 doc.setTextColor(...textDark);
                 doc.text(restaurant?.name || 'EatGreet Restaurant', margin, yPos + 8);
-                
+
                 doc.setFontSize(10);
                 doc.setFont("helvetica", "normal");
                 doc.setTextColor(...textGray);
@@ -946,21 +946,21 @@ const AdminSales = () => {
             doc.setFont("helvetica", "bold");
             doc.setTextColor(...textDark);
             doc.text("Sales Performance Report", margin, yPos);
-            
+
             // Meta Info
             doc.setFontSize(9);
             doc.setFont("helvetica", "normal");
             doc.setTextColor(...textGray);
             const generatedDate = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
             doc.text(`Report Date: ${generatedDate}`, pageWidth - margin, yPos, { align: 'right' });
-            
+
             yPos += 8;
             doc.setFontSize(10);
-            const periodText = (dateRange.start || dateRange.end) 
+            const periodText = (dateRange.start || dateRange.end)
                 ? `${new Date(dateRange.start).toLocaleDateString()}  to  ${new Date(dateRange.end || new Date()).toLocaleDateString()}`
                 : "All Time History";
             doc.text(`Period: ${periodText}`, margin, yPos);
-            
+
             yPos += 15; // Increased to fix overlap
 
             // 3. Financial Summary (Calculated from Filtered Data)
@@ -978,7 +978,7 @@ const AdminSales = () => {
             // Use safe fallbacks for potentially undefined expense variables
             const safeDailyExpense = typeof dailyExpense !== 'undefined' ? dailyExpense : 0;
             const safeMonthlyExpense = typeof monthlyExpense !== 'undefined' ? monthlyExpense : 0;
-            
+
             let totalExpenses = 0;
             if (dateRange.start && dateRange.end) {
                 const start = new Date(dateRange.start);
@@ -986,9 +986,9 @@ const AdminSales = () => {
                 const daysDiff = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
                 totalExpenses = safeDailyExpense * daysDiff;
             } else {
-                 totalExpenses = safeMonthlyExpense; // Fallback
+                totalExpenses = safeMonthlyExpense; // Fallback
             }
-            
+
             const pdfRevenue = pdfStats.revenue;
             const pdfOrders = pdfStats.orders;
             const pdfAov = pdfOrders > 0 ? (pdfRevenue / pdfOrders) : 0;
@@ -1019,8 +1019,8 @@ const AdminSales = () => {
                 startY: yPos,
                 body: summaryData,
                 theme: 'plain',
-                styles: { 
-                    cellPadding: 4, 
+                styles: {
+                    cellPadding: 4,
                     halign: 'center',
                     font: "helvetica"
                 },
@@ -1031,12 +1031,12 @@ const AdminSales = () => {
                     3: { cellWidth: (pageWidth - margin * 2) / 4 }
                 },
                 margin: { left: margin, right: margin },
-                didParseCell: function(data) {
+                didParseCell: function (data) {
                     // Background for the whole "card" area
-                     data.cell.styles.fillColor = bgLight;
+                    data.cell.styles.fillColor = bgLight;
                 }
             });
-            
+
             yPos = doc.lastAutoTable.finalY + 10;
 
             // 4. Detailed Transactions
@@ -1047,24 +1047,24 @@ const AdminSales = () => {
             yPos += 8;
 
             const tableColumn = ["Date", "Time", "Order ID", "Customer", "Pay Mode", "Items", "Total"];
-            
+
             const tableRows = tableData.map(order => [
                 new Date(order.createdAt).toLocaleDateString(),
-                new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id.slice(-6),
                 order.customerInfo?.name || 'Guest',
                 order.paymentMethod || 'Cash',
                 order.items?.length || 0,
                 formatCurrencyPDF(order.totalAmount || 0)
             ]);
-            
+
             autoTable(doc, {
                 startY: yPos,
                 head: [tableColumn],
                 body: tableRows,
                 theme: 'grid',
-                headStyles: { 
-                    fillColor: bgLight, 
+                headStyles: {
+                    fillColor: bgLight,
                     textColor: textGray,
                     fontStyle: 'bold',
                     lineWidth: 0,
@@ -1072,24 +1072,24 @@ const AdminSales = () => {
                     halign: 'center',
                     cellPadding: 3
                 },
-                styles: { 
-                    fontSize: 9, 
-                    cellPadding: 3, 
-                    textColor: textDark, 
-                    lineColor: [230, 230, 230], 
+                styles: {
+                    fontSize: 9,
+                    cellPadding: 3,
+                    textColor: textDark,
+                    lineColor: [230, 230, 230],
                     lineWidth: 0.1,
                     font: "helvetica",
                     valign: 'middle',
                     halign: 'center'
                 },
-                alternateRowStyles: { 
-                    fillColor: [255, 255, 255] 
+                alternateRowStyles: {
+                    fillColor: [255, 255, 255]
                 },
                 columnStyles: {
                     0: { cellWidth: 25 },
                     1: { cellWidth: 20 },
                     2: { cellWidth: 25, fontStyle: 'bold' },
-                    6: { fontStyle: 'bold' } 
+                    6: { fontStyle: 'bold' }
                 },
                 margin: { left: margin, right: margin, bottom: 25 }
             });
@@ -1103,7 +1103,7 @@ const AdminSales = () => {
                 doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
                 if (footerLogoImg) {
                     const props = doc.getImageProperties(footerLogoImg);
-                    const fw = 20; 
+                    const fw = 20;
                     const fh = (props.height / props.width) * fw;
                     doc.addImage(footerLogoImg, 'PNG', margin, pageHeight - 15, fw, fh);
                 } else {
@@ -1161,10 +1161,10 @@ const AdminSales = () => {
                     orders: acc.orders + 1
                 };
             }, { revenue: 0, orders: 0 }) : { revenue: 0, orders: 0 };
-            
+
             const safeDailyExpense = typeof dailyExpense !== 'undefined' ? dailyExpense : 0;
             const safeMonthlyExpense = typeof monthlyExpense !== 'undefined' ? monthlyExpense : 0;
-            
+
             let totalExpenses = 0;
             if (dateRange.start && dateRange.end) {
                 const start = new Date(dateRange.start);
@@ -1172,7 +1172,7 @@ const AdminSales = () => {
                 const diffDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
                 totalExpenses = safeDailyExpense * diffDays;
             } else {
-                 totalExpenses = safeMonthlyExpense; 
+                totalExpenses = safeMonthlyExpense;
             }
             const pdfProfit = pdfStats.revenue - totalExpenses;
             const pdfAov = pdfStats.orders > 0 ? (pdfStats.revenue / pdfStats.orders) : 0;
@@ -1185,14 +1185,14 @@ const AdminSales = () => {
 
             // Define columns with a balanced buffer A column to push content to the middle
             worksheet.columns = [
-                { key: 'buffer', width: 22 },  
-                { key: 'date', width: 20 },    
-                { key: 'time', width: 20 },    
-                { key: 'orderId', width: 20 }, 
+                { key: 'buffer', width: 22 },
+                { key: 'date', width: 20 },
+                { key: 'time', width: 20 },
+                { key: 'orderId', width: 20 },
                 { key: 'customer', width: 30 },
-                { key: 'payMode', width: 20 }, 
-                { key: 'items', width: 15 },   
-                { key: 'total', width: 25 }    
+                { key: 'payMode', width: 20 },
+                { key: 'items', width: 15 },
+                { key: 'total', width: 25 }
             ];
 
             // 3. Header Section (Premium Branding matching PDF)
@@ -1234,11 +1234,11 @@ const AdminSales = () => {
             const tel = restaurant?.contactNumber || restaurant?.restaurantDetails?.contactNumber;
             const email = restaurant?.businessEmail || restaurant?.restaurantDetails?.businessEmail;
             const gst = restaurant?.gstNumber || restaurant?.restaurantDetails?.gstNumber;
-            
+
             if (tel) contactParts.push(`Tel: ${tel}`);
             if (email) contactParts.push(`Email: ${email}`);
             if (gst) contactParts.push(`GST: ${gst}`);
-            
+
             const contactRow = worksheet.addRow(['', contactParts.join('   |   ') || 'Contact details not available']);
             worksheet.mergeCells('B4:H4');
             const contactCell = worksheet.getCell('B4');
@@ -1257,7 +1257,7 @@ const AdminSales = () => {
             reportSubtitle.height = 40;
 
             // Row 7: Report Date & Period
-            const periodText = (dateRange.start || dateRange.end) ? 
+            const periodText = (dateRange.start || dateRange.end) ?
                 `${new Date(dateRange.start).toLocaleDateString()} - ${new Date(dateRange.end || new Date()).toLocaleDateString()}` : "All Time History";
             const metaInfo = worksheet.addRow(['', `Generated: ${new Date().toLocaleString()}   |   Period: ${periodText}`]);
             worksheet.mergeCells('B7:H7');
@@ -1276,7 +1276,7 @@ const AdminSales = () => {
             oHeaderCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgLight } };
             oHeaderCell.alignment = { horizontal: 'center', vertical: 'middle' };
             overviewHeader.height = 35;
-            
+
             // Distribute stats across B:H
             const statsLabels = worksheet.addRow(['', 'TOTAL REVENUE', '', 'NET PROFIT', '', 'TOTAL ORDERS', 'AVG ORDER VALUE']);
             worksheet.mergeCells(`B${statsLabels.number}:C${statsLabels.number}`);
@@ -1284,7 +1284,7 @@ const AdminSales = () => {
             statsLabels.font = { size: 11, bold: true, color: { argb: textGray } };
             statsLabels.alignment = { horizontal: 'center' };
             statsLabels.height = 25;
-            
+
             const statsValues = worksheet.addRow([
                 '',
                 pdfStats.revenue,
@@ -1297,20 +1297,20 @@ const AdminSales = () => {
             worksheet.mergeCells(`B${statsValues.number}:C${statsValues.number}`);
             worksheet.mergeCells(`D${statsValues.number}:E${statsValues.number}`);
             statsValues.height = 45;
-            
+
             statsValues.eachCell((cell, colNumber) => {
                 if (colNumber > 1) {
                     cell.font = { size: 18, bold: true };
                     cell.alignment = { horizontal: 'center', vertical: 'middle' };
                 }
             });
-            
+
             statsValues.getCell(2).font = { color: { argb: textDark }, size: 18, bold: true };
             statsValues.getCell(4).font = { color: { argb: brandOrange }, size: 18, bold: true };
-            
+
             // Format Currency for B (2), D (4), and G (7)
             [2, 4, 7].forEach(col => {
-                statsValues.getCell(col).numFmt = `${currencySymbol === '₹' ? '₹' : '"'+currencySymbol+'"'}#,##0.00`;
+                statsValues.getCell(col).numFmt = `${currencySymbol === '₹' ? '₹' : '"' + currencySymbol + '"'}#,##0.00`;
             });
 
             worksheet.addRow([]); // Spacer
@@ -1330,9 +1330,9 @@ const AdminSales = () => {
                     cell.font = { bold: true, color: { argb: 'FFFFFF' }, size: 12 };
                     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: brandOrange } };
                     cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                    cell.border = { 
+                    cell.border = {
                         top: { style: 'thin', color: { argb: 'FFFFFF' } },
-                        bottom: { style: 'thin', color: { argb: 'E5E7EB' } } 
+                        bottom: { style: 'thin', color: { argb: 'E5E7EB' } }
                     };
                 }
             });
@@ -1343,7 +1343,7 @@ const AdminSales = () => {
                 const row = worksheet.addRow([
                     '',
                     new Date(order.createdAt).toLocaleDateString(),
-                    new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                    new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                     order.dailySequence ? String(order.dailySequence).padStart(3, '0') : (order._id || '').slice(-6).toUpperCase(),
                     order.customerInfo?.name || 'Guest',
                     order.paymentMethod || 'Cash',
@@ -1357,7 +1357,7 @@ const AdminSales = () => {
                     if (colNumber > 1) {
                         cell.alignment = { vertical: 'middle', horizontal: 'center' };
                         if (colNumber === 8) {
-                             cell.numFmt = `${currencySymbol === '₹' ? '₹' : '"'+currencySymbol+'"'}#,##0.00`;
+                            cell.numFmt = `${currencySymbol === '₹' ? '₹' : '"' + currencySymbol + '"'}#,##0.00`;
                         }
                         if (colNumber === 4) {
                             cell.font = { bold: true };
@@ -1381,8 +1381,8 @@ const AdminSales = () => {
 
             // 7. Footer Branding (Powered by EatGreet)
             worksheet.addRow([]); // Minimal spacer
-            
-            const footerRow = worksheet.addRow(['', '', '', 'Powered by', '']); 
+
+            const footerRow = worksheet.addRow(['', '', '', 'Powered by', '']);
             footerRow.height = 60;
 
             // Apply background and borders to the whole footer area (B:H)
@@ -1405,7 +1405,7 @@ const AdminSales = () => {
                 // Place logo starting from Column E (index 4.1 in 0-indexed terms but col 5 in 1-indexed)
                 // tl.col: 4 means Column E
                 worksheet.addImage(eatGreetLogoId, {
-                    tl: { col: 4.1, row: footerRow.number - 0.9 }, 
+                    tl: { col: 4.1, row: footerRow.number - 0.9 },
                     ext: { width: 140, height: 45 },
                     editAs: 'oneCell'
                 });
@@ -1432,14 +1432,14 @@ const AdminSales = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-medium text-black tracking-tight leading-none">Sales Dashboard</h1>
-                    <p className="text-[12px] sm:text-[18px] text-gray-400 font-medium">Financial Overview & Analytics</p>
+                    <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-normal text-black tracking-tight leading-none">Sales Dashboard</h1>
+                    <p className="text-[12px] sm:text-[18px] text-gray-400 font-normal">Financial Overview & Analytics</p>
                 </div>
                 <div className="flex flex-row items-center justify-end gap-1.5 sm:gap-2 w-full md:w-auto overflow-x-auto no-scrollbar pb-1">
                     <div className="flex items-center shrink-0">
                         <button
                             onClick={() => setIsDatePickerOpen(true)}
-                            className="bg-white border border-gray-100 text-gray-700 text-[10px] sm:text-[13px] rounded-full px-4 sm:px-6 py-2 sm:py-3 outline-none shadow-sm transition-all hover:border-gray-300 flex items-center gap-2 font-medium"
+                            className="bg-white border border-gray-100 text-gray-700 text-[10px] sm:text-[13px] rounded-full px-4 sm:px-6 py-2 sm:py-3 outline-none shadow-sm transition-all hover:border-gray-300 flex items-center gap-2 font-normal"
                         >
                             <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
                             {dateRange.start ? (
@@ -1451,10 +1451,10 @@ const AdminSales = () => {
                             ) : (
                                 <span className="text-gray-400">Select Date Range</span>
                             )}                <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 ml-1" />
-                </button>
-            
+                        </button>
+
                     </div>
-                    
+
                     {/* Render DatePicker conditionally outside the button but relative to it if needed, or just as a modal */}
                     {isDatePickerOpen && (
                         <DateRangePicker
@@ -1468,22 +1468,22 @@ const AdminSales = () => {
 
                     <button
                         onClick={handleDownloadPDF}
-                        className="bg-[#FD6941] hover:bg-orange-600 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-medium flex items-center justify-center shrink-0 group transition-all duration-300 shadow-sm shadow-orange-100 text-sm overflow-hidden hover:sm:w-auto hover:sm:px-6"
+                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-normal flex items-center justify-center gap-0 shrink-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden hover:sm:w-auto hover:sm:px-6 hover:sm:gap-2"
                         title="Download PDF Report"
                     >
-                        <Download className="w-4 h-4 sm:w-5 sm:h-5" />
-                        <span className="hidden sm:group-hover:inline-block transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden">
+                        <Download className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                        <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
                             Download PDF
                         </span>
                     </button>
-                    
+
                     <button
                         onClick={handleDownloadExcel}
-                        className="bg-green-600 hover:bg-green-700 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-medium flex items-center justify-center shrink-0 group transition-all duration-300 shadow-sm shadow-green-100 text-sm overflow-hidden hover:sm:w-auto hover:sm:px-6"
+                        className="bg-green-600 hover:bg-green-700 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-normal flex items-center justify-center gap-0 shrink-0 group transition-all duration-300 shadow-sm shadow-green-100 text-sm overflow-hidden hover:sm:w-auto hover:sm:px-6 hover:sm:gap-2"
                         title="Download Excel Report"
                     >
-                        <FileSpreadsheet className="w-4 h-4 sm:w-5 sm:h-5" />
-                        <span className="hidden sm:group-hover:inline-block transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden">
+                        <FileSpreadsheet className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+                        <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
                             Download Excel
                         </span>
                     </button>
@@ -1534,8 +1534,8 @@ const AdminSales = () => {
                 {/* Main Graph: Sales & Net Profit */}
                 <div className="lg:col-span-2 bg-white p-6 rounded-[1.5rem] shadow-sm">
                     <div className="mb-6">
-                        <h3 className="text-[16px] sm:text-[24px] font-medium text-black">Revenue & Net Profit</h3>
-                        <p className="text-[10px] text-gray-400 font-medium">Monthly breakdown of sales and actual earnings</p>
+                        <h3 className="text-[16px] sm:text-[24px] font-normal text-black">Revenue & Net Profit</h3>
+                        <p className="text-[10px] text-gray-400 font-normal">Monthly breakdown of sales and actual earnings</p>
                     </div>
                     <div className="h-[300px] w-full min-w-0">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
@@ -1574,7 +1574,7 @@ const AdminSales = () => {
                                     align="right"
                                     height={36}
                                     iconType="circle"
-                                    formatter={(value) => <span className="text-[12px] font-medium text-slate-600 mr-4">{value}</span>}
+                                    formatter={(value) => <span className="text-[12px] font-normal text-slate-600 mr-4">{value}</span>}
                                 />
                                 <Area
                                     type="monotone"
@@ -1604,8 +1604,8 @@ const AdminSales = () => {
                 {/* Secondary Graph: Total Volume */}
                 <div className="lg:col-span-1 bg-white p-6 rounded-[1.5rem] shadow-sm">
                     <div className="mb-6">
-                        <h3 className="text-[16px] sm:text-[24px] font-medium text-black">Total Orders</h3>
-                        <p className="text-[12px] text-gray-400 font-medium">Number of orders per period</p>
+                        <h3 className="text-[16px] sm:text-[24px] font-normal text-black">Total Orders</h3>
+                        <p className="text-[12px] text-gray-400 font-normal">Number of orders per period</p>
                     </div>
                     <div className="h-[300px] w-full min-w-0">
                         <ResponsiveContainer width="100%" height="100%" minWidth={0}>
@@ -1627,8 +1627,8 @@ const AdminSales = () => {
             <div className="bg-white rounded-[1.5rem] shadow-sm overflow-hidden">
                 <div className="p-4 sm:p-6 border-b border-gray-50 flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="w-full sm:w-auto">
-                        <h3 className="text-[16px] sm:text-[24px] font-medium text-black">Transaction History</h3>
-                        <p className="text-[12px] text-gray-400 font-medium">Detailed list of past orders</p>
+                        <h3 className="text-[16px] sm:text-[24px] font-normal text-black">Transaction History</h3>
+                        <p className="text-[12px] text-gray-400 font-normal">Detailed list of past orders</p>
                     </div>
 
                     {/* Controls */}
@@ -1649,7 +1649,7 @@ const AdminSales = () => {
                         <div className="relative">
                             <button
                                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                className={`flex items-center justify-center w-9 h-9 sm:w-auto sm:px-4 sm:py-2.5 rounded-full border text-xs sm:text-sm font-medium transition-all ${paymentFilter !== 'All' ? 'bg-[#FD6941] text-white border-[#FD6941]' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                                className={`flex items-center justify-center w-9 h-9 sm:w-auto sm:px-4 sm:py-2.5 rounded-full border text-xs sm:text-sm font-normal transition-all ${paymentFilter !== 'All' ? 'bg-[#FD6941] text-white border-[#FD6941]' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                                 title="Filter Transactions"
                             >
                                 <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -1661,7 +1661,7 @@ const AdminSales = () => {
                                 <>
                                     <div className="fixed inset-0 z-10" onClick={() => setIsFilterOpen(false)}></div>
                                     <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-20 animate-in fade-in slide-in-from-top-2">
-                                        <div className="px-3 py-1.5 font-medium text-gray-400 uppercase tracking-wider text-[10px]">Payment Mode</div>
+                                        <div className="px-3 py-1.5 font-normal text-gray-400 uppercase tracking-wider text-[10px]">Payment Mode</div>
                                         {['All', 'Cash', 'Online'].map(mode => (
                                             <button
                                                 key={mode}
@@ -1669,7 +1669,7 @@ const AdminSales = () => {
                                                     setPaymentFilter(mode);
                                                     setIsFilterOpen(false);
                                                 }}
-                                                className={`w-full text-left px-4 py-2 text-xs sm:text-sm font-medium hover:bg-orange-50 transition-colors ${paymentFilter === mode ? 'text-[#FD6941] bg-orange-50' : 'text-gray-600'}`}
+                                                className={`w-full text-left px-4 py-2 text-xs sm:text-sm font-normal hover:bg-[#FD6941] transition-colors ${paymentFilter === mode ? 'text-[#FD6941] bg-[#FD6941]' : 'text-gray-600'}`}
                                             >
                                                 {mode}
                                             </button>
@@ -1692,7 +1692,7 @@ const AdminSales = () => {
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2">
                                             <p className="text-sm font-bold text-gray-900 font-urbanist truncate">#{order.dailySequence || (order._id || '').slice(-6).toUpperCase()}</p>
-                                            <span className="text-[9px] text-gray-400 font-medium bg-gray-50 px-1.5 py-0.5 rounded-full border border-gray-100 italic">
+                                            <span className="text-[9px] text-gray-400 font-normal bg-gray-50 px-1.5 py-0.5 rounded-full border border-gray-100 italic">
                                                 {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </span>
                                         </div>
@@ -1701,7 +1701,7 @@ const AdminSales = () => {
                                                 }`}>
                                                 {order.paymentMethod || 'Cash'}
                                             </span>
-                                            <span className="text-[10px] text-gray-400 font-medium">
+                                            <span className="text-[10px] text-gray-400 font-normal">
                                                 {order.items?.reduce((acc, i) => acc + (i.quantity || 1), 0) || 0} items
                                             </span>
                                         </div>
@@ -1711,7 +1711,7 @@ const AdminSales = () => {
                                     <p className="text-sm font-bold text-gray-900 leading-none">{formatCurrency(order.totalAmount, currencySymbol)}</p>
                                     <button
                                         onClick={() => setSelectedOrder(order)}
-                                        className="px-4 py-1.5 bg-[#FD6941] text-white rounded-lg text-xs font-medium hover:bg-orange-600 transition-all active:scale-95 shadow-sm shadow-orange-100"
+                                        className="px-4 py-1.5 bg-[#FD6941] text-white rounded-lg text-xs font-normal hover:bg-[#FD6941] transition-all active:scale-95 shadow-sm "
                                     >
                                         View
                                     </button>
@@ -1723,7 +1723,7 @@ const AdminSales = () => {
                             <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Search className="w-8 h-8 text-gray-300" />
                             </div>
-                            <p className="text-gray-500 font-medium">No transactions found</p>
+                            <p className="text-gray-500 font-normal">No transactions found</p>
                         </div>
                     )}
                 </div>
@@ -1732,27 +1732,27 @@ const AdminSales = () => {
                     <table className="w-full text-left">
                         <thead className="bg-gray-50 text-gray-500 text-[10px] sm:text-xs uppercase tracking-wider">
                             <tr>
-                                <th className="px-6 py-4 font-medium">Order ID</th>
-                                <th className="px-6 py-4 font-medium">Date & Time</th>
-                                <th className="px-6 py-4 font-medium text-center">Payment</th>
-                                <th className="px-6 py-4 font-medium text-center">Quantity</th>
-                                <th className="px-6 py-4 font-medium text-right">Tax (10%)</th>
-                                <th className="px-6 py-4 font-medium text-right">Total Amount</th>
-                                <th className="px-6 py-4 font-medium text-center">Invoice</th>
+                                <th className="px-6 py-4 font-normal">Order ID</th>
+                                <th className="px-6 py-4 font-normal">Date & Time</th>
+                                <th className="px-6 py-4 font-normal text-center">Payment</th>
+                                <th className="px-6 py-4 font-normal text-center">Quantity</th>
+                                <th className="px-6 py-4 font-normal text-right">Tax (10%)</th>
+                                <th className="px-6 py-4 font-normal text-right">Total Amount</th>
+                                <th className="px-6 py-4 font-normal text-center">Invoice</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
                             {tableData.length > 0 ? (
                                 tableData.map((order) => (
                                     <tr key={order._id} className="hover:bg-gray-50/50 transition-colors">
-                                        <td className="px-6 py-4 text-sm font-medium text-black">
+                                        <td className="px-6 py-4 text-sm font-normal text-black">
                                             #{order.dailySequence || (order._id || '').slice(-6).toUpperCase()}
                                         </td>
                                         <td className="px-6 py-4 text-sm text-gray-600">
                                             {new Date(order.createdAt).toLocaleString()}
                                         </td>
                                         <td className="px-6 py-4 text-center">
-                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${(order.paymentMethod || 'Cash') === 'Online'
+                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-normal ${(order.paymentMethod || 'Cash') === 'Online'
                                                 ? 'bg-blue-100 text-blue-700'
                                                 : 'bg-green-100 text-green-700'
                                                 }`}>
@@ -1765,13 +1765,13 @@ const AdminSales = () => {
                                         <td className="px-6 py-4 text-sm text-gray-600 text-right">
                                             {formatCurrency((order.totalAmount || 0) * 0.10, currencySymbol)}
                                         </td>
-                                        <td className="px-6 py-4 text-sm font-medium text-black text-right">
+                                        <td className="px-6 py-4 text-sm font-normal text-black text-right">
                                             {formatCurrency(order.totalAmount || 0, currencySymbol)}
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <button
                                                 onClick={() => setSelectedOrder(order)}
-                                                className="w-8 h-8 rounded-full bg-[#FD6941] text-white flex items-center justify-center hover:bg-orange-600 transition-all active:scale-95 shadow-md hover:shadow-lg hover:shadow-orange-200 mx-auto"
+                                                className="w-8 h-8 rounded-full bg-[#FD6941] text-white flex items-center justify-center hover:bg-[#FD6941] transition-all active:scale-95 shadow-md hover:shadow-lg  mx-auto"
                                                 title="View Invoice"
                                             >
                                                 <FileText size={16} />

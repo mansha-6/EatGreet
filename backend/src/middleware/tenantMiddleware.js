@@ -7,7 +7,7 @@ const CategorySchema = require('../models/Category');
 const MenuItemSchema = require('../models/MenuItem');
 const OrderSchema = require('../models/Order');
 const CustomerSchema = require('../models/Customer');
-
+const OfferSchema = require('../models/Offer');
 
 /**
  * Middleware to resolve tenant DB based on user data or request params.
@@ -77,9 +77,9 @@ const resolveTenant = async (req, res, next) => {
             Category: getTenantModel(conn, 'Category', CategorySchema),
             MenuItem: getTenantModel(conn, 'MenuItem', MenuItemSchema),
             Order: getTenantModel(conn, 'Order', OrderSchema),
-            Customer: getTenantModel(getTenantConnection('eatgreet_customer'), 'Customer', CustomerSchema)
+            Customer: getTenantModel(getTenantConnection('eatgreet_customer'), 'Customer', CustomerSchema),
+            Offer: getTenantModel(conn, 'Offer', OfferSchema)
         };
-
 
         next();
     } catch (error) {

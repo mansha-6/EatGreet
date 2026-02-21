@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
 
 
 const api = axios.create({
@@ -95,6 +95,13 @@ export const categoryAPI = {
   create: (categoryData) => api.post('/categories', categoryData),
   update: (id, categoryData) => api.put(`/categories/${id}`, categoryData),
   delete: (id) => api.delete(`/categories/${id}`),
+};
+
+export const offerAPI = {
+  getAll: (params) => api.get('/offers', { params }),
+  create: (offerData) => api.post('/offers', offerData),
+  update: (id, offerData) => api.put(`/offers/${id}`, offerData),
+  delete: (id) => api.delete(`/offers/${id}`),
 };
 
 export const orderAPI = {
@@ -202,6 +209,7 @@ const apis = {
   statsAPI,
   menuAPI,
   categoryAPI,
+  offerAPI,
   orderAPI,
   customerAPI,
   restaurantAPI,

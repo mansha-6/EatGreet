@@ -55,7 +55,7 @@ class ErrorBoundary extends React.Component {
                                 localStorage.clear();
                                 window.location.href = '/';
                             }}
-                            className="mt-6 text-sm text-gray-400 font-medium hover:text-gray-600 underline underline-offset-4"
+                            className="mt-6 text-sm text-gray-400 font-normal hover:text-gray-600 underline underline-offset-4"
                         >
                             Clear Session & Logout
                         </button>

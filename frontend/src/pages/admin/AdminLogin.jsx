@@ -52,7 +52,7 @@ export default function AdminLogin() {
                     <div className="mb-2">
                         <img src="/logo-v.svg" alt="EatGreet Logo" className="w-[120px]" />
                     </div>
-                    <h2 className="text-gray-600 font-medium text-[20px] mt-2">Welcome back</h2>
+                    <h2 className="text-gray-600 font-normal text-[20px] mt-2">Welcome back</h2>
                     <p className="text-gray-400 text-[14px] mt-1 font-normal text-center">
                         Sign in to manage your restaurant
                     </p>
@@ -60,7 +60,7 @@ export default function AdminLogin() {
 
                 <form className="space-y-5" onSubmit={handleLogin}>
                     {error && (
-                        <div className="bg-red-50 text-red-500 text-xs p-3 rounded-2xl text-center font-medium">
+                        <div className="bg-red-50 text-red-500 text-xs p-3 rounded-2xl text-center font-normal">
                             {error}
                         </div>
                     )}
@@ -95,7 +95,7 @@ export default function AdminLogin() {
 
                     <button
                         disabled={isLoading}
-                        className="w-full bg-black text-white py-4 rounded-full font-medium shadow-lg hover:shadow-xl hover:bg-gray-900 transition-all duration-200 text-base tracking-wide mt-4 disabled:opacity-70 flex items-center justify-center gap-2"
+                        className="w-full bg-black text-white py-4 rounded-full font-normal shadow-lg hover:shadow-xl hover:bg-gray-900 transition-all duration-200 text-base tracking-wide mt-4 disabled:opacity-70 flex items-center justify-center gap-2"
                     >
                         {isLoading ? (
                             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -104,7 +104,7 @@ export default function AdminLogin() {
                 </form>
 
                 <p className="mt-8 text-center text-sm text-gray-400">
-                    New User? <Link to="/signup" className="text-blue-500 font-medium hover:underline">Register</Link>
+                    New User? <Link to="/signup" className="text-blue-500 font-normal hover:underline">Register</Link>
                 </p>
             </motion.div>
         </div>

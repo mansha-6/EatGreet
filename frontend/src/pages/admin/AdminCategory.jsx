@@ -164,7 +164,7 @@ const AdminCategory = () => {
     const handleDelete = (id) => {
         toast((t) => (
             <div className="flex flex-col gap-3">
-                <p className="font-medium text-gray-800 text-sm">Delete this category? Items will be uncategorized.</p>
+                <p className="font-normal text-gray-800 text-sm">Delete this category? Items will be uncategorized.</p>
                 <div className="flex gap-2">
                     <button
                         onClick={async () => {
@@ -177,13 +177,13 @@ const AdminCategory = () => {
                                 toast.error('Failed to delete category');
                             }
                         }}
-                        className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs font-medium hover:bg-red-600 transition-colors"
+                        className="px-3 py-1.5 bg-red-500 text-white rounded-lg text-xs font-normal hover:bg-red-600 transition-colors"
                     >
                         Delete
                     </button>
                     <button
                         onClick={() => toast.dismiss(t.id)}
-                        className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200 transition-colors"
+                        className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-normal hover:bg-gray-200 transition-colors"
                     >
                         Cancel
                     </button>
@@ -199,11 +199,11 @@ const AdminCategory = () => {
             {/* Header Section */}
             {/* Header Section */}
             <div className="flex justify-between items-center gap-4">
-                <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-medium text-black tracking-tight leading-none">Category Management</h1>
+                <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-normal text-black tracking-tight leading-none">Category Management</h1>
                 <div className="flex gap-2 items-center">
                     <button
                         onClick={() => { setEditingCategory(null); setNewCategoryName(''); setIsModalOpen(true); }}
-                        className="bg-[#FD6941] hover:bg-orange-600 text-white p-2.5 sm:p-3 rounded-full font-medium flex items-center justify-center gap-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2"
+                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2"
                     >
                         <Plus className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
                         <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
@@ -218,7 +218,7 @@ const AdminCategory = () => {
 
                 {/* Search & Toolbar */}
                 <div className="flex flex-col sm:flex-row justify-between items-center mb-6 sm:mb-8 gap-4">
-                    <h2 className="text-[16px] sm:text-[22px] font-medium text-black w-full sm:w-auto">All Categories</h2>
+                    <h2 className="text-[16px] sm:text-[22px] font-normal text-black w-full sm:w-auto">All Categories</h2>
                     <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
                         <div className="relative flex-1 sm:w-80">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
@@ -250,7 +250,7 @@ const AdminCategory = () => {
 
                                 {/* Mobile ONLY: Status Badge at top right corner */}
                                 <div className="sm:hidden absolute top-3 right-3 z-10">
-                                    <span className={`text-[9px] font-medium px-2 py-0.5 rounded-md uppercase tracking-wider ${category.status === 'ACTIVE' ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                                    <span className={`text-[9px] font-normal px-2 py-0.5 rounded-md uppercase tracking-wider ${category.status === 'ACTIVE' ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
                                         {category.status || 'INACTIVE'}
                                     </span>
                                 </div>
@@ -297,8 +297,8 @@ const AdminCategory = () => {
                                 {/* Right Column (Mobile) / Middle Area (Desktop) */}
                                 <div className="flex-1 flex flex-col justify-between sm:justify-start py-0 sm:py-1 sm:mb-8">
                                     <div>
-                                        <h3 className="text-lg sm:text-xl font-medium text-gray-800 mb-0.5 sm:mb-1 line-clamp-1">{category.name}</h3>
-                                        <p className="text-gray-400 text-[10px] sm:text-sm font-medium">{category.count || 0} Items Available</p>
+                                        <h3 className="text-lg sm:text-xl font-normal text-gray-800 mb-0.5 sm:mb-1 line-clamp-1">{category.name}</h3>
+                                        <p className="text-gray-400 text-[10px] sm:text-sm font-normal">{category.count || 0} Items Available</p>
                                     </div>
 
                                     {/* Mobile ONLY: Toggle at bottom-right of this column */}
@@ -318,8 +318,8 @@ const AdminCategory = () => {
                                 {/* Desktop ONLY Bottom Section: Status & Toggle */}
                                 <div className="hidden sm:flex flex-row items-center justify-between mt-auto pt-4 border-t border-gray-50">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-gray-400 text-xs font-medium uppercase tracking-wider">Status</span>
-                                        <span className={`text-[10px] font-medium px-2 py-0.5 rounded-md uppercase tracking-wider ${category.status === 'ACTIVE' ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                                        <span className="text-gray-400 text-xs font-normal uppercase tracking-wider">Status</span>
+                                        <span className={`text-[10px] font-normal px-2 py-0.5 rounded-md uppercase tracking-wider ${category.status === 'ACTIVE' ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
                                             {category.status || 'INACTIVE'}
                                         </span>
                                     </div>
@@ -343,12 +343,12 @@ const AdminCategory = () => {
                     {/* Add New Category Card */}
                     <div
                         onClick={() => { setEditingCategory(null); setNewCategoryName(''); setIsModalOpen(true); }}
-                        className="border-2 border-dashed border-gray-200 rounded-3xl flex flex-row sm:flex-col items-center justify-center p-4 sm:p-6 text-center cursor-pointer hover:border-[#FD6941] hover:bg-orange-50/10 transition-all h-40 sm:h-full group bg-gray-50/50 gap-4"
+                        className="border-2 border-dashed border-gray-200 rounded-3xl flex flex-row sm:flex-col items-center justify-center p-4 sm:p-6 text-center cursor-pointer hover:border-[#FD6941] hover:bg-[#FD6941]/5 transition-all h-40 sm:h-full group bg-gray-50/50 gap-4"
                     >
                         <div className="w-12 h-12 sm:w-14 sm:h-14 bg-white rounded-full shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
                             <Plus className="w-6 h-6 sm:w-7 sm:h-7 text-[#FD6941]" />
                         </div>
-                        <h3 className="text-base sm:text-lg font-medium text-gray-700">Add New Category</h3>
+                        <h3 className="text-base sm:text-lg font-normal text-gray-700">Add New Category</h3>
                     </div>
                 </div>
             </div>
@@ -358,7 +358,7 @@ const AdminCategory = () => {
                     <div className="fixed inset-0" onClick={closeModal} />
                     <div className="bg-white rounded-[2rem] w-full max-w-md p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200 relative z-10 max-h-[90vh] overflow-y-auto no-scrollbar">
                         <div className="flex justify-between items-center mb-4 sm:mb-6">
-                            <h2 className="text-xl sm:text-2xl font-medium text-gray-800">{editingCategory ? 'Edit Category' : 'Add New Category'}</h2>
+                            <h2 className="text-xl sm:text-2xl font-normal text-gray-800">{editingCategory ? 'Edit Category' : 'Add New Category'}</h2>
                             <button onClick={closeModal} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                                 <X className="w-5 h-5 text-gray-500" />
                             </button>
@@ -367,7 +367,7 @@ const AdminCategory = () => {
                         <div className="space-y-6">
                             {/* Icon Selection */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-4">Choose Category Icon</label>
+                                <label className="block text-sm font-normal text-gray-700 mb-4">Choose Category Icon</label>
 
                                 {/* Icon Selection Grid */}
                                 <div className="grid grid-cols-5 gap-3 mb-6">
@@ -384,17 +384,17 @@ const AdminCategory = () => {
                                 </div>
 
                                 {/* Active Icon Preview */}
-                                <div className="bg-orange-50/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center border border-orange-100/50 mb-6">
+                                <div className="bg-[#FD6941]/10 rounded-2xl p-6 flex flex-col items-center justify-center text-center border border-[#FD6941]/20 mb-6">
                                     <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-3 text-[#FD6941]">
                                         {ActiveIcon ? <ActiveIcon className="w-8 h-8" /> : <Utensils className="w-8 h-8" />}
                                     </div>
-                                    <p className="text-sm text-gray-800 font-medium">Preview Icon</p>
+                                    <p className="text-sm text-gray-800 font-normal">Preview Icon</p>
                                     <p className="text-xs text-gray-400 mt-1">This icon will represent the category</p>
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Category Name</label>
+                                <label className="block text-sm font-normal text-gray-700 mb-2">Category Name</label>
                                 <input
                                     type="text"
                                     placeholder="e.g. Breakfast Specials"
@@ -407,7 +407,7 @@ const AdminCategory = () => {
 
                             <div className="flex items-center justify-between py-2">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-800">Active Status</label>
+                                    <label className="block text-sm font-normal text-gray-800">Active Status</label>
                                     <p className="text-xs text-gray-400">Visible on menu immediately</p>
                                 </div>
                                 <label className="relative inline-flex items-center cursor-pointer">
@@ -423,7 +423,7 @@ const AdminCategory = () => {
 
                             <button
                                 onClick={handleSave}
-                                className="w-full py-4 rounded-full bg-[#FD6941] text-white text-sm font-medium hover:bg-orange-600 shadow-lg shadow-orange-200 transition-all mt-4"
+                                className="w-full py-4 rounded-full bg-[#FD6941] text-white text-sm sm:text-base font-normal hover:bg-[#FD6941]/90 shadow-lg  transition-all mt-4"
                             >
                                 {editingCategory ? 'Update Category' : 'Create Category'}
                             </button>

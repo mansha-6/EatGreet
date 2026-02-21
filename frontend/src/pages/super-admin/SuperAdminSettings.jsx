@@ -153,7 +153,7 @@ const SuperAdminSettings = () => {
                     {activeTab === 'subscription' && (
                         <div className="space-y-6">
                             <div className="flex justify-end">
-                                <button className="flex items-center gap-2 text-[#FD6941] font-bold text-sm bg-orange-50 px-4 py-2 rounded-lg hover:bg-orange-100 transition-colors">
+                                <button className="flex items-center gap-2 text-[#FD6941] font-bold text-sm bg-[#FD6941]/10 px-4 py-2 rounded-lg hover:bg-[#FD6941]/20 transition-colors">
                                     <Plus className="w-4 h-4" /> Create New Plan
                                 </button>
                             </div>
@@ -176,7 +176,7 @@ const SuperAdminSettings = () => {
                                         </div>
                                         <div className="flex items-center justify-end gap-3">
                                             <button className="text-sm font-bold text-gray-500 hover:text-gray-700">Disable</button>
-                                            <button className="text-sm font-bold text-[#FD6941] hover:text-orange-700">Edit Plan</button>
+                                            <button className="text-sm font-bold text-[#FD6941] hover:text-[#FD6941]">Edit Plan</button>
                                         </div>
                                     </div>
                                 </div>
@@ -240,11 +240,11 @@ const SuperAdminSettings = () => {
                             </SectionCard>
 
                             <SectionCard title="User Actions" icon={Lock}>
-                                <div className="p-4 bg-orange-50 rounded-xl mb-4">
-                                    <h4 className="font-bold text-orange-800 mb-1">Reset User Password</h4>
-                                    <p className="text-xs text-orange-600 mb-3">Send a password reset link to a specific user.</p>
+                                <div className="p-4 bg-[#FD6941] rounded-xl mb-4">
+                                    <h4 className="font-bold text-[#FD6941] mb-1">Reset User Password</h4>
+                                    <p className="text-xs text-[#FD6941] mb-3">Send a password reset link to a specific user.</p>
                                     <div className="flex gap-2">
-                                        <input type="email" placeholder="Enter user email" className="flex-1 px-3 py-2 rounded-lg text-sm border-none focus:ring-1 focus:ring-orange-300" />
+                                        <input type="email" placeholder="Enter user email" className="flex-1 px-3 py-2 rounded-lg text-sm border-none focus:ring-1 focus:ring-[#FD6941]" />
                                         <button className="px-4 py-2 bg-[#FD6941] text-white rounded-lg text-sm font-bold">Send Reset</button>
                                     </div>
                                 </div>
@@ -335,8 +335,8 @@ const SidebarItem = ({ icon: Icon, label, isActive, onClick }) => (
     <button
         onClick={onClick}
         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
-                ? 'bg-[#FD6941] text-white shadow-md shadow-orange-200'
-                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+            ? 'bg-[#FD6941] text-white shadow-md '
+            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
             }`}
     >
         <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'}`} />
@@ -347,7 +347,7 @@ const SidebarItem = ({ icon: Icon, label, isActive, onClick }) => (
 const SectionCard = ({ title, icon: Icon, children }) => (
     <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
         <div className="flex items-center gap-4 mb-6">
-            <div className="p-3 bg-orange-50 rounded-xl text-[#FD6941]">
+            <div className="p-3 bg-[#FD6941] rounded-xl text-[#FD6941]">
                 <Icon className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-bold text-gray-800">{title}</h3>

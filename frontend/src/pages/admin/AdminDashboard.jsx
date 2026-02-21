@@ -23,16 +23,16 @@ const DashboardCard = ({ value, label, icon, subValue, isCurrency }) => {
                     <img src={icon} alt="icon" className="w-5 h-5 sm:w-6 sm:h-6 opacity-80" />
                 </div>
                 <div className="flex flex-col">
-                    <h3 className="text-[18px] sm:text-[28px] lg:text-[32px] font-medium text-black leading-none flex items-baseline">
-                        {isCurrency && <span className="text-[14px] sm:text-[20px] lg:text-[24px] mr-1 font-medium">{currencySymbol}</span>}
+                    <h3 className="text-[18px] sm:text-[28px] lg:text-[32px] font-normal text-black leading-none flex items-baseline">
+                        {isCurrency && <span className="text-[14px] sm:text-[20px] lg:text-[24px] mr-1 font-normal">{currencySymbol}</span>}
                         {value}
                         {subValue !== undefined && (
-                            <span className="text-[12px] sm:text-[20px] lg:text-[24px] text-gray-400 opacity-30 font-medium ml-1">
+                            <span className="text-[12px] sm:text-[20px] lg:text-[24px] text-gray-400 opacity-30 font-normal ml-1">
                                 /{subValue}
                             </span>
                         )}
                     </h3>
-                    <p className={`text-[11px] sm:text-[13px] lg:text-[14px] text-gray-400 mt-1 sm:mt-2 font-medium tracking-tight ${label === 'Occupied Tables' ? 'whitespace-pre-line max-w-[70px]' : 'truncate max-w-[80px]'} sm:max-w-full sm:whitespace-normal`}>
+                    <p className={`text-[11px] sm:text-[13px] lg:text-[14px] text-gray-400 mt-1 sm:mt-2 font-normal tracking-tight ${label === 'Occupied Tables' ? 'whitespace-pre-line max-w-[70px]' : 'truncate max-w-[80px]'} sm:max-w-full sm:whitespace-normal`}>
                         {label === 'Occupied Tables' ? label.replace(' ', '\n') : label}
                     </p>
                 </div>
@@ -58,7 +58,7 @@ const TimeStatusGauge = ({ value }) => {
 
     return (
         <div className="bg-white rounded-[2rem] p-8 h-[320px] shadow-sm flex flex-col relative overflow-hidden transition-all border border-transparent">
-            <h3 className="text-[24px] font-medium text-black mb-1">Time Status</h3>
+            <h3 className="text-[24px] font-normal text-black mb-1">Time Status</h3>
 
             <div className="flex-1 flex items-center justify-center relative translate-y-[-10px]">
                 <svg width="100%" height="240" viewBox="0 0 360 230" className="overflow-visible">
@@ -104,12 +104,12 @@ const TimeStatusGauge = ({ value }) => {
 
                 <div className="absolute inset-0 flex flex-col items-center justify-center pt-24">
                     <div className="flex items-baseline gap-1">
-                        <span className="text-[56px] font-medium text-black tracking-tight leading-none">
+                        <span className="text-[56px] font-normal text-black tracking-tight leading-none">
                             {value || 0}
                         </span>
-                        <span className="text-[28px] font-medium text-black">min</span>
+                        <span className="text-[28px] font-normal text-black">min</span>
                     </div>
-                    <span className="text-[16px] text-gray-400 font-medium mt-1">Avg. Wait Time</span>
+                    <span className="text-[16px] text-gray-400 font-normal mt-1">Avg. Wait Time</span>
                 </div>
             </div>
 
@@ -321,8 +321,8 @@ const AdminDashboard = () => {
     return (
         <div className="min-h-screen bg-transparent px-2 sm:px-4 pt-0 pb-4 sm:pt-0 sm:pb-8 space-y-4 md:space-y-6">
             <div className="space-y-1">
-                <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-medium text-black tracking-tight leading-none">Dashboard</h1>
-                <p className="text-[12px] sm:text-[18px] text-gray-400 font-medium">Welcome back, Admin</p>
+                <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-normal text-black tracking-tight leading-none">Dashboard</h1>
+                <p className="text-[12px] sm:text-[18px] text-gray-400 font-normal">Welcome back, Admin</p>
             </div>
 
             {/* Main Content Grid - 1 Column on Mobile, 12 on Desktop */}
@@ -354,8 +354,8 @@ const AdminDashboard = () => {
                                 className="flex flex-col cursor-pointer hover:opacity-80 transition-opacity"
                                 onClick={() => navigate(`/${restaurantSlug}/admin/sales`)}
                             >
-                                <h2 className="text-[16px] sm:text-[24px] font-medium text-black">Sales Analytics</h2>
-                                <p className="text-[12px] text-gray-400 font-medium">Today Breakdown</p>
+                                <h2 className="text-[16px] sm:text-[24px] font-normal text-black">Sales Analytics</h2>
+                                <p className="text-[12px] text-gray-400 font-normal">Today Breakdown</p>
                             </div>
 
                             <div className="flex items-center gap-2 sm:gap-3">
@@ -385,7 +385,7 @@ const AdminDashboard = () => {
                                             if (active && payload && payload.length) {
                                                 return (
                                                     <div className="bg-white px-4 py-2 rounded-xl shadow-xl border border-gray-50">
-                                                        <p className="text-[14px] font-medium text-black font-urb">
+                                                        <p className="text-[14px] font-normal text-black font-urb">
                                                             {currencySymbol}{payload[0].value.toLocaleString()}
                                                         </p>
                                                     </div>
@@ -414,7 +414,7 @@ const AdminDashboard = () => {
                     {/* Live Active Feed */}
                     <div className="bg-white rounded-[1.5rem] sm:rounded-[2.8rem] p-4 sm:p-8 shadow-sm flex flex-col h-[400px] sm:h-[500px] lg:h-[560px] border border-transparent">
                         <div className="flex justify-between items-center mb-4 sm:mb-6">
-                            <h2 className="text-[16px] sm:text-[24px] font-medium text-black">Live Feed</h2>
+                            <h2 className="text-[16px] sm:text-[24px] font-normal text-black">Live Feed</h2>
                             <div
                                 onClick={() => navigate(`/${restaurantSlug}/admin/orders`)}
                                 className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-50 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors"
@@ -435,13 +435,13 @@ const AdminDashboard = () => {
                                             <img src={item.icon} alt={item.title} className="w-6 h-6 sm:w-9 sm:h-9 opacity-70" />
                                         </div>
                                         <div className="flex flex-col">
-                                            <h4 className="font-medium text-black text-[15px] sm:text-[18px] leading-tight">{item.title}</h4>
-                                            <p className="text-[12px] sm:text-[15px] text-gray-400 font-medium mt-0.5 truncate max-w-[100px] sm:max-w-[120px]">{item.sub}</p>
+                                            <h4 className="font-normal text-black text-[15px] sm:text-[18px] leading-tight">{item.title}</h4>
+                                            <p className="text-[12px] sm:text-[15px] text-gray-400 font-normal mt-0.5 truncate max-w-[100px] sm:max-w-[120px]">{item.sub}</p>
                                         </div>
                                     </div>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); navigate(`/${restaurantSlug}/admin/orders?orderId=${item.id}`); }}
-                                        className="bg-black text-white text-[12px] sm:text-[14px] font-medium px-4 sm:px-7 py-2 sm:py-3 rounded-full hover:bg-gray-800 transition-transform active:scale-95"
+                                        className="bg-black text-white text-[12px] sm:text-[14px] font-normal px-4 sm:px-7 py-2 sm:py-3 rounded-full hover:bg-gray-800 transition-transform active:scale-95"
                                     >
                                         View
                                     </button>

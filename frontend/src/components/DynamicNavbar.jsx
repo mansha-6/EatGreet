@@ -90,7 +90,7 @@ const DynamicNavbar = ({ customerProps }) => {
                 <div className="flex items-center gap-6">
                     <div className="relative group">
                         <button className="bg-white rounded-full pl-2 pr-6 py-2 flex items-center gap-4 shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-gray-100 transition-all hover:shadow-md group">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-400 to-red-500 p-[2px] shadow-inner">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#FD6941] to-red-500 p-[2px] shadow-inner">
                                 <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
                                     <img src={`https://ui-avatars.com/api/?name=${user?.name || 'Kitchen'}&background=FD6941&color=fff`} alt="Kitchen" className="w-full h-full object-cover" />
                                 </div>
@@ -123,7 +123,7 @@ const DynamicNavbar = ({ customerProps }) => {
                     <div className="flex items-center gap-2 md:gap-4">
                         {tableNo && (
                             <>
-                                <div className="hidden md:flex items-center gap-1 text-sm font-medium bg-gray-100 px-4 py-1.5 rounded-full uppercase tracking-wider text-gray-500">
+                                <div className="hidden md:flex items-center gap-1 text-sm font-normal bg-gray-100 px-4 py-1.5 rounded-full uppercase tracking-wider text-gray-500">
                                     Table no. {tableNo !== 'preview' && <span className="text-black font-bold ml-1">{tableNo}</span>}
                                 </div>
                                 <div className="flex md:hidden items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-xl border border-gray-100 shadow-sm animate-in fade-in slide-in-from-right-2">
@@ -179,7 +179,7 @@ const DynamicNavbar = ({ customerProps }) => {
                     <Link
                         key={item.path}
                         to={item.path}
-                        className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${isActive(item.path)}`}
+                        className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-normal transition-all duration-300 ${isActive(item.path)}`}
                     >
                         {item.label}
                     </Link>
@@ -205,7 +205,7 @@ const DynamicNavbar = ({ customerProps }) => {
                         >
                             <Bell className="w-5 h-5" />
                             {unreadCount > 0 && (
-                                <span className="absolute top-2 right-2.5 w-4 h-4 bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-medium text-white">
+                                <span className="absolute top-2 right-2.5 w-4 h-4 bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-normal text-white">
                                     {unreadCount > 9 ? '9+' : unreadCount}
                                 </span>
                             )}
@@ -217,26 +217,26 @@ const DynamicNavbar = ({ customerProps }) => {
                                 <div className="fixed inset-0 z-[100] bg-transparent" onClick={() => setIsNotificationOpen(false)}></div>
                                 <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-[1.5rem] shadow-xl border border-gray-100 z-[101] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 origin-top-right">
                                     <div className="p-4 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
-                                        <h3 className="font-medium text-gray-800">Notifications</h3>
+                                        <h3 className="font-normal text-gray-800">Notifications</h3>
                                         {notifications.length > 0 && (
-                                            <button onClick={clearAll} className="text-xs font-medium text-red-500 hover:text-red-600">Clear all</button>
+                                            <button onClick={clearAll} className="text-xs font-normal text-red-500 hover:text-red-600">Clear all</button>
                                         )}
                                     </div>
                                     <div className="max-h-[60vh] overflow-y-auto custom-scrollbar">
                                         {notifications.length > 0 ? (
                                             notifications.map((notif) => (
-                                                <div key={notif.id} onClick={() => markAsRead(notif.id)} className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors flex gap-3 ${!notif.read ? 'bg-orange-50/30' : ''}`}>
-                                                    <div className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center ${notif.type === 'newOrder' ? 'bg-green-100 text-green-600' : notif.type === 'completed' ? 'bg-blue-100 text-blue-600' : 'bg-orange-100 text-orange-600'}`}>
+                                                <div key={notif.id} onClick={() => markAsRead(notif.id)} className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors flex gap-3 ${!notif.read ? 'bg-[#FD6941]' : ''}`}>
+                                                    <div className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center ${notif.type === 'newOrder' ? 'bg-green-100 text-green-600' : notif.type === 'completed' ? 'bg-blue-100 text-blue-600' : 'bg-[#FD6941] text-[#FD6941]'}`}>
                                                         <Bell className="w-5 h-5 fill-current" />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex justify-between items-start mb-1">
-                                                            <h4 className="text-sm font-medium text-gray-900 truncate">{notif.title}</h4>
+                                                            <h4 className="text-sm font-normal text-gray-900 truncate">{notif.title}</h4>
                                                             <span className="text-[10px] text-gray-400 whitespace-nowrap ml-2">{notif.time}</span>
                                                         </div>
                                                         <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{notif.message}</p>
                                                     </div>
-                                                    {!notif.read && <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 shrink-0"></div>}
+                                                    {!notif.read && <div className="w-2 h-2 bg-[#FD6941] rounded-full mt-2 shrink-0"></div>}
                                                 </div>
                                             ))
                                         ) : (
@@ -248,7 +248,7 @@ const DynamicNavbar = ({ customerProps }) => {
                                     </div>
                                     {notifications.length > 0 && (
                                         <div className="p-3 border-t border-gray-50 bg-gray-50/30 text-center">
-                                            <button onClick={markAllRead} className="text-xs font-medium text-gray-600 hover:text-black transition-colors">Mark all as read</button>
+                                            <button onClick={markAllRead} className="text-xs font-normal text-gray-600 hover:text-black transition-colors">Mark all as read</button>
                                         </div>
                                     )}
                                 </div>
@@ -272,7 +272,7 @@ const DynamicNavbar = ({ customerProps }) => {
                             <img src={`https://ui-avatars.com/api/?name=${user?.name || (viewType === 'SUPER_ADMIN' ? 'Super Admin' : 'Admin')}&background=FD6941&color=fff`} alt="Profile" className="w-full h-full object-cover" />
                         </div>
                         <div className="hidden md:flex items-center gap-2">
-                            <span className="text-sm font-medium text-gray-800">{user?.name || (viewType === 'SUPER_ADMIN' ? 'Super Admin' : 'Admin')}</span>
+                            <span className="text-sm font-normal text-gray-800">{user?.name || (viewType === 'SUPER_ADMIN' ? 'Super Admin' : 'Admin')}</span>
                             <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
                         </div>
                     </div>
@@ -306,7 +306,7 @@ const DynamicNavbar = ({ customerProps }) => {
                                     key={item.path}
                                     to={item.path}
                                     onClick={() => setIsMenuOpen(false)}
-                                    className={`px-5 py-4 rounded-2xl text-[17px] font-medium transition-all ${isActive(item.path)}`}
+                                    className={`px-5 py-4 rounded-2xl text-[17px] font-normal transition-all ${isActive(item.path)}`}
                                 >
                                     {item.label}
                                 </Link>

@@ -25,7 +25,7 @@ export const SocketProvider = ({ children }) => {
 
         // Derive socket URL from VITE_API_BASE_URL or default to localhost
         // API_BASE_URL typically ends with /api, we need the root
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5002/api';
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001/api';
         const socketUrl = apiBaseUrl.replace('/api', '');
 
         console.log('Attempting Socket Connection to:', socketUrl);

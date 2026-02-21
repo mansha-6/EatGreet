@@ -109,7 +109,7 @@ export default function LandingPage() {
                         <img src={logoFull} alt="EatGreet Logo" className="h-8 md:h-10 w-auto" />
                     </div>
 
-                    <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
+                    <div className="hidden md:flex items-center gap-8 text-sm font-normal text-gray-600">
                         <a href="#platform" className="hover:text-primary transition-colors">PLATFORM</a>
                         <a href="#ecosystem" className="hover:text-primary transition-colors">ECOSYSTEM</a>
                         <a href="#enterprise" className="hover:text-primary transition-colors">ENTERPRISE</a>
@@ -118,7 +118,7 @@ export default function LandingPage() {
 
                     <div className="flex items-center gap-3 md:gap-4">
                         <a href="/login" className="text-xs md:text-sm font-bold text-gray-700 hover:text-primary transition-colors">LOGIN</a>
-                        <a href="#contact" className="px-4 py-2 md:px-6 md:py-3 bg-primary text-white text-xs md:text-sm font-bold rounded-full hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/30 whitespace-nowrap">
+                        <a href="#contact" className="px-4 py-2 md:px-6 md:py-3 bg-primary text-white text-xs md:text-sm font-bold rounded-full hover:bg-[#E55A35] transition-all shadow-lg  whitespace-nowrap">
                             GET STARTED
                         </a>
                     </div>
@@ -131,9 +131,9 @@ export default function LandingPage() {
 
                 <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10 md:gap-12 items-center">
                     <div className="space-y-8">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-orange-50 rounded-full border border-orange-100">
-                            <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
-                            <span className="text-xs font-bold text-orange-600 tracking-wide uppercase">v4.0 Global Release</span>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FFF5F1] rounded-full border border-[#FD6941]/20">
+                            <span className="w-2 h-2 bg-[#FD6941] rounded-full animate-pulse" />
+                            <span className="text-xs font-bold text-[#FD6941] tracking-wide uppercase">v4.0 Global Release</span>
                         </div>
 
                         <h1 className="text-4xl sm:text-5xl md:text-7xl leading-[1.1] font-bold">
@@ -147,7 +147,7 @@ export default function LandingPage() {
                         </p>
 
                         <div className="flex flex-wrap items-center gap-4">
-                            <a href="#contact" className="w-full sm:w-auto text-center px-8 py-4 bg-primary text-white font-bold rounded-lg hover:bg-orange-600 transition-all shadow-xl shadow-orange-500/20">
+                            <a href="#contact" className="w-full sm:w-auto text-center px-8 py-4 bg-primary text-white font-bold rounded-lg hover:bg-[#E55A35] transition-all shadow-xl ">
                                 BOOK A DEMO
                             </a>
 
@@ -174,12 +174,12 @@ export default function LandingPage() {
             {/* Unified Experience Section */}
             <section className="py-16 md:py-24 bg-white">
                 <div className="max-w-7xl mx-auto px-4 md:px-6 text-center">
-                    <span className="text-orange-500 font-bold tracking-widest text-xs uppercase mb-2 block">The Integrated Flow</span>
+                    <span className="text-[#FD6941] font-bold tracking-widest text-xs uppercase mb-2 block">The Integrated Flow</span>
                     <h2 className="text-3xl md:text-4xl font-bold mb-10 md:mb-16">A Unified Experience</h2>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                         {[
-                            { icon: Users, label: "Customer", desc: "Scan, 3D Menu Explore & Seamless Pay", color: "text-orange-500", bg: "bg-orange-50" },
+                            { icon: Users, label: "Customer", desc: "Scan, 3D Menu Explore & Seamless Pay", color: "text-[#FD6941]", bg: "bg-[#FFF5F1]" },
                             { icon: Briefcase, label: "Manager", desc: "Real-time floor tracking & Auto-Staffing", color: "text-blue-500", bg: "bg-blue-50" },
                             { icon: ChefHat, label: "Kitchen", desc: "AI Order Prioritization & Prep Sync", color: "text-purple-500", bg: "bg-purple-50" },
                             { icon: ShieldCheck, label: "Super Admin", desc: "Global Revenue & Supply Intelligence", color: "text-green-500", bg: "bg-green-50" },
@@ -207,10 +207,10 @@ export default function LandingPage() {
                         {/* AI Sales Reports */}
                         <div className="bg-[#FFF5F1] p-6 md:p-10 rounded-3xl flex flex-col justify-between relative overflow-hidden group">
                             <div className="relative z-10">
-                                <span className="text-orange-500 font-bold text-xs tracking-widest uppercase mb-2 block">Twin Intelligence</span>
+                                <span className="text-[#FD6941] font-bold text-xs tracking-widest uppercase mb-2 block">Twin Intelligence</span>
                                 <h3 className="text-2xl md:text-3xl font-bold mb-4">AI-Driven Sales Reports</h3>
                                 <p className="text-gray-600 mb-8 max-w-sm text-sm">Predict demand patterns, identify menu stars, and automate labor costs with 98.4% accuracy.</p>
-                                <button className="text-orange-500 font-bold flex items-center gap-2 hover:gap-3 transition-all group-hover:text-orange-600">
+                                <button className="text-[#FD6941] font-bold flex items-center gap-2 hover:gap-3 transition-all group-hover:text-[#FD6941]">
                                     ANALYZE NOW <ArrowRight className="w-4 h-4" />
                                 </button>
                             </div>
@@ -222,7 +222,7 @@ export default function LandingPage() {
                                         <div className="h-2 w-1/2 bg-gray-100 rounded" />
                                         <div className="flex justify-between items-end h-32 mt-8 gap-2">
                                             {[40, 65, 45, 80, 55, 90].map((h, i) => (
-                                                <div key={i} style={{ height: `${h}%` }} className="w-full bg-orange-200 rounded-t hover:bg-orange-400 transition-colors" />
+                                                <div key={i} style={{ height: `${h}%` }} className="w-full bg-[#FD6941] rounded-t hover:bg-[#FD6941] transition-colors" />
                                             ))}
                                         </div>
                                     </div>
@@ -241,7 +241,7 @@ export default function LandingPage() {
                                 <div className="flex items-center gap-3">
                                     <div className="flex -space-x-3">
                                         {[1, 2, 3].map((_, i) => (
-                                            <div key={i} className="w-8 h-8 rounded-full bg-gray-200 border-2 border-orange-500" />
+                                            <div key={i} className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white" />
                                         ))}
                                     </div>
                                     <span className="text-xs font-bold uppercase tracking-wide">Active Visualization.js</span>
@@ -254,7 +254,7 @@ export default function LandingPage() {
 
                     <div className="grid md:grid-cols-2 gap-8">
                         <div className="bg-white p-8 rounded-3xl flex items-center gap-6 shadow-sm border border-gray-100">
-                            <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center text-orange-500 flex-shrink-0">
+                            <div className="w-16 h-16 bg-[#FFF5F1] rounded-2xl flex items-center justify-center text-[#FD6941] flex-shrink-0">
                                 <Globe className="w-8 h-8" />
                             </div>
                             <div>
@@ -305,7 +305,7 @@ export default function LandingPage() {
                                             required
                                             value={formData.name}
                                             onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-orange-200 outline-none transition-all placeholder-gray-400"
+                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-[#FD6941] outline-none transition-all placeholder-gray-400"
                                             placeholder="Your Name"
                                         />
                                     </div>
@@ -316,7 +316,7 @@ export default function LandingPage() {
                                             required
                                             value={formData.email}
                                             onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-orange-200 outline-none transition-all placeholder-gray-400"
+                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-[#FD6941] outline-none transition-all placeholder-gray-400"
                                             placeholder="you@example.com"
                                         />
                                     </div>
@@ -330,7 +330,7 @@ export default function LandingPage() {
                                             required
                                             value={formData.password}
                                             onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-orange-200 outline-none transition-all placeholder-gray-400"
+                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-[#FD6941] outline-none transition-all placeholder-gray-400"
                                             placeholder="Min. 6 characters"
                                         />
                                     </div>
@@ -341,7 +341,7 @@ export default function LandingPage() {
                                             required
                                             value={formData.phone}
                                             onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-orange-200 outline-none transition-all placeholder-gray-400"
+                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-[#FD6941] outline-none transition-all placeholder-gray-400"
                                             placeholder="+91..."
                                         />
                                     </div>
@@ -355,7 +355,7 @@ export default function LandingPage() {
                                             required
                                             value={formData.city}
                                             onChange={e => setFormData({ ...formData, city: e.target.value })}
-                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-orange-200 outline-none transition-all placeholder-gray-400"
+                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-[#FD6941] outline-none transition-all placeholder-gray-400"
                                             placeholder="Your City"
                                         />
                                     </div>
@@ -366,7 +366,7 @@ export default function LandingPage() {
                                             required
                                             value={formData.businessName}
                                             onChange={e => setFormData({ ...formData, businessName: e.target.value })}
-                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-orange-200 outline-none transition-all placeholder-gray-400"
+                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-[#FD6941] outline-none transition-all placeholder-gray-400"
                                             placeholder="Your Restaurant Name"
                                         />
                                     </div>
@@ -382,26 +382,26 @@ export default function LandingPage() {
                                                         type="checkbox"
                                                         checked={formData.interestedIn.includes(item)}
                                                         onChange={() => handleCheckboxChange(item)}
-                                                        className="peer w-5 h-5 border-[1.5px] border-gray-400 rounded focus:ring-0 checked:bg-orange-500 checked:border-orange-500 transition-all appearance-none"
+                                                        className="peer w-5 h-5 border-[1.5px] border-gray-400 rounded focus:ring-0 checked:bg-[#FD6941] checked:border-[#FD6941] transition-all appearance-none"
                                                     />
                                                     <svg className="absolute w-3.5 h-3.5 text-white hidden peer-checked:block pointer-events-none left-[3px] top-[3px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                                                         <polyline points="20 6 9 17 4 12"></polyline>
                                                     </svg>
                                                 </div>
-                                                <span className="text-sm font-medium text-gray-600 group-hover:text-gray-900 transition-colors">
+                                                <span className="text-sm font-normal text-gray-600 group-hover:text-gray-900 transition-colors">
                                                     {item === 'Manager Dashboard' ? 'Register as Restaurant Manager' : item}
                                                 </span>
                                             </label>
                                         ))}
                                     </div>
-                                    <p className="text-[10px] text-gray-400 italic mt-1 font-medium">* Select 'Manager Dashboard' to access restaurant controls, otherwise you'll be a customer.</p>
+                                    <p className="text-[10px] text-gray-400 italic mt-1 font-normal">* Select 'Manager Dashboard' to access restaurant controls, otherwise you'll be a customer.</p>
                                 </div>
 
                                 <div className="pt-4">
                                     <button
                                         type="submit"
                                         disabled={isLoading}
-                                        className="px-12 py-3.5 bg-[#FD6941] text-white font-bold rounded-full hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 text-lg disabled:opacity-70 flex items-center gap-2"
+                                        className="px-12 py-3.5 bg-[#FD6941] text-white font-bold rounded-full hover:bg-[#E55A35] transition-all shadow-lg  text-lg disabled:opacity-70 flex items-center gap-2"
                                     >
                                         {isLoading ? 'Creating Account...' : 'Register Now'} <ArrowRight className="w-5 h-5" />
                                     </button>

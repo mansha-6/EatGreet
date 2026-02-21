@@ -39,7 +39,7 @@ export default function SuperAdminNavbar() {
                         <Link
                             key={item.name}
                             to={item.path}
-                            className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${isActive
+                            className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-normal transition-all duration-300 ${isActive
                                 ? 'bg-black text-white shadow-md'
                                 : 'text-gray-500 hover:text-black hover:bg-gray-50'
                                 }`}
@@ -68,7 +68,7 @@ export default function SuperAdminNavbar() {
                             <img src={`https://ui-avatars.com/api/?name=${user?.name || 'Admin'}&background=2C3E50&color=fff`} alt={user?.name || 'Admin'} className="w-full h-full object-cover" />
                         </div>
                         <div className="hidden md:flex items-center gap-1">
-                            <span className="font-medium text-sm text-gray-800">{user?.name || 'Admin'}</span>
+                            <span className="font-normal text-sm text-gray-800">{user?.name || 'Admin'}</span>
                             <ChevronDown className="w-4 h-4 text-gray-400" />
                         </div>
                     </div>

@@ -20,7 +20,7 @@ const KitchenSettings = () => {
                 {/* Sound Alerts */}
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                     <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-orange-500">
+                        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-[#FD6941]">
                             <Volume2 className="w-5 h-5" />
                         </div>
                         <div>
@@ -30,7 +30,7 @@ const KitchenSettings = () => {
                     </div>
                     <div
                         onClick={() => toggle('soundAlerts')}
-                        className={`w-12 h-7 rounded-full relative cursor-pointer transition-colors duration-300 ${settings.soundAlerts ? 'bg-orange-500' : 'bg-gray-300'}`}
+                        className={`w-12 h-7 rounded-full relative cursor-pointer transition-colors duration-300 ${settings.soundAlerts ? 'bg-[#FD6941]' : 'bg-gray-300'}`}
                     >
                         <div className={`absolute top-1 left-1 bg-white w-5 h-5 rounded-full shadow-sm transition-transform duration-300 ${settings.soundAlerts ? 'translate-x-5' : 'translate-x-0'}`}></div>
                     </div>

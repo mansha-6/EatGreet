@@ -79,13 +79,24 @@ io.on('connection', (socket) => {
 });
 
 // Routes
-app.use('/api/auth', require('./src/routes/authRoutes'));
-app.use('/api/restaurant', require('./src/routes/restaurantRoutes'));
-app.use('/api/categories', require('./src/routes/categoryRoutes'));
-app.use('/api/menu', require('./src/routes/menuRoutes'));
-app.use('/api/orders', require('./src/routes/orderRoutes'));
-app.use('/api/stats', require('./src/routes/statsRoutes'));
-app.use('/api/payments', require('./src/routes/paymentRoutes'));
+const authRoutes = require('./src/routes/authRoutes');
+const restaurantRoutes = require('./src/routes/restaurantRoutes');
+const categoryRoutes = require('./src/routes/categoryRoutes');
+const menuRoutes = require('./src/routes/menuRoutes');
+const orderRoutes = require('./src/routes/orderRoutes');
+const statsRoutes = require('./src/routes/statsRoutes');
+const paymentRoutes = require('./src/routes/paymentRoutes');
+const offerRoutes = require('./src/routes/offerRoutes'); // Added offerRoutes
+const { resolveTenant } = require('./src/middleware/tenantMiddleware');
+
+app.use('/api/auth', authRoutes);
+app.use('/api/restaurant', restaurantRoutes);
+app.use('/api/categories', categoryRoutes);
+app.use('/api/menu', menuRoutes);
+app.use('/api/orders', resolveTenant, orderRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/payments', resolveTenant, paymentRoutes);
+app.use('/api/offers', resolveTenant, offerRoutes); // Added offerRoutes usage
 
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });

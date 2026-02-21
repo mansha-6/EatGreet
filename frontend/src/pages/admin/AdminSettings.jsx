@@ -262,7 +262,7 @@ const AdminSettings = () => {
             <div className="w-full lg:w-64 flex-shrink-0">
                 <div className="flex lg:flex-col overflow-x-auto lg:overflow-x-visible no-scrollbar pb-2 lg:pb-0 gap-2 lg:gap-6">
                     <div className="hidden lg:block lg:mb-4 px-2">
-                        <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider">Management</h3>
+                        <h3 className="text-xs font-normal text-gray-400 uppercase tracking-wider">Management</h3>
                     </div>
                     <div className="flex lg:flex-col gap-1 sm:gap-2 min-w-max lg:min-w-0">
                         <SidebarItem
@@ -317,7 +317,7 @@ const AdminSettings = () => {
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
                     <div>
-                        <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-medium text-black tracking-tight leading-none">
+                        <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-normal text-black tracking-tight leading-none">
                             {activeTab === 'profile' && 'Admin Profile'}
                             {activeTab === 'restaurant' && 'Restaurant Details'}
                             {activeTab === 'orders' && 'Order Preferences'}
@@ -339,7 +339,7 @@ const AdminSettings = () => {
                     {activeTab !== 'subscription' && (
                         <button
                             onClick={handleSaveProfile}
-                            className="bg-[#FD6941] hover:bg-orange-600 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-medium flex items-center justify-center gap-2 transition-all shadow-sm w-full sm:w-auto text-sm sm:text-base"
+                            className="bg-[#FD6941] hover:bg-[#FD6941] text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-normal flex items-center justify-center gap-2 transition-all shadow-sm w-full sm:w-auto text-sm sm:text-base"
                         >
                             <Save className="w-4 h-4" />
                             Save Changes
@@ -369,7 +369,7 @@ const AdminSettings = () => {
                                             )}
                                         </div>
                                         <div>
-                                            <h4 className="font-medium text-gray-800">Profile Picture</h4>
+                                            <h4 className="font-normal text-gray-800">Profile Picture</h4>
                                             <p className="text-xs text-gray-500 mb-2">Upload a clear photo of yourself</p>
                                             <input
                                                 type="file"
@@ -381,7 +381,7 @@ const AdminSettings = () => {
                                             <button
                                                 onClick={() => document.getElementById('profile-pic-upload').click()}
                                                 disabled={uploadingProfilePic}
-                                                className="text-xs font-medium text-[#FD6941] hover:underline"
+                                                className="text-xs font-normal text-[#FD6941] hover:underline"
                                             >
                                                 {uploadingProfilePic ? 'Uploading...' : 'Upload New'}
                                             </button>
@@ -390,13 +390,13 @@ const AdminSettings = () => {
                                     <InputGroup label="Full Name" name="name" value={profile.name} onChange={handleProfileChange} />
                                     <InputGroup label="Phone Number" name="phone" value={profile.phone} onChange={handleProfileChange} />
                                     <div className="md:col-span-2">
-                                        <label className="block text-xs font-medium text-gray-400 mb-2">Email (Read-Only)</label>
-                                        <div className="w-full px-4 py-3 rounded-xl bg-gray-100 border-none text-gray-500 text-sm font-medium">
+                                        <label className="block text-xs font-normal text-gray-400 mb-2">Email (Read-Only)</label>
+                                        <div className="w-full px-4 py-3 rounded-xl bg-gray-100 border-none text-gray-500 text-sm font-normal">
                                             {user.email || ""}
                                         </div>
                                     </div>
                                     <div className="md:col-span-2 border-t border-gray-100 pt-6 mt-2">
-                                        <h4 className="font-medium text-gray-800 mb-4">Change Password</h4>
+                                        <h4 className="font-normal text-gray-800 mb-4">Change Password</h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <InputGroup label="New Password" name="newPassword" value={passwords.newPassword} onChange={handlePasswordChange} type="password" placeholder="••••••••" />
                                             <InputGroup label="Confirm Password" name="confirmPassword" value={passwords.confirmPassword} onChange={handlePasswordChange} type="password" placeholder="••••••••" />
@@ -426,7 +426,7 @@ const AdminSettings = () => {
                                             )}
                                         </div>
                                         <div>
-                                            <h4 className="font-medium text-gray-800 text-lg">Restaurant Logo</h4>
+                                            <h4 className="font-normal text-gray-800 text-lg">Restaurant Logo</h4>
                                             <p className="text-sm text-gray-500 mb-3">Your logo will appear on menu and invoices</p>
                                             <input
                                                 type="file"
@@ -438,7 +438,7 @@ const AdminSettings = () => {
                                             <button
                                                 onClick={() => document.getElementById('logo-upload-resto').click()}
                                                 disabled={uploadingLogo}
-                                                className="bg-gray-100 text-black px-4 py-2 rounded-xl text-xs font-medium hover:bg-gray-200 transition-colors flex items-center gap-2"
+                                                className="bg-gray-100 text-black px-4 py-2 rounded-xl text-xs font-normal hover:bg-gray-200 transition-colors flex items-center gap-2"
                                             >
                                                 <Upload className="w-3 h-3" />
                                                 {uploadingLogo ? 'Uploading...' : 'Update Logo'}
@@ -451,13 +451,13 @@ const AdminSettings = () => {
                                     <InputGroup label="Business Email" name="businessEmail" value={restoDetails.businessEmail} onChange={handleRestoChange} placeholder="business@example.com" />
                                     <InputGroup label="GST Number" name="gstNumber" value={restoDetails.gstNumber} onChange={handleRestoChange} />
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-400 mb-2">Currency</label>
+                                        <label className="block text-xs font-normal text-gray-400 mb-2">Currency</label>
                                         <div className="relative">
                                             <select
                                                 name="currency"
                                                 value={profile.currency}
                                                 onChange={handleProfileChange}
-                                                className="w-full px-4 py-3 rounded-xl bg-gray-50 border-none text-gray-800 text-sm font-medium focus:ring-0 focus:bg-white focus:shadow-sm transition-all outline-none appearance-none cursor-pointer"
+                                                className="w-full px-4 py-3 rounded-xl bg-gray-50 border-none text-gray-800 text-sm font-normal focus:ring-0 focus:bg-white focus:shadow-sm transition-all outline-none appearance-none cursor-pointer"
                                             >
                                                 <option value="USD">USD ($)</option>
                                                 <option value="EUR">EUR (€)</option>
@@ -492,11 +492,11 @@ const AdminSettings = () => {
 
                                     {/* Mock Map */}
                                     <div>
-                                        <label className="block text-xs font-medium text-gray-400 mb-2">Map Preview</label>
+                                        <label className="block text-xs font-normal text-gray-400 mb-2">Map Preview</label>
                                         <div className="h-48 bg-gray-100 rounded-2xl relative overflow-hidden border border-gray-100 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px]">
                                             <div className="absolute top-4 left-4 bg-white px-3 py-1.5 rounded-full shadow-sm flex items-center gap-2">
                                                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                                <span className="text-[10px] font-medium text-gray-600">Location Active</span>
+                                                <span className="text-[10px] font-normal text-gray-600">Location Active</span>
                                             </div>
                                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black">
                                                 <MapPin className="w-8 h-8 fill-current drop-shadow-md" />
@@ -577,31 +577,31 @@ const AdminSettings = () => {
                     {/* Subscription Information */}
                     {activeTab === 'subscription' && (
                         <div className="space-y-6">
-                            <div className="bg-gradient-to-r from-[#FD6941] to-orange-500 rounded-[2rem] p-8 text-white shadow-lg">
+                            <div className="bg-gradient-to-r from-[#FD6941] to-[#FD6941] rounded-[2rem] p-8 text-white shadow-lg">
                                 <div className="flex justify-between items-start mb-6">
                                     <div>
-                                        <p className="text-orange-100 text-sm font-medium mb-1">Current Plan</p>
-                                        <h2 className="text-3xl font-medium">Premium Enterprise</h2>
+                                        <p className="text-[#FD6941] text-sm font-normal mb-1">Current Plan</p>
+                                        <h2 className="text-3xl font-normal">Premium Enterprise</h2>
                                     </div>
-                                    <span className="px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-xs font-medium border border-white/30">
+                                    <span className="px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-xs font-normal border border-white/30">
                                         Active
                                     </span>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                                     <div>
-                                        <p className="text-orange-100 text-xs mb-1">Price</p>
-                                        <p className="font-medium text-xl">$199<span className="text-sm font-normal text-orange-200">/mo</span></p>
+                                        <p className="text-[#FD6941] text-xs mb-1">Price</p>
+                                        <p className="font-normal text-xl">$199<span className="text-sm font-normal text-[#FD6941]">/mo</span></p>
                                     </div>
                                     <div>
-                                        <p className="text-orange-100 text-xs mb-1">Expiry Date</p>
-                                        <p className="font-medium text-xl">Dec 31, 2026</p>
+                                        <p className="text-[#FD6941] text-xs mb-1">Expiry Date</p>
+                                        <p className="font-normal text-xl">Dec 31, 2026</p>
                                     </div>
                                     <div>
-                                        <p className="text-orange-100 text-xs mb-1">Next Billing</p>
-                                        <p className="font-medium text-xl">Jan 01, 2027</p>
+                                        <p className="text-[#FD6941] text-xs mb-1">Next Billing</p>
+                                        <p className="font-normal text-xl">Jan 01, 2027</p>
                                     </div>
                                 </div>
-                                <button className="bg-white text-[#FD6941] px-6 py-3 rounded-xl font-medium hover:bg-orange-50 transition-colors shadow-sm">
+                                <button className="bg-white text-[#FD6941] px-6 py-3 rounded-xl font-normal hover:bg-[#FD6941] transition-colors shadow-sm">
                                     Renew / Upgrade Plan
                                 </button>
                             </div>
@@ -609,7 +609,7 @@ const AdminSettings = () => {
                             <SectionCard title="Plan Features" icon={CheckCircle}>
                                 <ul className="space-y-3">
                                     {['Unlimited Orders', 'Advanced Analytics', 'Priority Support', 'Custom Branding', 'Multiple Locations'].map((feature) => (
-                                        <li key={feature} className="flex items-center gap-3 text-sm font-medium text-gray-600">
+                                        <li key={feature} className="flex items-center gap-3 text-sm font-normal text-gray-600">
                                             <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center text-green-500">
                                                 <CheckCircle className="w-3 h-3" />
                                             </div>
@@ -636,13 +636,13 @@ const AdminSettings = () => {
                             <SectionCard title="Settlement Preferences" icon={Calendar}>
                                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                                     <div>
-                                        <h4 className="font-medium text-gray-800">Settlement Cycle</h4>
+                                        <h4 className="font-normal text-gray-800">Settlement Cycle</h4>
                                         <p className="text-xs text-gray-500">How often payouts are processed</p>
                                     </div>
                                     <select
                                         value={bankDetails.settlementCycle}
                                         onChange={(e) => handleNestedChange('bank', 'settlementCycle', e.target.value)}
-                                        className="px-4 py-2 bg-white rounded-lg border border-gray-200 text-sm font-medium text-gray-700 outline-none"
+                                        className="px-4 py-2 bg-white rounded-lg border border-gray-200 text-sm font-normal text-gray-700 outline-none"
                                     >
                                         <option>Daily (T+1)</option>
                                         <option>Weekly (Monday)</option>
@@ -657,7 +657,7 @@ const AdminSettings = () => {
                     {activeTab === 'staff' && (
                         <div className="space-y-6">
                             <div className="bg-white p-6 rounded-[2rem] border border-gray-100 mb-6">
-                                <h4 className="font-medium text-gray-800 mb-4 flex items-center gap-2">
+                                <h4 className="font-normal text-gray-800 mb-4 flex items-center gap-2">
                                     <Plus className="w-4 h-4 text-black" /> Add New Staff
                                 </h4>
                                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -667,7 +667,7 @@ const AdminSettings = () => {
                                         <select
                                             value={newStaff.role}
                                             onChange={(e) => setNewStaff({ ...newStaff, role: e.target.value })}
-                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border-none text-gray-800 text-sm font-medium outline-none appearance-none"
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border-none text-gray-800 text-sm font-normal outline-none appearance-none"
                                         >
                                             <option>Chef</option>
                                             <option>Captain</option>
@@ -677,7 +677,7 @@ const AdminSettings = () => {
                                     </div>
                                     <button
                                         onClick={handleAddStaff}
-                                        className="bg-[#FD6941] text-white rounded-xl font-medium py-3 hover:bg-orange-600 transition-colors"
+                                        className="bg-[#FD6941] text-white rounded-xl font-normal py-3 hover:bg-[#FD6941] transition-colors"
                                     >
                                         Add Staff
                                     </button>
@@ -686,20 +686,20 @@ const AdminSettings = () => {
 
                             <div className="space-y-4">
                                 {staff.length > 0 ? staff.map((member) => (
-                                    <div key={member._id || member.name} className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between group hover:border-orange-100 transition-colors">
+                                    <div key={member._id || member.name} className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between group hover:border-[#FD6941] transition-colors">
                                         <div className="flex items-center gap-4">
-                                            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center font-medium text-black">
+                                            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center font-normal text-black">
                                                 {member.name.charAt(0).toUpperCase()}
                                             </div>
                                             <div>
-                                                <h4 className="font-medium text-gray-800">{member.name}</h4>
+                                                <h4 className="font-normal text-gray-800">{member.name}</h4>
                                                 <p className="text-xs text-gray-500">{member.role} • {member.email || 'No email'} • {member.isActive ? 'Active' : 'Inactive'}</p>
                                             </div>
                                         </div>
                                         <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button
                                                 onClick={() => handleRemoveStaff(member._id)}
-                                                className="text-xs font-medium text-red-400 hover:text-red-500 px-3 py-1 rounded-lg hover:bg-red-50"
+                                                className="text-xs font-normal text-red-400 hover:text-red-500 px-3 py-1 rounded-lg hover:bg-red-50"
                                             >
                                                 Remove
                                             </button>
@@ -708,7 +708,7 @@ const AdminSettings = () => {
                                 )) : (
                                     <div className="text-center py-10 bg-gray-50 rounded-[2rem] border-2 border-dashed border-gray-200">
                                         <Users className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                                        <p className="text-gray-400 text-sm font-medium">No staff members added yet.</p>
+                                        <p className="text-gray-400 text-sm font-normal">No staff members added yet.</p>
                                     </div>
                                 )}
                             </div>
@@ -764,12 +764,12 @@ const SidebarItem = ({ icon: Icon, label, isActive, onClick }) => (
     <button
         onClick={onClick}
         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
-            ? 'bg-[#FD6941] text-white shadow-md shadow-orange-200'
+            ? 'bg-[#FD6941] text-white shadow-md '
             : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
             }`}
     >
         <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'}`} />
-        <span className="text-sm font-medium">{label}</span>
+        <span className="text-sm font-normal">{label}</span>
     </button>
 );
 
@@ -781,7 +781,7 @@ const SectionCard = ({ title, icon: Icon, children }) => (
                     <Icon className="w-5 h-5 sm:w-6 h-6" />
                 </div>
             )}
-            <h3 className="text-base sm:text-lg font-medium text-gray-800">{title}</h3>
+            <h3 className="text-base sm:text-lg font-normal text-gray-800">{title}</h3>
         </div>
         {children}
     </div>
@@ -789,10 +789,10 @@ const SectionCard = ({ title, icon: Icon, children }) => (
 
 const InputGroup = ({ label, value, onChange, name, type = "text", placeholder, prefix }) => (
     <div>
-        <label className="block text-xs font-medium text-gray-400 mb-2">{label}</label>
+        <label className="block text-xs font-normal text-gray-400 mb-2">{label}</label>
         <div className="relative">
             {prefix && (
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-medium text-sm">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-normal text-sm">
                     {prefix}
                 </div>
             )}
@@ -802,7 +802,7 @@ const InputGroup = ({ label, value, onChange, name, type = "text", placeholder, 
                 value={value}
                 onChange={onChange}
                 placeholder={placeholder}
-                className={`w-full ${prefix ? 'pl-8' : 'px-4'} py-3 rounded-xl bg-gray-50 border-none text-gray-800 text-sm font-medium focus:ring-0 focus:bg-white focus:shadow-sm transition-all outline-none placeholder-gray-300`}
+                className={`w-full ${prefix ? 'pl-8' : 'px-4'} py-3 rounded-xl bg-gray-50 border-none text-gray-800 text-sm font-normal focus:ring-0 focus:bg-white focus:shadow-sm transition-all outline-none placeholder-gray-300`}
             />
         </div>
     </div>
@@ -811,7 +811,7 @@ const InputGroup = ({ label, value, onChange, name, type = "text", placeholder, 
 const ToggleItem = ({ title, description, enabled, onClick }) => (
     <div className="flex items-center justify-between py-2">
         <div>
-            <h4 className="font-medium text-gray-800 text-sm">{title}</h4>
+            <h4 className="font-normal text-gray-800 text-sm">{title}</h4>
             <p className="text-xs text-gray-500">{description}</p>
         </div>
         <div

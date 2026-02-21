@@ -19,10 +19,10 @@
 //                 <Icon className="w-6 h-6 text-gray-700" />
 //             </div>
 //             <div>
-//                 <h3 className="text-4xl font-medium text-gray-800">{value}</h3>
+//                 <h3 className="text-4xl font-normal text-gray-800">{value}</h3>
 //             </div>
 //         </div>
-//         <p className="text-gray-500 font-medium ml-1">{title}</p>
+//         <p className="text-gray-500 font-normal ml-1">{title}</p>
 //     </div>
 // );
 
@@ -151,7 +151,7 @@
 
 //     const getStatusButtonColor = (status) => {
 //         switch (status) {
-//             case 'pending': return 'bg-[#FD6941] hover:bg-orange-600';
+//             case 'pending': return 'bg-[#FD6941] hover:bg-[#FD6941]';
 //             case 'preparing': return 'bg-yellow-500 hover:bg-yellow-600';
 //             case 'ready': return 'bg-green-500 hover:bg-green-600';
 //             default: return 'bg-gray-500 hover:bg-gray-600';
@@ -340,7 +340,7 @@
 //         <div className="space-y-8">
 //             {/* Dashboard Main Title */}
 //             <div className="mb-8">
-//                 <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-medium text-black tracking-tight leading-none">Orders</h1>
+//                 <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-normal text-black tracking-tight leading-none">Orders</h1>
 //                 <p className="text-gray-500">Manage your restaurant active orders</p>
 //             </div>
 
@@ -382,7 +382,7 @@
 //                 {/* Today Orders Complete Card */}
 //                 <div className={`p-6 rounded-[2rem] shadow-sm border border-gray-100 relative overflow-hidden bg-gradient-to-b from-white to-[#F9FAFB] flex flex-col justify-between h-40 lg:col-span-2`}>
 //                     <div className="flex justify-between items-start mb-2">
-//                         <p className="text-gray-800 text-lg font-medium leading-tight max-w-[50%]">Today Orders Complete</p>
+//                         <p className="text-gray-800 text-lg font-normal leading-tight max-w-[50%]">Today Orders Complete</p>
 //                         <div className="text-right">
 //                             <span className="text-4xl font-normal text-gray-900">{stats.completed}</span>
 //                             <span className="text-2xl font-light text-gray-400">/{stats.total}</span>
@@ -391,7 +391,7 @@
 
 //                     {/* Custom Process Bar */}
 //                     <div className="w-full relative mt-auto">
-//                         <div className="flex justify-between text-[10px] text-gray-400 font-medium mb-1 px-0.5">
+//                         <div className="flex justify-between text-[10px] text-gray-400 font-normal mb-1 px-0.5">
 //                             <span>0%</span>
 //                             <span className="ml-[10%]">33%</span>
 //                             <span className="ml-[15%]">60%</span>
@@ -469,11 +469,11 @@
 //                                     <div className="flex items-center gap-4">
 //                                         <button
 //                                             onClick={() => setSelectedOrder(order)}
-//                                             className="px-5 py-2 bg-[#FD6941] text-white rounded-full text-sm hover:bg-orange-600 transition-colors"
+//                                             className="px-5 py-2 bg-[#FD6941] text-white rounded-full text-sm hover:bg-[#FD6941] transition-colors"
 //                                         >
 //                                             View Details
 //                                         </button>
-//                                         <span className={`px-4 py-1.5 rounded-full text-xs uppercase font-medium ${statusTextColor} ${statusBgColor}`}>{order.status}</span>
+//                                         <span className={`px-4 py-1.5 rounded-full text-xs uppercase font-normal ${statusTextColor} ${statusBgColor}`}>{order.status}</span>
 //                                     </div>
 //                                 </div>
 //                             );
@@ -484,7 +484,7 @@
 //                         <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
 //                             <UtensilsCrossed className="w-8 h-8 text-gray-300" />
 //                         </div>
-//                         <h3 className="text-lg font-medium text-gray-800 mb-1">No Active Orders</h3>
+//                         <h3 className="text-lg font-normal text-gray-800 mb-1">No Active Orders</h3>
 //                         <p className="text-gray-400 text-sm max-w-[200px]">New orders will appear here in real-time once placed by customers.</p>
 //                     </div>
 //                 )}
@@ -499,7 +499,7 @@
 //                             <select
 //                                 value={historyFilter}
 //                                 onChange={(e) => setHistoryFilter(e.target.value)}
-//                                 className="appearance-none bg-gray-50 border border-gray-100 text-gray-700 py-2.5 pl-5 pr-12 rounded-full focus:outline-none focus:ring-2 focus:ring-[#FD6941]/20 cursor-pointer font-medium text-sm tracking-wide"
+//                                 className="appearance-none bg-gray-50 border border-gray-100 text-gray-700 py-2.5 pl-5 pr-12 rounded-full focus:outline-none focus:ring-2 focus:ring-[#FD6941]/20 cursor-pointer font-normal text-sm tracking-wide"
 //                             >
 //                                 <option value="Today">Today</option>
 //                                 <option value="Yesterday">Yesterday</option>
@@ -530,7 +530,7 @@
 //                                         >
 //                                             <FileText className="w-5 h-5" />
 //                                         </button>
-//                                         <span className="px-4 py-1.5 rounded-full text-xs uppercase font-medium text-green-600 bg-green-100">Completed</span>
+//                                         <span className="px-4 py-1.5 rounded-full text-xs uppercase font-normal text-green-600 bg-green-100">Completed</span>
 //                                     </div>
 //                                 </div>
 //                             ))}
@@ -540,7 +540,7 @@
 //                             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
 //                                 <UtensilsCrossed className="w-8 h-8 text-gray-300" />
 //                             </div>
-//                             <h3 className="text-lg font-medium text-gray-800 mb-1">No Completed Orders</h3>
+//                             <h3 className="text-lg font-normal text-gray-800 mb-1">No Completed Orders</h3>
 //                             <p className="text-gray-400 text-sm max-w-[200px]">No orders found for {historyFilter.toLowerCase()}.</p>
 //                         </div>
 //                     )}
@@ -581,7 +581,7 @@
 //                                     </button>
 
 //                                     <div className="text-center mb-6">
-//                                         <h2 className="text-xl font-medium uppercase mb-1 tracking-tight">{restaurant?.name || 'EatGreet Restaurant'}</h2>
+//                                         <h2 className="text-xl font-normal uppercase mb-1 tracking-tight">{restaurant?.name || 'EatGreet Restaurant'}</h2>
 //                                         <p className="text-[12px] leading-tight mb-0.5">{restaurant?.restaurantDetails?.address || 'Restaurant Address'}</p>
 //                                         {restaurant?.restaurantDetails?.contactNumber && (
 //                                             <p className="text-[12px] mb-0.5 whitespace-nowrap overflow-hidden text-ellipsis">Tel: {restaurant.restaurantDetails.contactNumber}</p>
@@ -592,7 +592,7 @@
 //                                     <div className="border-t border-dashed border-black my-4"></div>
 //                                     <div className="flex justify-between text-[13px] mb-1">
 //                                         <span>Name:</span>
-//                                         <span className="font-medium">{selectedOrder.customerInfo?.name || 'Guest'}</span>
+//                                         <span className="font-normal">{selectedOrder.customerInfo?.name || 'Guest'}</span>
 //                                     </div>
 //                                     <div className="border-t border-dashed border-black my-4"></div>
 
@@ -609,7 +609,7 @@
 //                                     </div>
 
 //                                     <div className="border-t border-dashed border-black my-4"></div>
-//                                     <div className="flex justify-between font-medium text-[13px] mb-2 uppercase">
+//                                     <div className="flex justify-between font-normal text-[13px] mb-2 uppercase">
 //                                         <span style={{ flex: 1 }}>No.Item</span>
 //                                         <span style={{ width: '30px', textAlign: 'center' }}>Qty</span>
 //                                         <span style={{ width: '60px', textAlign: 'right' }}>Price</span>
@@ -629,7 +629,7 @@
 //                                     </div>
 
 //                                     <div className="border-t border-dashed border-black my-4"></div>
-//                                     <div className="flex justify-between font-medium text-[13px] mb-1">
+//                                     <div className="flex justify-between font-normal text-[13px] mb-1">
 //                                         <span>Total Qty: {selectedOrder.items?.reduce((acc, it) => acc + (it.quantity || 1), 0)}</span>
 //                                         <span>Sub Total: {currencySymbol}{(selectedOrder.items?.reduce((acc, it) => acc + (it.price * (it.quantity || 1)), 0) || 0).toFixed(2)}</span>
 //                                     </div>
@@ -642,13 +642,13 @@
 //                                         <span>{currencySymbol}{((selectedOrder.items?.reduce((acc, it) => acc + (it.price * (it.quantity || 1)), 0) || 0) * 0.025).toFixed(2)}</span>
 //                                     </div>
 //                                     <div className="border-t border-dashed border-black my-4"></div>
-//                                     <div className="flex justify-between font-medium text-lg mb-4">
+//                                     <div className="flex justify-between font-normal text-lg mb-4">
 //                                         <span>Grand Total</span>
 //                                         <span>{currencySymbol}{(selectedOrder.totalAmount || (selectedOrder.items?.reduce((acc, it) => acc + (it.price * (it.quantity || 1)), 0) * 1.05)).toFixed(2)}</span>
 //                                     </div>
 //                                     <div className="border-t border-dashed border-black my-4"></div>
 
-//                                     <div className="text-center font-medium text-[16px] uppercase tracking-widest mt-6">
+//                                     <div className="text-center font-normal text-[16px] uppercase tracking-widest mt-6">
 //                                         Thank You Visit Again
 //                                     </div>
 //                                 </div>
@@ -657,10 +657,10 @@
 //                                 <>
 //                                     <div className="flex items-start justify-between mb-8">
 //                                         <div>
-//                                             <h2 className="text-3xl text-gray-900 mb-2 font-mediumtracking-tight tracking-tight">Order #{selectedOrder._id.slice(-4)}</h2>
-//                                             <p className="text-gray-500 font-medium">Order details and active items</p>
+//                                             <h2 className="text-3xl text-gray-900 mb-2 font-normaltracking-tight tracking-tight">Order #{selectedOrder._id.slice(-4)}</h2>
+//                                             <p className="text-gray-500 font-normal">Order details and active items</p>
 //                                         </div>
-//                                         <span className={`px-5 py-2 rounded-full text-xs uppercase font-medium tracking-wider ${getStatusColor(selectedOrder.status)}`}>
+//                                         <span className={`px-5 py-2 rounded-full text-xs uppercase font-normal tracking-wider ${getStatusColor(selectedOrder.status)}`}>
 //                                             {selectedOrder.status}
 //                                         </span>
 //                                     </div>
@@ -671,8 +671,8 @@
 //                                                 <img src={diningIcon} alt="Table" className="w-6 h-6 opacity-60" />
 //                                             </div>
 //                                             <div>
-//                                                 <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider">Table</p>
-//                                                 <p className="text-lg text-gray-900 font-medium">{selectedOrder.tableNumber || 'Self'}</p>
+//                                                 <p className="text-[10px] text-gray-400 uppercase font-normal tracking-wider">Table</p>
+//                                                 <p className="text-lg text-gray-900 font-normal">{selectedOrder.tableNumber || 'Self'}</p>
 //                                             </div>
 //                                         </div>
 //                                         <div className="flex items-center gap-3">
@@ -680,8 +680,8 @@
 //                                                 <img src={userIcon} alt="Customer" className="w-6 h-6 opacity-60" />
 //                                             </div>
 //                                             <div>
-//                                                 <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider">Guest</p>
-//                                                 <p className="text-lg text-gray-900 font-medium">{(selectedOrder.customerInfo?.name || 'User').split(' ')[0]}</p>
+//                                                 <p className="text-[10px] text-gray-400 uppercase font-normal tracking-wider">Guest</p>
+//                                                 <p className="text-lg text-gray-900 font-normal">{(selectedOrder.customerInfo?.name || 'User').split(' ')[0]}</p>
 //                                             </div>
 //                                         </div>
 //                                         <div className="flex items-center gap-3">
@@ -689,8 +689,8 @@
 //                                                 <img src={clockIcon} alt="Time" className="w-6 h-6 opacity-60" />
 //                                             </div>
 //                                             <div>
-//                                                 <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider">Time</p>
-//                                                 <p className="text-lg text-gray-900 font-medium">{getOrderTime(selectedOrder.createdAt)}</p>
+//                                                 <p className="text-[10px] text-gray-400 uppercase font-normal tracking-wider">Time</p>
+//                                                 <p className="text-lg text-gray-900 font-normal">{getOrderTime(selectedOrder.createdAt)}</p>
 //                                             </div>
 //                                         </div>
 //                                         <div className="flex items-center gap-3">
@@ -698,8 +698,8 @@
 //                                                 <img src={groupIcon} alt="Items" className="w-6 h-6 opacity-60" />
 //                                             </div>
 //                                             <div>
-//                                                 <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider">Items</p>
-//                                                 <p className="text-lg text-gray-900 font-medium">{selectedOrder.items?.length || 0}</p>
+//                                                 <p className="text-[10px] text-gray-400 uppercase font-normal tracking-wider">Items</p>
+//                                                 <p className="text-lg text-gray-900 font-normal">{selectedOrder.items?.length || 0}</p>
 //                                             </div>
 //                                         </div>
 //                                     </div>
@@ -719,28 +719,28 @@
 //                                                 />
 //                                             </svg>
 //                                             <div className="text-center z-10">
-//                                                 <div className="text-4xl font-medium text-gray-900 leading-none">{formatTime(timers[selectedOrder._id] || 0)}</div>
-//                                                 <p className="text-[10px] text-gray-400 mt-1 uppercase font-medium tracking-widest">Remaining</p>
+//                                                 <div className="text-4xl font-normal text-gray-900 leading-none">{formatTime(timers[selectedOrder._id] || 0)}</div>
+//                                                 <p className="text-[10px] text-gray-400 mt-1 uppercase font-normal tracking-widest">Remaining</p>
 //                                             </div>
 //                                         </div>
 //                                     </div>
 
 //                                     <div className="mb-8 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
-//                                         <h3 className="text-[10px] text-gray-400 uppercase font-medium tracking-widest mb-4">Order Items</h3>
+//                                         <h3 className="text-[10px] text-gray-400 uppercase font-normal tracking-widest mb-4">Order Items</h3>
 //                                         <div className="space-y-4">
 //                                             {(selectedOrder.items || []).map((item, idx) => (
 //                                                 <div key={idx} className="flex justify-between items-center p-4 bg-gray-50 rounded-2xl border border-transparent hover:border-gray-200 transition-all">
 //                                                     <div className="flex items-center gap-4">
-//                                                         <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center font-medium text-gray-400 border border-gray-100 shadow-sm">
+//                                                         <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center font-normal text-gray-400 border border-gray-100 shadow-sm">
 //                                                             {item.quantity}x
 //                                                         </div>
 //                                                         <div>
-//                                                             <p className="text-gray-900 font-medium">{item.name}</p>
-//                                                             <p className="text-xs text-gray-400 font-medium">{currencySymbol}{item.price.toFixed(2)} / unit</p>
+//                                                             <p className="text-gray-900 font-normal">{item.name}</p>
+//                                                             <p className="text-xs text-gray-400 font-normal">{currencySymbol}{item.price.toFixed(2)} / unit</p>
 //                                                         </div>
 //                                                     </div>
 //                                                     <div className="text-right">
-//                                                         <p className="text-gray-900 font-medium">{currencySymbol}{(item.price * item.quantity).toFixed(2)}</p>
+//                                                         <p className="text-gray-900 font-normal">{currencySymbol}{(item.price * item.quantity).toFixed(2)}</p>
 //                                                     </div>
 //                                                 </div>
 //                                             ))}
@@ -749,8 +749,8 @@
 
 //                                     <div className="flex items-center justify-between p-6 bg-gray-900 rounded-[2rem] text-white mb-8 shadow-xl">
 //                                         <div>
-//                                             <p className="text-[10px] text-gray-400 font-medium uppercase tracking-widest mb-1.5 opacity-60">Grand Total Amount</p>
-//                                             <p className="text-4xl font-medium leading-none">{currencySymbol}{(selectedOrder.totalAmount || 0).toFixed(2)}</p>
+//                                             <p className="text-[10px] text-gray-400 font-normal uppercase tracking-widest mb-1.5 opacity-60">Grand Total Amount</p>
+//                                             <p className="text-4xl font-normal leading-none">{currencySymbol}{(selectedOrder.totalAmount || 0).toFixed(2)}</p>
 //                                         </div>
 //                                         <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-md">
 //                                             <Hash className="w-6 h-6 text-white opacity-40" />
@@ -763,7 +763,7 @@
 //                                                 updateOrderStatus(selectedOrder._id, getNextStatus(selectedOrder.status));
 //                                                 setSelectedOrder(null);
 //                                             }}
-//                                             className={`flex-1 ${getStatusButtonColor(selectedOrder.status)} text-white py-5 rounded-[1.8rem] transition-all text-lg font-medium shadow-lg hover:shadow-xl active:scale-[0.98] outline-none`}
+//                                             className={`flex-1 ${getStatusButtonColor(selectedOrder.status)} text-white py-5 rounded-[1.8rem] transition-all text-lg font-normal shadow-lg hover:shadow-xl active:scale-[0.98] outline-none`}
 //                                         >
 //                                             {getNextStatusLabel(selectedOrder.status)}
 //                                         </button>
@@ -805,10 +805,10 @@ const StatCard = ({ icon: Icon, value, title }) => (
                 <Icon className="w-6 h-6 text-gray-700" />
             </div>
             <div>
-                <h3 className="text-4xl font-medium text-gray-800">{value}</h3>
+                <h3 className="text-4xl font-normal text-gray-800">{value}</h3>
             </div>
         </div>
-        <p className="text-gray-500 font-medium ml-1">{title}</p>
+        <p className="text-gray-500 font-normal ml-1">{title}</p>
     </div>
 );
 
@@ -1110,7 +1110,7 @@ const AdminOrders = () => {
 
     const getStatusButtonColor = (status) => {
         switch (status) {
-            case 'pending': return 'bg-[#FD6941] hover:bg-orange-600';
+            case 'pending': return 'bg-[#FD6941] hover:bg-[#FD6941]/90';
             case 'preparing': return 'bg-yellow-500 hover:bg-yellow-600';
             case 'ready': return 'bg-green-500 hover:bg-green-600';
             default: return 'bg-gray-500 hover:bg-gray-600';
@@ -1199,7 +1199,7 @@ const AdminOrders = () => {
                 <body>
                     <div class="header">
                         <div class="restaurant-name">${restaurant?.name || 'EatGreet Restaurant'}</div>
-                        <div class="restaurant-info font-medium" style="margin-top: 5px;">${restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</div>
+                        <div class="restaurant-info font-normal" style="margin-top: 5px;">${restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</div>
                         ${(restaurant?.businessEmail || restaurant?.restaurantDetails?.businessEmail) ? `<div class="restaurant-info">Email: ${restaurant.businessEmail || restaurant.restaurantDetails.businessEmail}</div>` : ''}
                         ${(restaurant?.gstNumber || restaurant?.restaurantDetails?.gstNumber) ? `<div class="restaurant-info">GST: ${restaurant.gstNumber || restaurant.restaurantDetails.gstNumber}</div>` : ''}
                         ${(restaurant?.contactNumber || restaurant?.restaurantDetails?.contactNumber) ? `<div class="restaurant-info" style="margin-top: 2px;">Tel: ${restaurant.contactNumber || restaurant.restaurantDetails.contactNumber}</div>` : ''}
@@ -1301,7 +1301,7 @@ const AdminOrders = () => {
     return (
         <div className="space-y-4 sm:space-y-8 px-1 sm:px-0">
             <div className="mb-4 sm:mb-8">
-                <h1 className="text-[20px] sm:text-[24px] lg:text-[36px] font-medium text-black tracking-tight leading-none">Orders</h1>
+                <h1 className="text-[20px] sm:text-[24px] lg:text-[36px] font-normal text-black tracking-tight leading-none">Orders</h1>
                 <p className="text-gray-500 text-sm sm:text-base">Manage your restaurant active orders</p>
             </div>
 
@@ -1338,7 +1338,7 @@ const AdminOrders = () => {
 
                 <div className={`p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 relative overflow-hidden bg-gradient-to-b from-white to-[#F9FAFB] flex flex-col justify-between h-32 sm:h-40 col-span-2 lg:col-span-2`}>
                     <div className="flex justify-between items-start mb-1 sm:mb-2">
-                        <p className="text-gray-800 text-sm sm:text-lg font-medium leading-tight max-w-[50%]">Total Complete</p>
+                        <p className="text-gray-800 text-sm sm:text-lg font-normal leading-tight max-w-[50%]">Total Complete</p>
                         <div className="text-right">
                             <span className="text-2xl sm:text-4xl font-normal text-gray-900">{stats.completed}</span>
                             <span className="text-lg sm:text-2xl font-light text-gray-400">/{stats.total}</span>
@@ -1346,7 +1346,7 @@ const AdminOrders = () => {
                     </div>
 
                     <div className="w-full relative mt-auto">
-                        <div className="flex justify-between text-[10px] text-gray-400 font-medium mb-1 px-0.5">
+                        <div className="flex justify-between text-[10px] text-gray-400 font-normal mb-1 px-0.5">
                             <span>0%</span>
                             <span className="ml-[10%]">33%</span>
                             <span className="ml-[15%]">60%</span>
@@ -1374,7 +1374,7 @@ const AdminOrders = () => {
 
             <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-8 shadow-sm border border-gray-100">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
-                    <h2 className="text-xl sm:text-2xl font-medium text-gray-800">Active Orders</h2>
+                    <h2 className="text-xl sm:text-2xl font-normal text-gray-800">Active Orders</h2>
                     <div className="flex gap-2 sm:gap-4 w-full sm:w-auto">
                         <div className="relative flex-1 sm:w-80">
                             <input
@@ -1403,7 +1403,7 @@ const AdminOrders = () => {
                             const statusBgColor = order.status === 'pending' ? 'bg-red-100' : order.status === 'preparing' ? 'bg-yellow-100' : 'bg-green-100';
 
                             return (
-                                <div key={order._id} className="flex items-center justify-between p-2.5 sm:p-5 bg-white rounded-[1.5rem] sm:rounded-[2.5rem] border border-gray-100 shadow-sm hover:border-orange-100 transition-all gap-1.5 sm:gap-4 group">
+                                <div key={order._id} className="flex items-center justify-between p-2.5 sm:p-5 bg-white rounded-[1.5rem] sm:rounded-[2.5rem] border border-gray-100 shadow-sm hover:border-[#FD6941] transition-all gap-1.5 sm:gap-4 group">
                                     {/* Left: Info */}
                                     <div className="flex items-center gap-2 sm:gap-4 flex-[2] sm:flex-1 min-w-0">
                                         <div className={`w-8 h-8 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 border ${order.status === 'pending' ? 'bg-red-50' : order.status === 'preparing' ? 'bg-yellow-50' : 'bg-green-50'} border-transparent group-hover:scale-110 transition-transform`}>
@@ -1411,11 +1411,11 @@ const AdminOrders = () => {
                                         </div>
                                         <div className="min-w-0 flex flex-col gap-0.5 sm:gap-1">
                                             <div>
-                                                <h4 className="text-gray-900 text-[13px] sm:text-lg font-medium font-urbanist truncate">#{order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id.slice(-4)}</h4>
-                                                <p className="text-[9px] sm:text-sm text-gray-400 font-medium uppercase tracking-tight">Table {order.tableNumber || 'N/A'}</p>
+                                                <h4 className="text-gray-900 text-[13px] sm:text-lg font-normal font-urbanist truncate">#{order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id.slice(-4)}</h4>
+                                                <p className="text-[9px] sm:text-sm text-gray-400 font-normal uppercase tracking-tight">Table {order.tableNumber || 'N/A'}</p>
                                             </div>
                                             {/* Item List Display - Desktop only */}
-                                            <div className="hidden sm:flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-gray-600 font-medium">
+                                            <div className="hidden sm:flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-gray-600 font-normal">
                                                 {order.items && order.items.length > 0 ? (
                                                     order.items.map((item, idx) => (
                                                         <span key={idx} className="bg-gray-50 px-1.5 py-0.5 rounded-md border border-gray-100">
@@ -1428,7 +1428,7 @@ const AdminOrders = () => {
                                             </div>
                                             {/* Item Count - Mobile only */}
                                             <div className="sm:hidden">
-                                                <p className="text-[10px] text-gray-400 font-medium">{order.items?.length || 0} items</p>
+                                                <p className="text-[10px] text-gray-400 font-normal">{order.items?.length || 0} items</p>
                                             </div>
                                         </div>
                                     </div>
@@ -1454,14 +1454,14 @@ const AdminOrders = () => {
                                                 <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${order.status === 'pending' ? 'bg-red-400' : order.status === 'preparing' ? 'bg-yellow-400' : 'bg-green-400'}`}></span>
                                                 <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${order.status === 'pending' ? 'bg-red-500' : order.status === 'preparing' ? 'bg-yellow-500' : 'bg-green-500'}`}></span>
                                             </div>
-                                            <span className="text-[10px] font-medium uppercase tracking-widest">{order.status}</span>
+                                            <span className="text-[10px] font-normal uppercase tracking-widest">{order.status}</span>
                                         </div>
 
                                         <div className="flex items-center gap-2">
                                             <p className="text-[11px] sm:text-base font-bold text-gray-900 sm:hidden">{currencySymbol}{(order.totalAmount || 0).toFixed(2)}</p>
                                             <button
                                                 onClick={() => setSelectedOrder(order)}
-                                                className="px-3 py-1.5 sm:px-8 sm:py-3 bg-gray-900 text-white rounded-lg sm:rounded-full text-[10px] sm:text-sm font-medium hover:bg-black transition-all active:scale-95 shadow-lg shadow-gray-200"
+                                                className="px-3 py-1.5 sm:px-8 sm:py-3 bg-gray-900 text-white rounded-lg sm:rounded-full text-[10px] sm:text-sm font-normal hover:bg-black transition-all active:scale-95 shadow-lg shadow-gray-200"
                                             >
                                                 View
                                             </button>
@@ -1476,7 +1476,7 @@ const AdminOrders = () => {
                         <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
                             <UtensilsCrossed className="w-8 h-8 text-gray-300" />
                         </div>
-                        <h3 className="text-lg font-medium text-gray-800 mb-1">No Active Orders</h3>
+                        <h3 className="text-lg font-normal text-gray-800 mb-1">No Active Orders</h3>
                         <p className="text-gray-400 text-sm max-w-[200px]">New orders will appear here in real-time once placed by customers.</p>
                     </div>
                 )}
@@ -1485,7 +1485,7 @@ const AdminOrders = () => {
             {/* Order History Section */}
             <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-8 shadow-sm border border-gray-100">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-8 gap-4">
-                    <h2 className="text-xl sm:text-2xl font-medium text-gray-800">Order History</h2>
+                    <h2 className="text-xl sm:text-2xl font-normal text-gray-800">Order History</h2>
                     <div className="flex gap-3 w-full sm:w-auto">
                         <div className="relative flex-1 sm:flex-none">
                             <input
@@ -1500,7 +1500,7 @@ const AdminOrders = () => {
                         <div className="relative">
                             <button
                                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                                className="flex items-center gap-1.5 px-3 sm:px-6 py-2.5 sm:py-3 rounded-full border border-transparent bg-gray-50 text-[12px] sm:text-sm font-medium text-gray-500 hover:bg-gray-100 transition-all active:scale-95"
+                                className="flex items-center gap-1.5 px-3 sm:px-6 py-2.5 sm:py-3 rounded-full border border-transparent bg-gray-50 text-[12px] sm:text-sm font-normal text-gray-500 hover:bg-gray-100 transition-all active:scale-95"
                             >
                                 {historyFilter.charAt(0).toUpperCase() + historyFilter.slice(1)} <ChevronDown className={`w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
                             </button>
@@ -1518,7 +1518,7 @@ const AdminOrders = () => {
                                                 setHistoryFilter(option.value);
                                                 setIsDropdownOpen(false);
                                             }}
-                                            className={`w-full text-left px-4 py-2.5 text-[13px] font-medium transition-colors ${historyFilter === option.value ? 'text-[#FD6941] bg-orange-50/50' : 'text-gray-500 hover:bg-gray-50'}`}
+                                            className={`w-full text-left px-4 py-2.5 text-[13px] font-normal transition-colors ${historyFilter === option.value ? 'text-[#FD6941] bg-[#FD6941]' : 'text-gray-500 hover:bg-gray-50'}`}
                                         >
                                             {option.label}
                                         </button>
@@ -1532,7 +1532,7 @@ const AdminOrders = () => {
                 {filteredHistoryOrders.length > 0 ? (
                     <div className="space-y-4">
                         {filteredHistoryOrders.map(order => (
-                            <div key={order._id} className="flex items-center justify-between p-2.5 sm:p-5 bg-white rounded-[1.5rem] sm:rounded-[2.5rem] border border-gray-100 shadow-sm hover:border-orange-100 transition-all gap-1.5 sm:gap-4 group">
+                            <div key={order._id} className="flex items-center justify-between p-2.5 sm:p-5 bg-white rounded-[1.5rem] sm:rounded-[2.5rem] border border-gray-100 shadow-sm hover:border-[#FD6941] transition-all gap-1.5 sm:gap-4 group">
                                 {/* Left: Info */}
                                 <div className="flex items-center gap-2 sm:gap-4 flex-[2] sm:flex-1 min-w-0">
                                     <div className="w-8 h-8 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 border bg-green-50 border-transparent group-hover:scale-110 transition-transform">
@@ -1540,15 +1540,15 @@ const AdminOrders = () => {
                                     </div>
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <h4 className="text-gray-900 text-[13px] sm:text-lg font-medium font-urbanist truncate">#{order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id.slice(-4)}</h4>
-                                            <span className="hidden sm:inline text-[9px] sm:text-xs text-gray-400 font-medium bg-gray-50 px-1.5 py-0.5 rounded-full border border-gray-100">
+                                            <h4 className="text-gray-900 text-[13px] sm:text-lg font-normal font-urbanist truncate">#{order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id.slice(-4)}</h4>
+                                            <span className="hidden sm:inline text-[9px] sm:text-xs text-gray-400 font-normal bg-gray-50 px-1.5 py-0.5 rounded-full border border-gray-100">
                                                 {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </span>
                                         </div>
-                                        <p className="text-[9px] sm:text-sm text-gray-400 font-medium uppercase tracking-tight">Table {order.tableNumber || 'N/A'}</p>
+                                        <p className="text-[9px] sm:text-sm text-gray-400 font-normal uppercase tracking-tight">Table {order.tableNumber || 'N/A'}</p>
                                     </div>
                                     {/* Item List Display - Desktop only */}
-                                    <div className="hidden sm:flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-gray-600 font-medium">
+                                    <div className="hidden sm:flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-gray-600 font-normal">
                                         {order.items && order.items.length > 0 ? (
                                             order.items.map((item, idx) => (
                                                 <span key={idx} className="bg-gray-50 px-1.5 py-0.5 rounded-md border border-gray-100">
@@ -1561,7 +1561,7 @@ const AdminOrders = () => {
                                     </div>
                                     {/* Item Count - Mobile only */}
                                     <div className="sm:hidden">
-                                        <p className="text-[10px] text-gray-400 font-medium">{order.items?.length || 0} items</p>
+                                        <p className="text-[10px] text-gray-400 font-normal">{order.items?.length || 0} items</p>
                                     </div>
                                 </div>
 
@@ -1587,7 +1587,7 @@ const AdminOrders = () => {
                                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-400"></span>
                                             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500"></span>
                                         </div>
-                                        <span className="text-[10px] font-medium uppercase tracking-widest">Completed</span>
+                                        <span className="text-[10px] font-normal uppercase tracking-widest">Completed</span>
                                     </div>
 
                                     <div className="flex items-center gap-2">
@@ -1609,7 +1609,7 @@ const AdminOrders = () => {
                         <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
                             <UtensilsCrossed className="w-8 h-8 text-gray-300" />
                         </div>
-                        <h3 className="text-lg font-medium text-gray-800 mb-1">No Completed Orders</h3>
+                        <h3 className="text-lg font-normal text-gray-800 mb-1">No Completed Orders</h3>
                         <p className="text-gray-400 text-sm max-w-[200px]">Completed orders will appear here once marked complete.</p>
                     </div>
                 )}
@@ -1643,13 +1643,13 @@ const AdminOrders = () => {
                                             </button>
 
                                             <div className="text-center mb-6">
-                                                <h2 className="text-xl font-medium uppercase mb-2 tracking-tight">{restaurant?.name || 'EatGreet Restaurant'}</h2>
-                                                <p className="text-[12px] leading-tight mb-1 font-medium italic">{restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</p>
+                                                <h2 className="text-xl font-normal uppercase mb-2 tracking-tight">{restaurant?.name || 'EatGreet Restaurant'}</h2>
+                                                <p className="text-[12px] leading-tight mb-1 font-normal italic">{restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</p>
                                                 {(restaurant?.businessEmail || restaurant?.restaurantDetails?.businessEmail) && (
                                                     <p className="text-[11px] mb-0.5 opacity-80">Email: {restaurant.businessEmail || restaurant.restaurantDetails.businessEmail}</p>
                                                 )}
                                                 {(restaurant?.gstNumber || restaurant?.restaurantDetails?.gstNumber) && (
-                                                    <p className="text-[11px] font-medium">GST: {restaurant.gstNumber || restaurant.restaurantDetails.gstNumber}</p>
+                                                    <p className="text-[11px] font-normal">GST: {restaurant.gstNumber || restaurant.restaurantDetails.gstNumber}</p>
                                                 )}
                                                 {(restaurant?.contactNumber || restaurant?.restaurantDetails?.contactNumber) && (
                                                     <p className="text-[11px] text-gray-500 mt-1">Tel: {restaurant.contactNumber || restaurant.restaurantDetails.contactNumber}</p>
@@ -1659,12 +1659,12 @@ const AdminOrders = () => {
                                             <div className="border-t border-dashed border-black my-4"></div>
                                             <div className="flex justify-between text-[13px] mb-1">
                                                 <span>Name:</span>
-                                                <span className="font-medium">{selectedOrder.customerInfo?.name || 'Guest'}</span>
+                                                <span className="font-normal">{selectedOrder.customerInfo?.name || 'Guest'}</span>
                                             </div>
                                             {selectedOrder.customerInfo?.phone && (
                                                 <div className="flex justify-between text-[13px] mb-1">
                                                     <span>Tel:</span>
-                                                    <span className="font-medium">{selectedOrder.customerInfo.phone}</span>
+                                                    <span className="font-normal">{selectedOrder.customerInfo.phone}</span>
                                                 </div>
                                             )}
                                             <div className="border-t border-dashed border-black my-4"></div>
@@ -1682,7 +1682,7 @@ const AdminOrders = () => {
                                             </div>
 
                                             <div className="border-t border-dashed border-black my-4"></div>
-                                            <div className="flex justify-between font-medium text-[13px] mb-2 uppercase">
+                                            <div className="flex justify-between font-normal text-[13px] mb-2 uppercase">
                                                 <span style={{ flex: 1 }}>No.Item</span>
                                                 <span style={{ width: '30px', textAlign: 'center' }}>Qty</span>
                                                 <span style={{ width: '60px', textAlign: 'right' }}>Price</span>
@@ -1702,7 +1702,7 @@ const AdminOrders = () => {
                                             </div>
 
                                             <div className="border-t border-dashed border-black my-4"></div>
-                                            <div className="flex justify-between font-medium text-[13px] mb-1">
+                                            <div className="flex justify-between font-normal text-[13px] mb-1">
                                                 <span>Total Qty: {selectedOrder.items?.reduce((acc, it) => acc + (it.quantity || 1), 0)}</span>
                                                 <span>Sub Total: {currencySymbol}{orderStats?.subtotal.toFixed(2)}</span>
                                             </div>
@@ -1714,7 +1714,7 @@ const AdminOrders = () => {
                                                 <span>SGST@2.5%</span>
                                                 <span>{currencySymbol}{orderStats?.sgst.toFixed(2)}</span>
                                             </div>
-                                            <div className="flex justify-between font-medium text-[13px] mb-1">
+                                            <div className="flex justify-between font-normal text-[13px] mb-1">
                                                 <span>Total</span>
                                                 <span>{currencySymbol}{orderStats?.totalRaw.toFixed(2)}</span>
                                             </div>
@@ -1723,19 +1723,19 @@ const AdminOrders = () => {
                                                 <span>{currencySymbol}{orderStats?.roundOff.toFixed(2)}</span>
                                             </div>
                                             <div className="border-t border-dashed border-black my-4"></div>
-                                            <div className="flex justify-between font-medium text-lg mb-4">
+                                            <div className="flex justify-between font-normal text-lg mb-4">
                                                 <span>Grand Total</span>
                                                 <span>{currencySymbol}{orderStats?.grandTotal.toFixed(2)}</span>
                                             </div>
                                             <div className="border-t border-dashed border-black my-4"></div>
-                                            <div className="text-center font-medium text-[16px] uppercase tracking-widest mt-6">Thank You Visit Again</div>
+                                            <div className="text-center font-normal text-[16px] uppercase tracking-widest mt-6">Thank You Visit Again</div>
                                         </div>
                                     </div>
                                 ) : (
                                     <div className="flex flex-col h-full overflow-hidden p-4 sm:p-0">
                                         <div className="flex-1 overflow-y-auto no-scrollbar sm:pr-2 mb-4">
                                             <div className="mb-4 sm:mb-8 mt-2 sm:mt-0">
-                                                <h2 className="text-2xl sm:text-4xl text-gray-900 mb-1 font-medium tracking-tighter font-urbanist">Order #{selectedOrder.dailySequence ? String(selectedOrder.dailySequence).padStart(3, '0') : selectedOrder._id.slice(-4)}</h2>
+                                                <h2 className="text-2xl sm:text-4xl text-gray-900 mb-1 font-normal tracking-tighter font-urbanist">Order #{selectedOrder.dailySequence ? String(selectedOrder.dailySequence).padStart(3, '0') : selectedOrder._id.slice(-4)}</h2>
                                                 <p className="text-gray-400 text-[8px] sm:text-xs font-semibold uppercase tracking-[0.3em]">Live Order View</p>
                                             </div>
 
@@ -1745,8 +1745,8 @@ const AdminOrders = () => {
                                                         <img src={diningIcon} alt="Table" className="w-5 h-5 sm:w-6 sm:h-6 opacity-60" />
                                                     </div>
                                                     <div>
-                                                        <p className="text-[8px] sm:text-[10px] text-gray-400 uppercase font-medium tracking-wider">Table</p>
-                                                        <p className="text-base sm:text-lg text-gray-900 font-medium">{selectedOrder.tableNumber || 'Self'}</p>
+                                                        <p className="text-[8px] sm:text-[10px] text-gray-400 uppercase font-normal tracking-wider">Table</p>
+                                                        <p className="text-base sm:text-lg text-gray-900 font-normal">{selectedOrder.tableNumber || 'Self'}</p>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2 sm:gap-3">
@@ -1754,8 +1754,8 @@ const AdminOrders = () => {
                                                         <img src={userIcon} alt="Customer" className="w-5 h-5 sm:w-6 sm:h-6 opacity-60" />
                                                     </div>
                                                     <div>
-                                                        <p className="text-[8px] sm:text-[10px] text-gray-400 uppercase font-medium tracking-wider">Customer</p>
-                                                        <p className="text-[13px] sm:text-lg text-gray-900 font-medium truncate max-w-[80px] sm:max-w-[150px]" title={selectedOrder.customerInfo?.name}>{selectedOrder.customerInfo?.name || 'Guest'}</p>
+                                                        <p className="text-[8px] sm:text-[10px] text-gray-400 uppercase font-normal tracking-wider">Customer</p>
+                                                        <p className="text-[13px] sm:text-lg text-gray-900 font-normal truncate max-w-[80px] sm:max-w-[150px]" title={selectedOrder.customerInfo?.name}>{selectedOrder.customerInfo?.name || 'Guest'}</p>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2 sm:gap-3">
@@ -1763,8 +1763,8 @@ const AdminOrders = () => {
                                                         <img src={clockIcon} alt="Time" className="w-5 h-5 sm:w-6 sm:h-6 opacity-60" />
                                                     </div>
                                                     <div>
-                                                        <p className="text-[8px] sm:text-[10px] text-gray-400 uppercase font-medium tracking-wider">Time</p>
-                                                        <p className="text-base sm:text-lg text-gray-900 font-medium">{getOrderTime(selectedOrder.createdAt)}</p>
+                                                        <p className="text-[8px] sm:text-[10px] text-gray-400 uppercase font-normal tracking-wider">Time</p>
+                                                        <p className="text-base sm:text-lg text-gray-900 font-normal">{getOrderTime(selectedOrder.createdAt)}</p>
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2 sm:gap-3">
@@ -1772,8 +1772,8 @@ const AdminOrders = () => {
                                                         <img src={groupIcon} alt="Items" className="w-5 h-5 sm:w-6 sm:h-6 opacity-60" />
                                                     </div>
                                                     <div>
-                                                        <p className="text-[8px] sm:text-[10px] text-gray-400 uppercase font-medium tracking-wider">Items</p>
-                                                        <p className="text-base sm:text-lg text-gray-900 font-medium">{selectedOrder.items?.length || 0}</p>
+                                                        <p className="text-[8px] sm:text-[10px] text-gray-400 uppercase font-normal tracking-wider">Items</p>
+                                                        <p className="text-base sm:text-lg text-gray-900 font-normal">{selectedOrder.items?.length || 0}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1792,15 +1792,15 @@ const AdminOrders = () => {
                                                         />
                                                     </svg>
                                                     <div className="text-center z-10">
-                                                        <div className="text-2xl sm:text-4xl font-medium text-gray-900 leading-none">{formatTime(timers[selectedOrder._id] || 0)}</div>
-                                                        <p className="text-[8px] sm:text-[10px] text-gray-400 mt-1 uppercase font-medium tracking-widest">Remaining</p>
+                                                        <div className="text-2xl sm:text-4xl font-normal text-gray-900 leading-none">{formatTime(timers[selectedOrder._id] || 0)}</div>
+                                                        <p className="text-[8px] sm:text-[10px] text-gray-400 mt-1 uppercase font-normal tracking-widest">Remaining</p>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             <div className="space-y-4">
                                                 <div className="flex justify-between items-center mb-4">
-                                                    <h3 className="text-[10px] text-gray-400 uppercase font-medium tracking-widest px-1">Order Items</h3>
+                                                    <h3 className="text-[10px] text-gray-400 uppercase font-normal tracking-widest px-1">Order Items</h3>
                                                     {selectedOrder.status !== 'completed' && (
                                                         <button
                                                             onClick={() => {
@@ -1810,7 +1810,7 @@ const AdminOrders = () => {
                                                                     setSelectedItems(selectedOrder.items?.map((_, i) => i) || []);
                                                                 }
                                                             }}
-                                                            className="text-[10px] font-medium text-[#FD6941] bg-orange-50 px-3 py-1 rounded-full border border-orange-100"
+                                                            className="text-[10px] font-normal text-[#FD6941] bg-[#FD6941] px-3 py-1 rounded-full border border-[#FD6941]"
                                                         >
                                                             {selectedItems.length === selectedOrder.items?.length ? 'Deselect All' : 'Select All'}
                                                         </button>
@@ -1822,7 +1822,7 @@ const AdminOrders = () => {
                                                             key={idx}
                                                             onClick={() => selectedOrder.status !== 'completed' && toggleItemSelection(idx)}
                                                             className={`flex justify-between items-center p-3 sm:p-4 rounded-[1.2rem] sm:rounded-2xl border transition-all cursor-pointer ${selectedItems.includes(idx)
-                                                                ? 'bg-orange-50/50 border-orange-200'
+                                                                ? 'bg-[#FD6941] border-[#FD6941]'
                                                                 : 'bg-gray-50 border-transparent hover:border-gray-200'
                                                                 }`}
                                                         >
@@ -1832,7 +1832,7 @@ const AdminOrders = () => {
                                                                         {selectedItems.includes(idx) && <X className="w-3.5 h-3.5 text-white" strokeWidth={4} />}
                                                                     </div>
                                                                 )}
-                                                                <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center font-medium text-gray-400 border border-gray-100 shadow-sm shrink-0">
+                                                                <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center font-normal text-gray-400 border border-gray-100 shadow-sm shrink-0">
                                                                     {item.quantity}x
                                                                 </div>
 
@@ -1885,13 +1885,13 @@ const AdminOrders = () => {
                                                                 </div>
 
                                                                 <div>
-                                                                    <p className="text-gray-900 font-medium">{item.name}</p>
-                                                                    <p className="text-xs text-gray-400 font-medium">{currencySymbol}{item.price.toFixed(2)} / unit</p>
+                                                                    <p className="text-gray-900 font-normal">{item.name}</p>
+                                                                    <p className="text-xs text-gray-400 font-normal">{currencySymbol}{item.price.toFixed(2)} / unit</p>
                                                                 </div>
                                                             </div>
                                                             <div className="flex flex-col items-end gap-2">
                                                                 <div className="flex items-center gap-2">
-                                                                    <span className={`text-[10px] font-medium uppercase tracking-wider px-2 py-0.5 rounded-full ${item.status === 'ready' ? 'bg-green-100 text-green-600' :
+                                                                    <span className={`text-[10px] font-normal uppercase tracking-wider px-2 py-0.5 rounded-full ${item.status === 'ready' ? 'bg-green-100 text-green-600' :
                                                                         item.status === 'served' ? 'bg-blue-100 text-blue-600' :
                                                                             item.status === 'completed' ? 'bg-gray-100 text-gray-400' :
                                                                                 item.status === 'preparing' ? 'bg-yellow-100 text-yellow-600' :
@@ -1901,7 +1901,7 @@ const AdminOrders = () => {
                                                                     </span>
 
                                                                 </div>
-                                                                <p className="text-gray-900 font-medium">{currencySymbol}{(item.price * item.quantity).toFixed(2)}</p>
+                                                                <p className="text-gray-900 font-normal">{currencySymbol}{(item.price * item.quantity).toFixed(2)}</p>
                                                             </div>
                                                         </div>
                                                     ))}
@@ -1913,8 +1913,8 @@ const AdminOrders = () => {
                                         <div className="pt-2 sm:pt-6 border-t border-gray-100 bg-white/50 backdrop-blur-md">
                                             <div className="flex items-center justify-between p-4 sm:p-8 bg-gray-50 rounded-[1.5rem] sm:rounded-[3rem] text-gray-900 mb-3 sm:mb-6 border border-gray-100 shadow-sm relative overflow-hidden group">
                                                 <div className="relative z-10">
-                                                    <p className="text-[8px] sm:text-[11px] text-gray-400 font-medium uppercase tracking-[0.2em] mb-1 sm:mb-2 italic">Grand Total</p>
-                                                    <p className="text-xl sm:text-5xl font-medium font-urbanist tracking-tighter flex items-center gap-1.5 sm:gap-2">
+                                                    <p className="text-[8px] sm:text-[11px] text-gray-400 font-normal uppercase tracking-[0.2em] mb-1 sm:mb-2 italic">Grand Total</p>
+                                                    <p className="text-xl sm:text-5xl font-normal font-urbanist tracking-tighter flex items-center gap-1.5 sm:gap-2">
                                                         <span className="text-[#FD6941]">{currencySymbol}</span>
                                                         {(selectedOrder.totalAmount || 0).toFixed(2)}
                                                     </p>
@@ -1923,7 +1923,7 @@ const AdminOrders = () => {
                                                     <Hash className="w-4 h-4 sm:w-7 sm:h-7 text-gray-300 font-light" />
                                                 </div>
                                                 {/* Subtle Ambient Glow */}
-                                                <div className="absolute -right-8 -bottom-8 sm:-right-10 sm:-bottom-10 w-32 h-32 sm:w-40 sm:h-40 bg-orange-100/30 blur-[40px] sm:blur-[60px] rounded-full group-hover:bg-orange-200/40 transition-colors" />
+                                                <div className="absolute -right-8 -bottom-8 sm:-right-10 sm:-bottom-10 w-32 h-32 sm:w-40 sm:h-40 bg-[#FD6941]/30 blur-[40px] sm:blur-[60px] rounded-full group-hover:bg-[#FD6941]/40 transition-colors" />
                                             </div>
 
                                             <div className="flex gap-4">
@@ -1935,7 +1935,7 @@ const AdminOrders = () => {
                                                         }) && (
                                                                 <button
                                                                     onClick={() => handleBulkItemStatusUpdate('preparing')}
-                                                                    className="flex-1 bg-yellow-500 text-white py-3 sm:py-5 rounded-[1.2rem] sm:rounded-[1.8rem] transition-all text-sm sm:text-lg font-medium shadow-lg hover:shadow-xl active:scale-[0.98] outline-none"
+                                                                    className="flex-1 bg-yellow-500 text-white py-3 sm:py-5 rounded-[1.2rem] sm:rounded-[1.8rem] transition-all text-sm sm:text-lg font-normal shadow-lg hover:shadow-xl active:scale-[0.98] outline-none"
                                                                 >
                                                                     Mark Preparing ({selectedItems.length})
                                                                 </button>
@@ -1946,7 +1946,7 @@ const AdminOrders = () => {
                                                         }) && (
                                                                 <button
                                                                     onClick={() => handleBulkItemStatusUpdate('ready')}
-                                                                    className="flex-1 bg-green-500 text-white py-3 sm:py-5 rounded-[1.2rem] sm:rounded-[1.8rem] transition-all text-sm sm:text-lg font-medium shadow-lg hover:shadow-xl active:scale-[0.98] outline-none"
+                                                                    className="flex-1 bg-green-500 text-white py-3 sm:py-5 rounded-[1.2rem] sm:rounded-[1.8rem] transition-all text-sm sm:text-lg font-normal shadow-lg hover:shadow-xl active:scale-[0.98] outline-none"
                                                                 >
                                                                     Mark Ready ({selectedItems.length})
                                                                 </button>
@@ -1957,7 +1957,7 @@ const AdminOrders = () => {
                                                         }) && (
                                                                 <button
                                                                     onClick={() => handleBulkItemStatusUpdate('completed')}
-                                                                    className="flex-1 bg-blue-500 text-white py-3 sm:py-5 rounded-[1.2rem] sm:rounded-[1.8rem] transition-all text-sm sm:text-lg font-medium shadow-lg hover:shadow-xl active:scale-[0.98] outline-none"
+                                                                    className="flex-1 bg-blue-500 text-white py-3 sm:py-5 rounded-[1.2rem] sm:rounded-[1.8rem] transition-all text-sm sm:text-lg font-normal shadow-lg hover:shadow-xl active:scale-[0.98] outline-none"
                                                                 >
                                                                     Mark Completed ({selectedItems.length})
                                                                 </button>
@@ -1970,7 +1970,7 @@ const AdminOrders = () => {
                                                             updateOrderStatus(selectedOrder._id, nextStatus);
                                                             setSelectedOrder(null);
                                                         }}
-                                                        className={`flex-1 ${selectedOrder.status === 'ready' ? 'bg-[#FD6941]' : getStatusButtonColor(selectedOrder.status)} text-white py-3 sm:py-5 rounded-[1.2rem] sm:rounded-[1.8rem] transition-all text-sm sm:text-lg font-medium shadow-lg hover:shadow-xl active:scale-[0.98] outline-none`}
+                                                        className={`flex-1 ${selectedOrder.status === 'ready' ? 'bg-[#FD6941]' : getStatusButtonColor(selectedOrder.status)} text-white py-3 sm:py-5 rounded-[1.2rem] sm:rounded-[1.8rem] transition-all text-sm sm:text-lg font-normal shadow-lg hover:shadow-xl active:scale-[0.98] outline-none`}
                                                     >
                                                         {selectedOrder.status === 'ready' ? 'Complete Order' : getNextStatusLabel(selectedOrder.status)}
                                                     </button>

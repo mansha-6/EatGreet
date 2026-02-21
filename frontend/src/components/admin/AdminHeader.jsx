@@ -121,7 +121,7 @@ const AdminHeader = () => {
           <Link
             key={item.path}
             to={item.path}
-            className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${isActive(item.path)}`}
+            className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm font-normal transition-all duration-300 ${isActive(item.path)}`}
           >
             {item.label}
           </Link>
@@ -142,7 +142,7 @@ const AdminHeader = () => {
           >
             <Bell className="w-5 h-5" />
             {unreadCount > 0 && (
-              <span className="absolute top-2 right-2.5 w-4 h-4 bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-medium text-white">
+              <span className="absolute top-2 right-2.5 w-4 h-4 bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-[9px] font-normal text-white">
                 {unreadCount > 9 ? '9+' : unreadCount}
               </span>
             )}
@@ -154,11 +154,11 @@ const AdminHeader = () => {
               <div className="fixed inset-0 z-[100] bg-transparent" onClick={() => setIsNotificationOpen(false)}></div>
               <div className="absolute right-0 mt-3 w-80 sm:w-96 bg-white rounded-[1.5rem] shadow-xl border border-gray-100 z-[101] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 origin-top-right">
                 <div className="p-4 border-b border-gray-50 flex items-center justify-between bg-gray-50/50">
-                  <h3 className="font-medium text-gray-800">Notifications</h3>
+                  <h3 className="font-normal text-gray-800">Notifications</h3>
                   {notifications.length > 0 && (
                     <button
                       onClick={() => setNotifications([])}
-                      className="text-xs font-medium text-red-500 hover:text-red-600"
+                      className="text-xs font-normal text-red-500 hover:text-red-600"
                     >
                       Clear all
                     </button>
@@ -170,24 +170,24 @@ const AdminHeader = () => {
                     notifications.map((notif) => (
                       <div
                         key={notif.id}
-                        className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors flex gap-3 ${!notif.read ? 'bg-orange-50/30' : ''}`}
+                        className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors flex gap-3 ${!notif.read ? 'bg-[#FD6941]' : ''}`}
                         onClick={() => markAsRead(notif.id)}
                       >
                         <div className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center ${notif.type === 'newOrder' ? 'bg-green-100 text-green-600' :
                           notif.type === 'completed' ? 'bg-blue-100 text-blue-600' :
-                            'bg-orange-100 text-orange-600'
+                            'bg-[#FD6941] text-[#FD6941]'
                           }`}>
                           <Bell className="w-5 h-5 fill-current" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-start mb-1">
-                            <h4 className="text-sm font-medium text-gray-900 truncate">{notif.title}</h4>
+                            <h4 className="text-sm font-normal text-gray-900 truncate">{notif.title}</h4>
                             <span className="text-[10px] text-gray-400 whitespace-nowrap ml-2">{notif.time}</span>
                           </div>
                           <p className="text-xs text-gray-500 leading-relaxed line-clamp-2">{notif.message}</p>
                         </div>
                         {!notif.read && (
-                          <div className="w-2 h-2 bg-orange-500 rounded-full mt-2 shrink-0"></div>
+                          <div className="w-2 h-2 bg-[#FD6941] rounded-full mt-2 shrink-0"></div>
                         )}
                       </div>
                     ))
@@ -205,7 +205,7 @@ const AdminHeader = () => {
                   <div className="p-3 border-t border-gray-50 bg-gray-50/30 text-center">
                     <button
                       onClick={markAllRead}
-                      className="text-xs font-medium text-gray-600 hover:text-black transition-colors"
+                      className="text-xs font-normal text-gray-600 hover:text-black transition-colors"
                     >
                       Mark all as read
                     </button>
@@ -230,7 +230,7 @@ const AdminHeader = () => {
             <img src={`https://ui-avatars.com/api/?name=${user?.name || 'Admin'}&background=FD6941&color=fff`} alt={user?.name || 'Admin'} className="w-full h-full object-cover" />
           </div>
           <div className="hidden md:flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-800">{user?.name || 'Admin'}</span>
+            <span className="text-sm font-normal text-gray-800">{user?.name || 'Admin'}</span>
             <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
@@ -251,7 +251,7 @@ const AdminHeader = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setIsMenuOpen(false)}
-                  className={`px-5 py-4 rounded-2xl text-[17px] font-medium transition-all ${location.pathname === item.path
+                  className={`px-5 py-4 rounded-2xl text-[17px] font-normal transition-all ${location.pathname === item.path
                     ? 'bg-gray-900 text-white shadow-lg'
                     : 'text-gray-600 hover:bg-gray-50 active:bg-gray-100'
                     }`}

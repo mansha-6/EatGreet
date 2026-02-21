@@ -40,7 +40,7 @@ const dietaryIcons = {
 const orangeFilter = "brightness-0 saturate-100 invert(55%) sepia(85%) saturate(1600%) hue-rotate(335deg) brightness(101%) contrast(98%)";
 
 const offers = [
-    { id: 1, type: 'video', src: arVideo, bg: "bg-orange-600" },
+    { id: 1, type: 'video', src: arVideo, bg: "bg-[#FD6941]" },
     { id: 2, title: "50% OFF", subtitle: "On your first order", code: "WELCOME50", bg: "bg-gray-700", text: "text-white" },
     { id: 3, title: "FREE FRIES", subtitle: "Orders above 299", code: "FREEMEAL", bg: "bg-[#FD6941]", text: "text-white" },
 ];
@@ -55,7 +55,7 @@ const currencyMap = {
     'CAD': 'C$'
 };
 
-import { menuAPI, categoryAPI, orderAPI } from '../../utils/api';
+import apis, { menuAPI, categoryAPI, orderAPI } from '../../utils/api';
 import toast from 'react-hot-toast';
 
 import { useSettings } from '../../context/SettingsContext';
@@ -94,6 +94,8 @@ const Menu = () => {
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [menuItems, setMenuItems] = useState([]);
     const [categories, setCategories] = useState(["All"]);
+    const [fetchedOffers, setFetchedOffers] = useState([]);
+    const [selectedOffer, setSelectedOffer] = useState(null);
 
     const [customerDetails, setCustomerDetails] = useState({
         name: "",
@@ -182,12 +184,16 @@ const Menu = () => {
                 restaurantName: tenantName,
                 restaurantId
             };
-            const [menuRes, catRes] = await Promise.all([
+            const [menuRes, catRes, offerRes] = await Promise.all([
                 menuAPI.getAll(params),
-                categoryAPI.getAll(params)
+                categoryAPI.getAll(params),
+                apis.offerAPI.getAll(params)
             ]);
             setMenuItems(menuRes.data || []);
             setCategories(["All", ...(catRes.data || []).map(c => c.name)]);
+
+            const activeOffers = (offerRes.data || []).filter(o => o.status === 'ACTIVE');
+            setFetchedOffers(activeOffers);
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -218,11 +224,12 @@ const Menu = () => {
     const isInteractingRef = useRef(false);
     const interactionTimeoutRef = useRef(null);
 
-    // Use only the 3 offers without duplication
-    const extendedOffers = offers.map(offer => ({
-        ...offer,
-        uniqueId: `${offer.id}`
-    }));
+    const extendedOffers = (fetchedOffers || []).length > 0
+        ? fetchedOffers.map(offer => ({
+            ...offer,
+            uniqueId: `${offer._id || offer.id}`
+        }))
+        : []; // Render nothing or fallbacks if none exist
 
     // Interaction Handlers
     const handleInteractionStart = () => {
@@ -244,13 +251,14 @@ const Menu = () => {
 
     // Auto-swipe offers
     useEffect(() => {
+        if (extendedOffers.length <= 1) return; // Don't auto-swipe if only 1 offer
+
         const interval = setInterval(() => {
             if (isVideoPlayingRef.current || isInteractingRef.current) return;
 
             if (sliderRef.current) {
                 const { clientWidth, scrollLeft, scrollWidth } = sliderRef.current;
 
-                // For 3 items, if we are at the last one, go back to start
                 if (scrollLeft + clientWidth >= scrollWidth - 10) {
                     sliderRef.current.scrollTo({ left: 0, behavior: 'smooth' });
                 } else {
@@ -262,7 +270,7 @@ const Menu = () => {
             clearInterval(interval);
             if (interactionTimeoutRef.current) clearTimeout(interactionTimeoutRef.current);
         };
-    }, []);
+    }, [extendedOffers.length]);
 
     // Play video when in view
     useEffect(() => {
@@ -370,17 +378,38 @@ const Menu = () => {
     const itemsToDisplay = menuItems;
 
     const filteredItems = itemsToDisplay.filter(item => {
+        // If an offer is selected and it has specific applicable items, ONLY show those items
+        if (selectedOffer && selectedOffer.applicableItems && selectedOffer.applicableItems.length > 0) {
+            if (!selectedOffer.applicableItems.includes(item._id)) {
+                return false;
+            }
+        }
+
         const itemCategory = typeof item.category === 'object' ? item.category?.name : item.category;
         const matchesCategory = selectedCategory === "All" || (itemCategory && itemCategory.toUpperCase() === selectedCategory.toUpperCase());
         const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             item.description.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
-    }).map(item => ({
-        ...item,
-        time: item.time || "15-20 min",
-        calories: item.calories || "450 kcal",
-        isVeg: item.isVeg !== undefined ? item.isVeg : true
-    }));
+    }).map(item => {
+        // Calculate discounted price if applicable
+        let finalPrice = item.price;
+        let originalPrice = null;
+        if (selectedOffer && selectedOffer.discountPercentage > 0) {
+            if (!selectedOffer.applicableItems || selectedOffer.applicableItems.length === 0 || selectedOffer.applicableItems.includes(item._id)) {
+                finalPrice = item.price - (item.price * (selectedOffer.discountPercentage / 100));
+                originalPrice = item.price;
+            }
+        }
+
+        return {
+            ...item,
+            time: item.time || "15-20 min",
+            calories: item.calories || "450 kcal",
+            isVeg: item.isVeg !== undefined ? item.isVeg : true,
+            displayPrice: finalPrice,
+            originalPrice: originalPrice
+        };
+    });
 
     return (
         <div className="bg-gray-50 min-h-screen pb-32 md:pb-0">
@@ -393,10 +422,15 @@ const Menu = () => {
                 onMouseUp={handleInteractionEnd}
                 onMouseEnter={handleInteractionStart}
                 onMouseLeave={handleInteractionEnd}
-                className="mt-4 md:mt-6 px-2 md:px-4 overflow-x-auto no-scrollbar flex gap-2 md:gap-4 snap-x snap-mandatory w-full touch-pan-x overscroll-x-contain cursor-grab active:cursor-grabbing"
+                className="mt-4 md:mt-6 px-4 md:px-6 overflow-x-auto no-scrollbar flex gap-8 md:gap-4 snap-x snap-mandatory w-full touch-pan-x overscroll-x-contain cursor-grab active:cursor-grabbing"
             >
                 {extendedOffers.map((offer, index) => (
-                    <div key={offer.uniqueId} style={{ scrollSnapStop: 'always' }} className={`snap-center snap-always shrink-0 w-full md:w-[350px] h-44 md:h-48 rounded-[2rem] flex flex-col justify-center relative shadow-lg overflow-hidden ${offer.bg} ${!offer.type ? 'p-5 md:p-6' : ''}`}>
+                    <div
+                        key={offer.uniqueId}
+                        style={{ scrollSnapStop: 'always' }}
+                        onClick={() => offer.type === 'color' && setSelectedOffer(selectedOffer?._id === offer._id ? null : offer)}
+                        className={`snap-center snap-always shrink-0 w-[calc(100vw-32px)] md:w-[350px] h-44 md:h-48 rounded-[2rem] flex flex-col justify-center relative shadow-lg overflow-hidden transition-all ${offer.bg || 'bg-gradient-to-br from-[#FD6941] to-[#E55A35] text-white'} ${offer.type === 'color' ? 'p-6 sm:p-8 cursor-pointer' : ''} ${selectedOffer?._id === offer._id ? 'scale-[0.98] opacity-100' : (offer.type === 'color' ? 'hover:scale-[0.98] opacity-90' : 'opacity-100')}`}
+                    >
                         {offer.type === 'video' ? (
                             <video
                                 ref={el => videoRefs.current[index] = el}
@@ -412,14 +446,18 @@ const Menu = () => {
                                     handleVideoEnd();
                                 }}
                             />
+                        ) : offer.type === 'image' ? (
+                            <img src={offer.src} className="w-full h-full object-cover rounded-[2rem]" alt={offer.title || 'Advertisement'} />
                         ) : (
                             <>
-                                <div className="relative z-10 block">
-                                    <span className={`text-[10px] md:text-xs px-2 md:px-3 py-0.5 md:py-1 rounded-full mb-2 md:mb-3 inline-block ${offer.text === 'text-white' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>LIMITED TIME</span>
-                                    <h3 className={`text-2xl md:text-3xl ${offer.text} leading-none mb-1`}>{offer.title}</h3>
-                                    <p className={`text-xs md:text-sm ${offer.text} opacity-80 mb-2 md:mb-3`}>{offer.subtitle}</p>
-                                    <div className="flex items-center gap-2">
-                                        <code className="bg-white/20 backdrop-blur-md px-2 md:px-3 py-1 rounded-lg text-[10px] md:text-xs text-white border border-white/30 tracking-wider border-dashed">{offer.code}</code>
+                                <div className="relative z-10 flex flex-col items-start w-full">
+                                    <span className={`text-[10px] md:text-xs px-3 py-1 rounded-full mb-3 inline-block font-bold tracking-wider ${offer.text === 'text-black' || offer.text === 'text-gray-900' ? 'bg-black/10 text-black' : 'bg-white/20 text-white'}`}>LIMITED TIME</span>
+                                    <h3 className={`text-2xl md:text-3xl font-black ${offer.text || 'text-white'} leading-tight mb-1 truncate w-full`}>{offer.title || offer.name}</h3>
+                                    <p className={`text-xs md:text-sm ${offer.text || 'text-white'} opacity-90 mb-3 truncate w-full`}>{offer.subtitle || offer.description}</p>
+                                    <div className="flex items-center gap-2 mt-auto">
+                                        <code className={`${offer.text === 'text-black' || offer.text === 'text-gray-900' ? 'bg-black/10 text-black border-black/20' : 'bg-white/20 text-white border-white/30'} backdrop-blur-md px-3 py-1.5 rounded-lg text-[10px] md:text-xs border tracking-wider border-dashed font-bold`}>
+                                            {offer.code || 'SAVE NOW'}
+                                        </code>
                                     </div>
                                 </div>
                                 {/* Decorative Circles */}
@@ -509,7 +547,7 @@ const Menu = () => {
                                 {!item.isAvailable && (
                                     <div className="absolute top-8 left-2 md:top-12 md:left-4 z-20">
                                         <div className="md:hidden w-2 h-2 bg-red-500 rounded-full border border-white shadow-sm"></div>
-                                        <div className="hidden md:flex bg-red-500/95 backdrop-blur-md text-white border border-red-400/30 px-3 py-1 rounded-full text-[10px] font-medium uppercase tracking-wider items-center gap-1.5 shadow-lg">
+                                        <div className="hidden md:flex bg-red-500/95 backdrop-blur-md text-white border border-red-400/30 px-3 py-1 rounded-full text-[10px] font-normal uppercase tracking-wider items-center gap-1.5 shadow-lg">
                                             <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
                                             Sold Out
                                         </div>
@@ -522,7 +560,7 @@ const Menu = () => {
                             <div className="flex-1 flex flex-col md:block justify-between md:px-2 md:pb-2 overflow-hidden relative">
                                 <div className="flex justify-between items-start mb-1 md:mb-2 gap-2 md:gap-4">
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="text-base md:text-xl text-gray-800 leading-tight font-medium inline align-middle">
+                                        <h3 className="text-base md:text-xl text-gray-800 leading-tight font-normal inline align-middle">
                                             {item.name}
                                         </h3>
                                     </div>
@@ -530,12 +568,19 @@ const Menu = () => {
                                     {/* Rating & Price (Desktop) - Top Right Corner */}
                                     <div className="shrink-0 flex flex-col items-end gap-1">
                                         {/* Price - Top Right (Mobile & Desktop) */}
-                                        <span className="text-lg md:text-xl font-medium text-gray-900 block">
-                                            {activeSymbol}{item.price}
-                                        </span>
+                                        <div className="flex flex-col items-end">
+                                            {item.originalPrice && (
+                                                <span className="text-xs md:text-sm text-gray-400 line-through mb-0.5">
+                                                    {activeSymbol}{item.originalPrice}
+                                                </span>
+                                            )}
+                                            <span className={`text-lg md:text-xl block ${item.originalPrice ? 'text-[#FD6941] font-bold' : 'text-gray-900 font-normal'}`}>
+                                                {activeSymbol}{Number(item.displayPrice).toFixed(0)}
+                                            </span>
+                                        </div>
 
                                         {/* Rating - Desktop Only */}
-                                        <span className="hidden md:flex items-center gap-1 bg-green-50 text-green-700 px-1.5 py-0 rounded-md font-medium text-[10px]">
+                                        <span className="hidden md:flex items-center gap-1 bg-green-50 text-green-700 px-1.5 py-0 rounded-md font-normal text-[10px]">
                                             <Star className="w-2.5 h-2.5 fill-current" /> {item.rating || '4.5'}
                                         </span>
                                     </div>
@@ -572,7 +617,7 @@ const Menu = () => {
                                     {item.description}
                                 </p>
                                 {/* Mobile-only description (shorter) */}
-                                < p className="text-xs text-gray-400 line-clamp-2 mb-2 md:hidden" >
+                                <p className="text-xs text-gray-400 line-clamp-2 mb-2 md:hidden">
                                     {item.description}
                                 </p>
 
@@ -595,7 +640,7 @@ const Menu = () => {
                                                 <Heart className={`w-4 h-4 transition-transform duration-300 ${favorites[item._id] ? 'fill-current scale-110' : ''}`} />
                                             </button>
                                         ) : (
-                                            <span className="flex items-center gap-1 bg-green-50 text-green-700 px-1 py-0.5 rounded-md font-medium text-[9px]">
+                                            <span className="flex items-center gap-1 bg-green-50 text-green-700 px-1 py-0.5 rounded-md font-normal text-[9px]">
                                                 <Star className="w-2 h-2 fill-current" /> {item.rating || '4.5'}
                                             </span>
                                         )}
@@ -663,13 +708,13 @@ const Menu = () => {
                                                     >
                                                         <Minus className="w-2.5 h-2.5 md:w-5 md:h-5" />
                                                     </button>
-                                                    <span className="text-xs md:text-lg min-w-[1.2rem] text-center font-medium text-[#FD6941] px-0.5">{cart[item._id].qty}</span>
+                                                    <span className="text-xs md:text-lg min-w-[1.2rem] text-center font-normal text-[#FD6941] px-0.5">{cart[item._id].qty}</span>
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             addToCart(item);
                                                         }}
-                                                        className="w-6 h-6 md:w-10 md:h-10 rounded-full bg-[#FD6941] text-white flex items-center justify-center hover:bg-orange-600 transition-all shrink-0 shadow-sm"
+                                                        className="w-6 h-6 md:w-10 md:h-10 rounded-full bg-[#FD6941] text-white flex items-center justify-center hover:bg-[#FD6941]/90 transition-all shrink-0 shadow-sm"
                                                     >
                                                         <Plus className="w-2.5 h-2.5 md:w-5 md:h-5" />
                                                     </button>
@@ -714,18 +759,18 @@ const Menu = () => {
                                         <ShoppingBag size={22} className="text-[#FD6941]" />
                                     </div>
                                     <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#FD6941] text-white rounded-full border border-white flex items-center justify-center shadow-sm">
-                                        <span className="text-[8px] font-medium leading-none">{totalItems}</span>
+                                        <span className="text-[8px] font-normal leading-none">{totalItems}</span>
                                     </div>
                                 </div>
                                 <div className="flex flex-col">
-                                    <p className="text-[10px] text-gray-400 uppercase font-medium tracking-wider leading-tight">Your Bag</p>
-                                    <p className="text-lg font-medium text-gray-900 leading-tight">{activeSymbol}{grandTotal}</p>
+                                    <p className="text-[10px] text-gray-400 uppercase font-normal tracking-wider leading-tight">Your Bag</p>
+                                    <p className="text-lg font-normal text-gray-900 leading-tight">{activeSymbol}{grandTotal}</p>
                                 </div>
                             </div>
 
                             <button
                                 onClick={() => isPreviewMode ? toast('Preview Mode: Checkout disabled') : setShowBill(true)}
-                                className="flex items-center gap-2 bg-[#FD6941] text-white px-6 h-11 rounded-full text-sm font-medium shadow-lg shadow-orange-200/50 hover:bg-orange-600 transition-all active:scale-95 relative z-10"
+                                className="flex items-center gap-2 bg-[#FD6941] text-white px-6 h-11 rounded-full text-sm font-normal shadow-lg  hover:bg-[#FD6941]/90 transition-all active:scale-95 relative z-10"
                             >
                                 Checkout <ChevronRight className="w-4 h-4" />
                             </button>
@@ -741,7 +786,7 @@ const Menu = () => {
 
                         {/* Header */}
                         <div className="px-6 pt-5 pb-3 border-b border-gray-100 flex items-center justify-between bg-white shrink-0 sticky top-0 z-10">
-                            <h2 className="text-xl font-medium text-gray-800">Your Order</h2>
+                            <h2 className="text-xl font-normal text-gray-800">Your Order</h2>
                             <button
                                 onClick={() => setShowBill(false)}
                                 className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-200"
@@ -772,15 +817,15 @@ const Menu = () => {
                                                     <img src={item.image} className="w-full h-full object-cover" alt={item.name} />
                                                 </div>
                                                 <div className="flex-1">
-                                                    <h4 className="text-gray-800 text-[13px] font-medium leading-tight mb-1.5">{item.name}</h4>
+                                                    <h4 className="text-gray-800 text-[13px] font-normal leading-tight mb-1.5">{item.name}</h4>
                                                     <div className="flex items-center gap-3 bg-gray-50 rounded-full px-2 py-1 w-fit h-8 border border-gray-100">
                                                         <button onClick={() => removeFromCart(item._id)} className="w-6 h-6 flex items-center justify-center bg-white rounded-full text-gray-600 shadow-sm hover:bg-gray-100 transition-colors"><Minus className="w-3 h-3" /></button>
-                                                        <span className="text-xs w-4 text-center font-medium text-gray-800">{item.qty}</span>
-                                                        <button onClick={() => addToCart(item)} className="w-6 h-6 flex items-center justify-center bg-[#FD6941] text-white rounded-full hover:bg-orange-600 transition-colors"><Plus className="w-3 h-3" /></button>
+                                                        <span className="text-xs w-4 text-center font-normal text-gray-800">{item.qty}</span>
+                                                        <button onClick={() => addToCart(item)} className="w-6 h-6 flex items-center justify-center bg-[#FD6941] text-white rounded-full hover:bg-[#FD6941]/90 transition-colors"><Plus className="w-3 h-3" /></button>
                                                     </div>
                                                 </div>
                                                 <div className="text-right self-center">
-                                                    <span className="text-[#FD6941] font-medium text-sm whitespace-nowrap">{activeSymbol}{item.price * item.qty}</span>
+                                                    <span className="text-[#FD6941] font-normal text-sm whitespace-nowrap">{activeSymbol}{item.price * item.qty}</span>
                                                 </div>
                                             </div>
                                         ))}
@@ -789,11 +834,11 @@ const Menu = () => {
                                     {/* Customer Details Form - Fixed below items */}
                                     <div className="flex-shrink-0 space-y-3 pt-3 border-t border-gray-100">
                                         <div className="flex justify-between items-center">
-                                            <h3 className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Order Details</h3>
+                                            <h3 className="text-[10px] font-normal text-gray-400 uppercase tracking-widest">Order Details</h3>
                                             {(customerDetails.name && customerDetails.phone) && (
                                                 <button
                                                     onClick={() => setShowFullForm(!showFullForm)}
-                                                    className="text-[10px] font-medium text-[#FD6941] bg-orange-50 px-3 py-1 rounded-full border border-orange-100"
+                                                    className="text-[10px] font-normal text-[#FD6941] bg-[#FFF5F1] px-3 py-1 rounded-full border border-[#FD6941]/30"
                                                 >
                                                     {showFullForm ? "View Summary" : "Change Info"}
                                                 </button>
@@ -804,21 +849,21 @@ const Menu = () => {
                                             <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100 space-y-3">
                                                 <div className="flex items-center justify-between">
                                                     <div>
-                                                        <p className="text-[10px] text-gray-400 uppercase font-medium tracking-widest mb-0.5">Guest Information</p>
-                                                        <p className="font-medium text-gray-800">{customerDetails.name}</p>
+                                                        <p className="text-[10px] text-gray-400 uppercase font-normal tracking-widest mb-0.5">Guest Information</p>
+                                                        <p className="font-normal text-gray-800">{customerDetails.name}</p>
                                                         <p className="text-[10px] text-gray-400">{customerDetails.phone} • Table {customerDetails.tableNo}</p>
                                                     </div>
-                                                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#FD6941] shadow-sm border border-orange-50">
+                                                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-[#FD6941] shadow-sm border border-[#FD6941]">
                                                         <Star className="w-5 h-5 fill-current" />
                                                     </div>
                                                 </div>
                                                 <div className="pt-3 border-t border-gray-200/50">
-                                                    <label className="block text-[10px] text-gray-400 uppercase font-medium tracking-widest mb-2">Cooking Instructions</label>
+                                                    <label className="block text-[10px] text-gray-400 uppercase font-normal tracking-widest mb-2">Cooking Instructions</label>
                                                     <textarea
                                                         rows="2"
                                                         value={customerDetails.notes}
                                                         onChange={e => setCustomerDetails({ ...customerDetails, notes: e.target.value })}
-                                                        className="w-full px-4 py-3 bg-white rounded-xl text-sm text-gray-800 focus:outline-none border border-gray-100 focus:border-orange-200 resize-none"
+                                                        className="w-full px-4 py-3 bg-white rounded-xl text-sm text-gray-800 focus:outline-none border border-gray-100 focus:border-[#FD6941] resize-none"
                                                         placeholder="Any special requests? (Optional)"
                                                     />
                                                 </div>
@@ -826,7 +871,7 @@ const Menu = () => {
                                         ) : (
                                             <div className="grid grid-cols-12 gap-3">
                                                 <div className="col-span-12">
-                                                    <label className="block text-[10px] text-gray-400 mb-1 font-medium uppercase tracking-widest">Full Name</label>
+                                                    <label className="block text-[10px] text-gray-400 mb-1 font-normal uppercase tracking-widest">Full Name</label>
                                                     <input
                                                         type="text"
                                                         value={customerDetails.name}
@@ -836,7 +881,7 @@ const Menu = () => {
                                                     />
                                                 </div>
                                                 <div className="col-span-8">
-                                                    <label className="block text-[10px] text-gray-400 mb-1 font-medium uppercase tracking-widest">Phone</label>
+                                                    <label className="block text-[10px] text-gray-400 mb-1 font-normal uppercase tracking-widest">Phone</label>
                                                     <input
                                                         type="tel"
                                                         value={customerDetails.phone}
@@ -846,16 +891,16 @@ const Menu = () => {
                                                     />
                                                 </div>
                                                 <div className="col-span-4">
-                                                    <label className="block text-[10px] text-gray-400 mb-1 text-center font-medium uppercase tracking-widest">Table</label>
+                                                    <label className="block text-[10px] text-gray-400 mb-1 text-center font-normal uppercase tracking-widest">Table</label>
                                                     <input
                                                         type="text"
                                                         value={customerDetails.tableNo}
                                                         readOnly
-                                                        className="w-full px-4 py-2.5 bg-gray-50 rounded-full text-sm text-gray-500 border border-gray-200 cursor-not-allowed outline-none font-medium text-center"
+                                                        className="w-full px-4 py-2.5 bg-gray-50 rounded-full text-sm text-gray-500 border border-gray-200 cursor-not-allowed outline-none font-normal text-center"
                                                     />
                                                 </div>
                                                 <div className="col-span-12">
-                                                    <label className="block text-[10px] text-gray-400 mb-1 font-medium uppercase tracking-widest">Special Requests</label>
+                                                    <label className="block text-[10px] text-gray-400 mb-1 font-normal uppercase tracking-widest">Special Requests</label>
                                                     <textarea
                                                         rows="2"
                                                         value={customerDetails.notes}
@@ -870,15 +915,15 @@ const Menu = () => {
 
                                     {/* Bill Summary - Compact Solid */}
                                     <div className="space-y-2 pt-4 border-t border-gray-100 flex-shrink-0">
-                                        <div className="flex justify-between text-xs text-gray-400 font-medium uppercase tracking-widest">
+                                        <div className="flex justify-between text-xs text-gray-400 font-normal uppercase tracking-widest">
                                             <span>Subtotal</span>
                                             <span className="text-gray-700">{activeSymbol}{subTotal}</span>
                                         </div>
-                                        <div className="flex justify-between text-xs text-gray-400 font-medium uppercase tracking-widest">
+                                        <div className="flex justify-between text-xs text-gray-400 font-normal uppercase tracking-widest">
                                             <span>Tax (5%)</span>
                                             <span className="text-gray-700">{activeSymbol}{tax}</span>
                                         </div>
-                                        <div className="flex justify-between text-lg font-medium text-gray-900 pt-2.5 mt-1 border-t border-dashed border-gray-200">
+                                        <div className="flex justify-between text-lg font-normal text-gray-900 pt-2.5 mt-1 border-t border-dashed border-gray-200">
                                             <span>Grand Total</span>
                                             <span className="text-[#FD6941]">{activeSymbol}{grandTotal}</span>
                                         </div>
@@ -892,7 +937,7 @@ const Menu = () => {
                             <div className="p-5 border-t border-gray-100 bg-white shrink-0 safety-pb">
                                 <button
                                     onClick={handlePlaceOrder}
-                                    className="w-full bg-[#FD6941] text-white py-4 rounded-full text-base font-medium shadow-xl shadow-orange-200 hover:bg-orange-600 active:scale-[0.98] transition-all flex items-center justify-center gap-2 uppercase tracking-widest"
+                                    className="w-full bg-[#FD6941] text-white py-4 rounded-full text-base font-normal shadow-xl  hover:bg-[#FD6941]/90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 uppercase tracking-widest"
                                 >
                                     Place Order <span className="text-white/40">•</span> {activeSymbol}{grandTotal}
                                 </button>
@@ -922,7 +967,7 @@ const Menu = () => {
                                 {/* Top Left Badges - Status Only */}
                                 <div className="absolute top-4 left-4 z-30">
                                     {/* Status Tag */}
-                                    <div className={`px-2.5 py-1.5 rounded-lg backdrop-blur-md shadow-sm flex items-center gap-1.5 font-medium text-[10px] uppercase tracking-wider ${selectedItem.isAvailable ? 'bg-white/90 text-green-600' : 'bg-red-500/90 text-white'}`}>
+                                    <div className={`px-2.5 py-1.5 rounded-lg backdrop-blur-md shadow-sm flex items-center gap-1.5 font-normal text-[10px] uppercase tracking-wider ${selectedItem.isAvailable ? 'bg-white/90 text-green-600' : 'bg-red-500/90 text-white'}`}>
                                         <span className={`w-1.5 h-1.5 rounded-full ${selectedItem.isAvailable ? 'bg-green-500 animate-pulse' : 'bg-white'}`}></span>
                                         {selectedItem.isAvailable ? 'Available' : 'Sold Out'}
                                     </div>
@@ -946,7 +991,7 @@ const Menu = () => {
                                         <div className="flex flex-col gap-0.5">
                                             <div className="flex justify-between items-start gap-4">
                                                 <div className="flex-1 min-w-0">
-                                                    <h2 className="text-2xl md:text-3xl font-medium text-gray-900 leading-tight inline align-middle">
+                                                    <h2 className="text-2xl md:text-3xl font-normal text-gray-900 leading-tight inline align-middle">
                                                         {selectedItem.name}
                                                     </h2>
                                                     {selectedItem.labels && selectedItem.labels.length > 0 && (
@@ -964,11 +1009,20 @@ const Menu = () => {
                                                         </span>
                                                     )}
                                                 </div>
-                                                <span className="text-2xl md:text-3xl font-medium text-gray-900 whitespace-nowrap shrink-0">{activeSymbol}{selectedItem.price}</span>
+                                                <div className="flex flex-col items-end shrink-0">
+                                                    {selectedItem.originalPrice && (
+                                                        <span className="text-sm md:text-base text-gray-400 line-through mb-0.5">
+                                                            {activeSymbol}{selectedItem.originalPrice}
+                                                        </span>
+                                                    )}
+                                                    <span className={`text-2xl md:text-3xl whitespace-nowrap ${selectedItem.originalPrice ? 'text-[#FD6941] font-bold' : 'text-gray-900 font-normal'}`}>
+                                                        {activeSymbol}{Number(selectedItem.displayPrice || selectedItem.price).toFixed(0)}
+                                                    </span>
+                                                </div>
                                             </div>
 
                                             <div className="flex items-center gap-2">
-                                                <span className="text-[10px] md:text-xs font-medium tracking-wider text-[#FD6941] uppercase">
+                                                <span className="text-[10px] md:text-xs font-normal tracking-wider text-[#FD6941] uppercase">
                                                     {typeof selectedItem.category === 'object' ? selectedItem.category?.name : selectedItem.category}
                                                 </span>
                                             </div>
@@ -987,7 +1041,7 @@ const Menu = () => {
                                             <span className="flex items-center gap-1.5">
                                                 <Flame className="w-4 h-4 text-[#FD6941]" /> {selectedItem.calories}
                                             </span>
-                                            <span className="flex items-center gap-1.5 bg-green-50 text-green-700 px-2 py-1 rounded-lg font-medium">
+                                            <span className="flex items-center gap-1.5 bg-green-50 text-green-700 px-2 py-1 rounded-lg font-normal">
                                                 <Star className="w-4 h-4 fill-current" /> {selectedItem.rating || '4.5'}
                                             </span>
                                         </div>
@@ -1003,10 +1057,10 @@ const Menu = () => {
                                     {/* Dietary Tags */}
                                     {selectedItem.labels && selectedItem.labels.length > 0 && (
                                         <div className="mb-8">
-                                            <h4 className="text-sm font-medium text-gray-900 uppercase tracking-widest mb-3">Dietary Info</h4>
+                                            <h4 className="text-sm font-normal text-gray-900 uppercase tracking-widest mb-3">Dietary Info</h4>
                                             <div className="flex flex-wrap gap-2">
                                                 {selectedItem.labels.map(label => (
-                                                    <span key={label} className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 border border-gray-100 text-sm font-medium text-gray-700">
+                                                    <span key={label} className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 border border-gray-100 text-sm font-normal text-gray-700">
                                                         {dietaryIcons[label] && (
                                                             <img
                                                                 src={dietaryIcons[label]}
@@ -1058,10 +1112,10 @@ const Menu = () => {
                                                 >
                                                     <Minus className="w-3.5 h-3.5 md:w-5 md:h-5" />
                                                 </button>
-                                                <span className="text-base md:text-lg font-medium min-w-[1.2rem] text-center text-[#FD6941]">{cart[selectedItem._id].qty}</span>
+                                                <span className="text-base md:text-lg font-normal min-w-[1.2rem] text-center text-[#FD6941]">{cart[selectedItem._id].qty}</span>
                                                 <button
                                                     onClick={() => addToCart(selectedItem)}
-                                                    className="w-7 h-7 md:w-10 md:h-10 rounded-full bg-[#FD6941] text-white flex items-center justify-center hover:bg-orange-600 transition-all shrink-0 shadow-sm"
+                                                    className="w-7 h-7 md:w-10 md:h-10 rounded-full bg-[#FD6941] text-white flex items-center justify-center hover:bg-[#FD6941]/90 transition-all shrink-0 shadow-sm"
                                                 >
                                                     <Plus className="w-3.5 h-3.5 md:w-5 md:h-5" />
                                                 </button>
@@ -1069,13 +1123,13 @@ const Menu = () => {
                                         ) : (
                                             <button
                                                 onClick={() => addToCart(selectedItem)}
-                                                className="h-12 w-12 md:h-14 md:w-14 bg-[#FD6941] text-white rounded-full font-medium hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
+                                                className="h-12 w-12 md:h-14 md:w-14 bg-[#FD6941] text-white rounded-full font-normal hover:scale-105 active:scale-95 transition-all flex items-center justify-center"
                                             >
                                                 <Plus className="w-6 h-6 md:w-7 md:h-7" />
                                             </button>
                                         )
                                     ) : (
-                                        <div className="flex-1 md:flex-none px-6 py-4 bg-gray-100 text-gray-400 rounded-full font-medium text-sm text-center">
+                                        <div className="flex-1 md:flex-none px-6 py-4 bg-gray-100 text-gray-400 rounded-full font-normal text-sm text-center">
                                             Currently Unavailable
                                         </div>
                                     )}
@@ -1094,14 +1148,14 @@ const Menu = () => {
                             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500">
                                 <UtensilsCrossed className="w-10 h-10" />
                             </div>
-                            <h3 className="text-2xl font-medium text-gray-900 mb-2">Table Occupied</h3>
+                            <h3 className="text-2xl font-normal text-gray-900 mb-2">Table Occupied</h3>
                             <p className="text-gray-500 mb-6 px-4">
                                 You can't order here, this table is already occupied.
                                 <br />Please check your table number and scan the QR Code again.
                             </p>
 
                             <div className="border-t border-gray-100 pt-6">
-                                <p className="text-sm font-medium text-gray-800 mb-3">Is this your table?</p>
+                                <p className="text-sm font-normal text-gray-800 mb-3">Is this your table?</p>
                                 <div className="flex gap-2">
                                     <input
                                         type="tel"
@@ -1121,7 +1175,7 @@ const Menu = () => {
                                                 toast.error("Phone number does not match current order.");
                                             }
                                         }}
-                                        className="bg-[#FD6941] text-white px-4 py-2 rounded-xl text-sm font-medium shadow-lg shadow-orange-100"
+                                        className="bg-[#FD6941] text-white px-4 py-2 rounded-xl text-sm font-normal shadow-lg "
                                     >
                                         Verify
                                     </button>

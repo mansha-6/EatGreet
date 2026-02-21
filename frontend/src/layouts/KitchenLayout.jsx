@@ -6,7 +6,7 @@ const KitchenLayout = () => {
     const { restaurantName } = useParams();
 
     return (
-        <div className="min-h-screen bg-[#F5F5F5] font-sans text-gray-900 selection:bg-orange-100 selection:text-orange-900">
+        <div className="min-h-screen bg-[#F5F5F5] font-sans text-gray-900 selection:bg-[#FD6941] selection:text-[#FD6941]">
             <DynamicNavbar />
 
             {/* Content Container */}

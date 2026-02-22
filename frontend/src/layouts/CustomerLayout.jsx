@@ -22,6 +22,7 @@ const CustomerLayout = () => {
     const [tenantName, setTenantName] = useState(restaurantName || '');
     const [businessName, setBusinessName] = useState('');
     const [currency, setCurrency] = useState('INR');
+    const [restaurantLogo, setRestaurantLogo] = useState('');
 
     const [isResolving, setIsResolving] = useState(!!(restaurantName || restaurantId));
     const [resolveError, setResolveError] = useState(null);
@@ -51,6 +52,7 @@ const CustomerLayout = () => {
                         setResolvedRestaurantId(data._id);
                         setBusinessName(data.name || '');
                         if (data.currency) setCurrency(data.currency);
+                        if (data.logo) setRestaurantLogo(data.logo);
                     } else {
                         setResolveError("Restaurant not found");
                     }
@@ -70,6 +72,7 @@ const CustomerLayout = () => {
                         setTenantName(data.restaurantName || '');
                         setBusinessName(data.name || '');
                         if (data.currency) setCurrency(data.currency);
+                        if (data.logo) setRestaurantLogo(data.logo);
                     } else {
                         setResolveError("Restaurant not found");
                     }
@@ -170,7 +173,8 @@ const CustomerLayout = () => {
                         tableNo,
                         setShowBill,
                         totalItems,
-                        baseUrl
+                        baseUrl,
+                        logo: restaurantLogo
                     }} />
 
                     {/* Content - key={tenantName} forces a clean remount when switching restaurants */}

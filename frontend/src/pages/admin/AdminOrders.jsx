@@ -796,6 +796,7 @@ import { createPortal } from 'react-dom';
 import { orderAPI, statsAPI } from '../../utils/api';
 import toast from 'react-hot-toast';
 import { useSocket } from '../../context/SocketContext';
+import EatGreetLogo from '../../assets/logo-full.png';
 import '@google/model-viewer';
 
 const StatCard = ({ icon: Icon, value, title }) => (
@@ -1198,7 +1199,9 @@ const AdminOrders = () => {
                 </head>
                 <body>
                     <div class="header">
-                        <div class="restaurant-name">${restaurant?.name || 'EatGreet Restaurant'}</div>
+                    <img src="${EatGreetLogo}" style="height: 25px; width: auto; margin: 0 auto 15px; display: block; opacity: 0.8;" />
+                    ${restaurant?.logo ? `<img src="${restaurant.logo}" style="height: 50px; width: auto; margin-bottom: 10px;" />` : ''}
+                    <div class="restaurant-name">${restaurant?.name || 'EatGreet Restaurant'}</div>
                         <div class="restaurant-info font-normal" style="margin-top: 5px;">${restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</div>
                         ${(restaurant?.businessEmail || restaurant?.restaurantDetails?.businessEmail) ? `<div class="restaurant-info">Email: ${restaurant.businessEmail || restaurant.restaurantDetails.businessEmail}</div>` : ''}
                         ${(restaurant?.gstNumber || restaurant?.restaurantDetails?.gstNumber) ? `<div class="restaurant-info">GST: ${restaurant.gstNumber || restaurant.restaurantDetails.gstNumber}</div>` : ''}
@@ -1299,7 +1302,7 @@ const AdminOrders = () => {
     })() : null;
 
     return (
-        <div className="space-y-4 sm:space-y-8 px-1 sm:px-0">
+        <div className="space-y-4 sm:space-y-8 px-1 sm:px-0 pb-20">
             <div className="mb-4 sm:mb-8">
                 <h1 className="text-[20px] sm:text-[24px] lg:text-[36px] font-normal text-black tracking-tight leading-none">Orders</h1>
                 <p className="text-gray-500 text-sm sm:text-base">Manage your restaurant active orders</p>
@@ -1405,17 +1408,23 @@ const AdminOrders = () => {
                             return (
                                 <div key={order._id} className="flex items-center justify-between p-2.5 sm:p-5 bg-white rounded-[1.5rem] sm:rounded-[2.5rem] border border-gray-100 shadow-sm hover:border-[#FD6941] transition-all gap-1.5 sm:gap-4 group">
                                     {/* Left: Info */}
-                                    <div className="flex items-center gap-2 sm:gap-4 flex-[2] sm:flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 sm:gap-5 shrink-0 min-w-0">
                                         <div className={`w-8 h-8 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 border ${order.status === 'pending' ? 'bg-red-50' : order.status === 'preparing' ? 'bg-yellow-50' : 'bg-green-50'} border-transparent group-hover:scale-110 transition-transform`}>
                                             <UtensilsCrossed className={`w-3.5 h-3.5 sm:w-6 sm:h-6 ${statusTextColor}`} />
                                         </div>
                                         <div className="min-w-0 flex flex-col gap-0.5 sm:gap-1">
-                                            <div>
-                                                <h4 className="text-gray-900 text-[13px] sm:text-lg font-normal font-urbanist truncate">#{order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id.slice(-4)}</h4>
-                                                <p className="text-[9px] sm:text-sm text-gray-400 font-normal uppercase tracking-tight">Table {order.tableNumber || 'N/A'}</p>
+                                            <div className="flex items-center gap-2 whitespace-nowrap">
+                                                <h4 className="text-gray-900 text-[14px] sm:text-lg font-normal">#{order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id.slice(-4)}</h4>
+                                                <span className="hidden sm:inline-flex items-center text-[10px] sm:text-xs text-gray-500 font-normal bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100">
+                                                    {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </span>
                                             </div>
-                                            {/* Item List Display - Desktop only */}
-                                            <div className="hidden sm:flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-gray-600 font-normal">
+                                        <p className="text-[10px] sm:text-sm text-gray-400 font-normal uppercase tracking-widest mt-0.5">Table {order.tableNumber || 'N/A'}</p>
+                                    </div>
+                                </div>
+
+                                    {/* Item List Display - Desktop only */}
+                                    <div className="hidden sm:flex flex-1 flex-wrap gap-x-3 gap-y-2 text-[13px] text-gray-600 font-normal ml-4 border-l border-gray-50 pl-6">
                                                 {order.items && order.items.length > 0 ? (
                                                     order.items.map((item, idx) => (
                                                         <span key={idx} className="bg-gray-50 px-1.5 py-0.5 rounded-md border border-gray-100">
@@ -1427,11 +1436,10 @@ const AdminOrders = () => {
                                                 )}
                                             </div>
                                             {/* Item Count - Mobile only */}
-                                            <div className="sm:hidden">
-                                                <p className="text-[10px] text-gray-400 font-normal">{order.items?.length || 0} items</p>
-                                            </div>
-                                        </div>
+                                    <div className="sm:hidden">
+                                        <p className="text-[10px] text-gray-400 font-normal">{order.items?.length || 0} items</p>
                                     </div>
+
 
                                     {/* Middle for Mobile / Hidden on Desktop */}
                                     <div className="flex-1 flex flex-col justify-center items-center sm:hidden shrink-0 gap-0.5">
@@ -1442,7 +1450,7 @@ const AdminOrders = () => {
                                             </div>
                                             <span className="text-[8px] font-bold uppercase tracking-widest">{order.status}</span>
                                         </div>
-                                        <span className="text-[10px] text-gray-900 border-gray-100 font-bold font-urbanist">
+                                        <span className="text-[10px] text-gray-900 border-gray-100 font-bold ">
                                             {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                     </div>
@@ -1534,21 +1542,22 @@ const AdminOrders = () => {
                         {filteredHistoryOrders.map(order => (
                             <div key={order._id} className="flex items-center justify-between p-2.5 sm:p-5 bg-white rounded-[1.5rem] sm:rounded-[2.5rem] border border-gray-100 shadow-sm hover:border-[#FD6941] transition-all gap-1.5 sm:gap-4 group">
                                 {/* Left: Info */}
-                                <div className="flex items-center gap-2 sm:gap-4 flex-[2] sm:flex-1 min-w-0">
+                                <div className="flex items-center gap-2 sm:gap-5 shrink-0 min-w-0">
                                     <div className="w-8 h-8 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0 border bg-green-50 border-transparent group-hover:scale-110 transition-transform">
                                         <UtensilsCrossed className="w-3.5 h-3.5 sm:w-6 sm:h-6 text-green-600" />
                                     </div>
                                     <div>
-                                        <div className="flex items-center gap-2">
-                                            <h4 className="text-gray-900 text-[13px] sm:text-lg font-normal font-urbanist truncate">#{order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id.slice(-4)}</h4>
-                                            <span className="hidden sm:inline text-[9px] sm:text-xs text-gray-400 font-normal bg-gray-50 px-1.5 py-0.5 rounded-full border border-gray-100">
+                                        <div className="flex items-center gap-2 whitespace-nowrap">
+                                            <h4 className="text-gray-900 text-[14px] sm:text-xl font-normal">#{order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id.slice(-4)}</h4>
+                                            <span className="hidden sm:inline-flex items-center text-[10px] sm:text-xs text-gray-500 font-normal bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100">
                                                 {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </span>
                                         </div>
-                                        <p className="text-[9px] sm:text-sm text-gray-400 font-normal uppercase tracking-tight">Table {order.tableNumber || 'N/A'}</p>
+                                        <p className="text-[10px] sm:text-sm text-gray-400 font-normal uppercase tracking-widest mt-0.5">Table {order.tableNumber || 'N/A'}</p>
                                     </div>
+                                </div>
                                     {/* Item List Display - Desktop only */}
-                                    <div className="hidden sm:flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-gray-600 font-normal">
+                                    <div className="hidden sm:flex flex-1 flex-wrap gap-x-3 gap-y-2 text-[13px] text-gray-600 font-normal ml-4 border-l border-gray-50 pl-6">
                                         {order.items && order.items.length > 0 ? (
                                             order.items.map((item, idx) => (
                                                 <span key={idx} className="bg-gray-50 px-1.5 py-0.5 rounded-md border border-gray-100">
@@ -1563,7 +1572,6 @@ const AdminOrders = () => {
                                     <div className="sm:hidden">
                                         <p className="text-[10px] text-gray-400 font-normal">{order.items?.length || 0} items</p>
                                     </div>
-                                </div>
 
                                 {/* Middle for Mobile / Hidden on Desktop */}
                                 <div className="flex-1 flex flex-col justify-center items-center sm:hidden shrink-0 gap-0.5">
@@ -1574,7 +1582,7 @@ const AdminOrders = () => {
                                         </div>
                                         <span className="text-[8px] font-bold uppercase tracking-widest">Done</span>
                                     </div>
-                                    <span className="text-[10px] text-gray-900 font-bold font-urbanist">
+                                    <span className="text-[10px] text-gray-900 font-bold ">
                                         {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                     </span>
                                 </div>
@@ -1615,10 +1623,10 @@ const AdminOrders = () => {
                 )}
             </div>
 
-            {
-                selectedOrder && createPortal(
-                    <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-md flex items-center justify-center p-2 sm:p-4">
-                        <div className="bg-gradient-to-br from-gray-50 to-white w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] rounded-[1.5rem] sm:rounded-[2.5rem] shadow-2xl relative flex flex-col border border-gray-100 overflow-hidden">
+            {selectedOrder && createPortal(
+                    <div className="fixed inset-0 w-full h-[100dvh] z-[9999] bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4">
+                        <div className="fixed inset-0" onClick={() => { setSelectedOrder(null); setSelectedItems([]); }} />
+                        <div className="bg-gradient-to-br from-gray-50 to-white w-full max-w-2xl max-h-[92dvh] sm:max-h-[90vh] rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl relative flex flex-col border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-5 sm:zoom-in duration-300">
 
                             <button
                                 onClick={() => {
@@ -1631,9 +1639,9 @@ const AdminOrders = () => {
                             </button>
 
                             <div className="overflow-hidden flex flex-col flex-1">
-                                {selectedOrder.status === 'completed' ? (
+                                {selectedOrder?.status === 'completed' ? (
                                     <div className="p-2 sm:p-8 overflow-y-auto custom-scrollbar flex items-start sm:items-center justify-center bg-gray-100/50 h-full flex-1">
-                                        <div className="bg-white mx-auto shadow-sm border border-gray-200 p-4 sm:p-8 font-mono text-black relative mb-4 sm:mb-8" style={{ width: '100%', maxWidth: '380px' }}>
+                                        <div className="bg-white mx-auto shadow-sm border border-gray-200 p-4 sm:p-8 font-mono text-black relative my-2 sm:my-8" style={{ width: '100%', maxWidth: '380px' }}>
                                             <button
                                                 onClick={() => handlePrint(selectedOrder)}
                                                 className="absolute top-4 right-4 p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors no-print"
@@ -1643,6 +1651,10 @@ const AdminOrders = () => {
                                             </button>
 
                                             <div className="text-center mb-6">
+                                                <img src={EatGreetLogo} alt="EatGreet" className="h-6 mx-auto mb-4 object-contain opacity-70" />
+                                                {restaurant?.logo && (
+                                                    <img src={restaurant.logo} alt="Restaurant Logo" className="h-12 mx-auto mb-3 object-contain" />
+                                                )}
                                                 <h2 className="text-xl font-normal uppercase mb-2 tracking-tight">{restaurant?.name || 'EatGreet Restaurant'}</h2>
                                                 <p className="text-[12px] leading-tight mb-1 font-normal italic">{restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</p>
                                                 {(restaurant?.businessEmail || restaurant?.restaurantDetails?.businessEmail) && (
@@ -1732,10 +1744,10 @@ const AdminOrders = () => {
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="flex flex-col h-full overflow-hidden p-4 sm:p-0">
-                                        <div className="flex-1 overflow-y-auto no-scrollbar sm:pr-2 mb-4">
-                                            <div className="mb-4 sm:mb-8 mt-2 sm:mt-0">
-                                                <h2 className="text-2xl sm:text-4xl text-gray-900 mb-1 font-normal tracking-tighter font-urbanist">Order #{selectedOrder.dailySequence ? String(selectedOrder.dailySequence).padStart(3, '0') : selectedOrder._id.slice(-4)}</h2>
+                                    <div className="flex flex-col h-full overflow-hidden">
+                                        <div className="flex-1 overflow-y-auto no-scrollbar px-6 sm:px-10 mb-4">
+                                            <div className="mb-6 sm:mb-8 mt-8 sm:mt-10">
+                                                <h2 className="text-2xl sm:text-4xl text-gray-900 mb-1 font-normal tracking-tighter ">Order #{selectedOrder?.dailySequence ? String(selectedOrder.dailySequence).padStart(3, '0') : selectedOrder?._id?.slice(-4)}</h2>
                                                 <p className="text-gray-400 text-[8px] sm:text-xs font-semibold uppercase tracking-[0.3em]">Live Order View</p>
                                             </div>
 
@@ -1784,15 +1796,15 @@ const AdminOrders = () => {
                                                         <circle cx="50" cy="50" r="46" fill="none" stroke="#F3F4F6" strokeWidth="4" />
                                                         <circle
                                                             cx="50" cy="50" r="46" fill="none"
-                                                            stroke={selectedOrder.status === 'pending' ? '#FD6941' : selectedOrder.status === 'preparing' ? '#EAB308' : '#22C55E'}
+                                                            stroke={selectedOrder?.status === 'pending' ? '#FD6941' : selectedOrder?.status === 'preparing' ? '#EAB308' : '#22C55E'}
                                                             strokeWidth="4"
-                                                            strokeDasharray={`${(timers[selectedOrder._id] / 900) * 289} 289`}
+                                                            strokeDasharray={`${(timers[selectedOrder?._id] / 900) * 289} 289`}
                                                             strokeLinecap="round"
                                                             className="transition-all duration-1000"
                                                         />
                                                     </svg>
                                                     <div className="text-center z-10">
-                                                        <div className="text-2xl sm:text-4xl font-normal text-gray-900 leading-none">{formatTime(timers[selectedOrder._id] || 0)}</div>
+                                                        <div className="text-2xl sm:text-4xl font-normal text-gray-900 leading-none">{formatTime(timers[selectedOrder?._id] || 0)}</div>
                                                         <p className="text-[8px] sm:text-[10px] text-gray-400 mt-1 uppercase font-normal tracking-widest">Remaining</p>
                                                     </div>
                                                 </div>
@@ -1803,14 +1815,15 @@ const AdminOrders = () => {
                                                     <h3 className="text-[10px] text-gray-400 uppercase font-normal tracking-widest px-1">Order Items</h3>
                                                     {selectedOrder.status !== 'completed' && (
                                                         <button
-                                                            onClick={() => {
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
                                                                 if (selectedItems.length === selectedOrder.items?.length) {
                                                                     setSelectedItems([]);
                                                                 } else {
                                                                     setSelectedItems(selectedOrder.items?.map((_, i) => i) || []);
                                                                 }
                                                             }}
-                                                            className="text-[10px] font-normal text-[#FD6941] bg-[#FD6941] px-3 py-1 rounded-full border border-[#FD6941]"
+                                                            className="text-[11px] font-normal text-white bg-[#FD6941] px-4 py-1.5 rounded-full shadow-sm active:scale-95 transition-all"
                                                         >
                                                             {selectedItems.length === selectedOrder.items?.length ? 'Deselect All' : 'Select All'}
                                                         </button>
@@ -1910,11 +1923,11 @@ const AdminOrders = () => {
                                         </div>
 
                                         {/* Fixed Bottom Action Area */}
-                                        <div className="pt-2 sm:pt-6 border-t border-gray-100 bg-white/50 backdrop-blur-md">
+                                        <div className="pt-2 sm:pt-6 px-6 sm:px-10 pb-10 sm:pb-10 border-t border-gray-100 bg-white/50 backdrop-blur-md">
                                             <div className="flex items-center justify-between p-4 sm:p-8 bg-gray-50 rounded-[1.5rem] sm:rounded-[3rem] text-gray-900 mb-3 sm:mb-6 border border-gray-100 shadow-sm relative overflow-hidden group">
                                                 <div className="relative z-10">
                                                     <p className="text-[8px] sm:text-[11px] text-gray-400 font-normal uppercase tracking-[0.2em] mb-1 sm:mb-2 italic">Grand Total</p>
-                                                    <p className="text-xl sm:text-5xl font-normal font-urbanist tracking-tighter flex items-center gap-1.5 sm:gap-2">
+                                                    <p className="text-xl sm:text-5xl font-normal  tracking-tighter flex items-center gap-1.5 sm:gap-2">
                                                         <span className="text-[#FD6941]">{currencySymbol}</span>
                                                         {(selectedOrder.totalAmount || 0).toFixed(2)}
                                                     </p>
@@ -1966,13 +1979,13 @@ const AdminOrders = () => {
                                                 ) : (
                                                     <button
                                                         onClick={() => {
-                                                            const nextStatus = selectedOrder.status === 'ready' ? 'completed' : getNextStatus(selectedOrder.status);
-                                                            updateOrderStatus(selectedOrder._id, nextStatus);
+                                                            const nextStatus = selectedOrder?.status === 'ready' ? 'completed' : getNextStatus(selectedOrder?.status);
+                                                            updateOrderStatus(selectedOrder?._id, nextStatus);
                                                             setSelectedOrder(null);
                                                         }}
-                                                        className={`flex-1 ${selectedOrder.status === 'ready' ? 'bg-[#FD6941]' : getStatusButtonColor(selectedOrder.status)} text-white py-3 sm:py-5 rounded-[1.2rem] sm:rounded-[1.8rem] transition-all text-sm sm:text-lg font-normal shadow-lg hover:shadow-xl active:scale-[0.98] outline-none`}
+                                                        className={`flex-1 ${selectedOrder?.status === 'ready' ? 'bg-[#FD6941]' : getStatusButtonColor(selectedOrder?.status)} text-white py-3 sm:py-5 rounded-[1.2rem] sm:rounded-[1.8rem] transition-all text-sm sm:text-lg font-normal shadow-lg hover:shadow-xl active:scale-[0.98] outline-none`}
                                                     >
-                                                        {selectedOrder.status === 'ready' ? 'Complete Order' : getNextStatusLabel(selectedOrder.status)}
+                                                        {selectedOrder?.status === 'ready' ? 'Complete Order' : getNextStatusLabel(selectedOrder?.status)}
                                                     </button>
                                                 )}
                                             </div>

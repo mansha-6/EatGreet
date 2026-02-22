@@ -274,9 +274,9 @@ const DateRangePicker = ({ range, onChange, onClose }) => {
 
                         let stateClasses = "";
                         if (active) {
-                            stateClasses = "bg-[#FD6941] text-white shadow-lg  z-10 hover:bg-[#E55A35]";
+                            stateClasses = "bg-[#FD6941] text-white shadow-lg z-10 hover:bg-[#E55A35]";
                         } else if (range) {
-                            stateClasses = "bg-[#FD6941] text-[#FD6941] hover:bg-[#FD6941]";
+                            stateClasses = "bg-[#FFF5F1] text-[#FD6941] hover:bg-[#FFE4DE]";
                         } else {
                             stateClasses = "text-gray-700 hover:bg-gray-100";
                         }
@@ -375,6 +375,8 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
             </head>
             <body>
                 <div class="header">
+                    <img src="${EatGreetLogo}" style="height: 25px; width: auto; margin: 0 auto 15px; display: block; opacity: 0.8;" />
+                    ${restaurant?.logo ? `<img src="${restaurant.logo}" style="height: 50px; width: auto; margin-bottom: 10px;" />` : ''}
                     <div class="restaurant-name">${restaurant?.name || 'EatGreet Restaurant'}</div>
                     <div class="restaurant-info">${restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</div>
                     ${(restaurant?.contactNumber || restaurant?.restaurantDetails?.contactNumber) ? `<div class="restaurant-info">Tel: ${restaurant.contactNumber || restaurant.restaurantDetails.contactNumber}</div>` : ''}
@@ -453,8 +455,8 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200" onClick={onClose}>
-            <div className="bg-gradient-to-br from-gray-50 to-white w-full max-w-2xl max-h-[90vh] rounded-[2.5rem] shadow-2xl relative flex flex-col border border-gray-100 overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 w-full h-[100dvh] z-[9999] flex items-end sm:items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200" onClick={onClose}>
+            <div className="bg-gradient-to-br from-gray-50 to-white w-full max-w-2xl max-h-[92dvh] sm:max-h-[90vh] rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl relative flex flex-col border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-5 sm:zoom-in-95" onClick={e => e.stopPropagation()}>
 
                 <button
                     onClick={onClose}
@@ -463,8 +465,8 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                     <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
 
-                <div className="p-4 sm:p-8 overflow-y-auto custom-scrollbar flex items-start sm:items-center justify-center bg-gray-100/50 h-full">
-                    <div className="bg-white mx-auto shadow-sm border border-gray-200 p-6 sm:p-8 font-mono text-black relative w-full max-w-[380px] my-4">
+                <div className="p-2 sm:p-8 overflow-y-auto custom-scrollbar flex items-start sm:items-center justify-center bg-gray-100/50 h-full flex-1">
+                    <div className="bg-white mx-auto shadow-sm border border-gray-200 p-4 sm:p-8 font-mono text-black relative w-full max-w-[380px] my-2 sm:my-8">
                         <button
                             onClick={handlePrint}
                             className="absolute top-4 right-4 p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors no-print"
@@ -474,6 +476,10 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                         </button>
 
                         <div className="text-center mb-6">
+                            <img src={EatGreetLogo} alt="EatGreet" className="h-6 mx-auto mb-4 object-contain opacity-70" />
+                            {restaurant?.logo && (
+                                <img src={restaurant.logo} alt="Restaurant Logo" className="h-12 mx-auto mb-3 object-contain" />
+                            )}
                             <h2 className="text-xl font-normal uppercase mb-2 tracking-tight">{restaurant?.name || 'EatGreet Restaurant'}</h2>
                             <p className="text-[12px] leading-tight mb-1 font-normal italic">{restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</p>
                             {(restaurant?.businessEmail || restaurant?.restaurantDetails?.businessEmail) && (
@@ -573,7 +579,7 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
 };
 
 const AdminSales = () => {
-    const { currencySymbol } = useSettings();
+    const { currencySymbol, user } = useSettings();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -723,7 +729,7 @@ const AdminSales = () => {
         const orders = isFiltered ? (s.totalOrders || 0) : (s.allTimeOrders || s.totalOrders || 0);
 
         // Net Profit Logic: Revenue - Expenses
-        const monthlyExpense = s.monthlyExpense || restaurant?.monthlyExpense || restaurant?.restaurantDetails?.monthlyExpense || 0;
+        const monthlyExpense = s.monthlyExpense || user?.restaurantDetails?.monthlyExpense || restaurant?.monthlyExpense || 0;
         let totalExpense = 0;
 
         if (isFiltered && dateRange.start && dateRange.end) {
@@ -756,7 +762,7 @@ const AdminSales = () => {
         const trend = analytics.charts?.revenueTrend || [];
         const isFiltered = !!(dateRange.start || dateRange.end);
         const s = analytics.summary || {};
-        const monthlyExpense = s.monthlyExpense || restaurant?.monthlyExpense || restaurant?.restaurantDetails?.monthlyExpense || 0;
+        const monthlyExpense = s.monthlyExpense || user?.restaurantDetails?.monthlyExpense || restaurant?.monthlyExpense || 0;
         const dailyExpense = monthlyExpense / 30;
 
         // 1. All Time View (Fixed 12-Month Jan-Dec Axis)
@@ -824,6 +830,11 @@ const AdminSales = () => {
 
     // Download PDF Handler
     const handleDownloadPDF = async () => {
+        if (!dateRange.start || !dateRange.end) {
+            toast.error("Please select and apply a date range first to export the report.");
+            return;
+        }
+
         const toastId = toast.loading('Generating PDF report...');
         try {
             // Helper: Safe Currency Formatter for PDF
@@ -885,7 +896,7 @@ const AdminSales = () => {
             // Restaurant Logo & Info
             let logoImg = null;
             const footerLogoImg = await innerLoadImage(EatGreetLogo);
-            const logoUrl = restaurant?.logo || restaurant?.image || restaurant?.restaurantDetails?.logo;
+            const logoUrl = user?.restaurantDetails?.logo || restaurant?.logo || restaurant?.restaurantDetails?.logo || restaurant?.image;
 
             if (logoUrl) {
                 logoImg = await innerLoadImage(logoUrl);
@@ -1126,6 +1137,11 @@ const AdminSales = () => {
 
     // Download Excel Handler
     const handleDownloadExcel = async () => {
+        if (!dateRange.start || !dateRange.end) {
+            toast.error("Please select and apply a date range first to export the report.");
+            return;
+        }
+
         const toastId = toast.loading('Generating branded Excel report...');
         try {
             // Helper to load image for ExcelJS
@@ -1153,7 +1169,7 @@ const AdminSales = () => {
             const worksheet = workbook.addWorksheet('Sales Report');
 
             // 1. Load Images
-            const restaurantLogoBase64 = await excelLoadImage(restaurant?.logo || restaurant?.image || restaurant?.restaurantDetails?.logo);
+            const restaurantLogoBase64 = await excelLoadImage(user?.restaurantDetails?.logo || restaurant?.logo || restaurant?.restaurantDetails?.logo || restaurant?.image);
             const eatGreetLogoBase64 = await excelLoadImage(EatGreetLogo);
 
             // 2. Calculate Stats (Same logic as PDF)
@@ -1221,7 +1237,7 @@ const AdminSales = () => {
                 const logoId = workbook.addImage({ base64: restaurantLogoBase64, extension: 'png' });
                 // Position logo closer to the centered title for a unified look
                 worksheet.addImage(logoId, {
-                    tl: { col: 3.2, row: 1.1 }, // Moved to 3.2 to sit just left of the center
+                    tl: { col: 3.8, row: 1.1 }, // Moved to 3.8 to sit tightly next to the title
                     ext: { width: 80, height: 80 },
                     editAs: 'oneCell'
                 });
@@ -1285,9 +1301,10 @@ const AdminSales = () => {
             overviewHeader.height = 35;
 
             // Distribute stats across B:H
-            const statsLabels = worksheet.addRow(['', 'TOTAL REVENUE', '', 'NET PROFIT', '', 'TOTAL ORDERS', 'AVG ORDER VALUE']);
+            const statsLabels = worksheet.addRow(['', 'TOTAL REVENUE', '', 'NET PROFIT', '', 'TOTAL ORDERS', 'AVG ORDER VALUE', '']);
             worksheet.mergeCells(`B${statsLabels.number}:C${statsLabels.number}`);
             worksheet.mergeCells(`D${statsLabels.number}:E${statsLabels.number}`);
+            worksheet.mergeCells(`G${statsLabels.number}:H${statsLabels.number}`);
             statsLabels.font = { size: 11, bold: true, color: { argb: textGray } };
             statsLabels.alignment = { horizontal: 'center' };
             statsLabels.height = 25;
@@ -1299,10 +1316,12 @@ const AdminSales = () => {
                 pdfProfit,
                 '',
                 pdfStats.orders,
-                pdfAov
+                pdfAov,
+                ''
             ]);
             worksheet.mergeCells(`B${statsValues.number}:C${statsValues.number}`);
             worksheet.mergeCells(`D${statsValues.number}:E${statsValues.number}`);
+            worksheet.mergeCells(`G${statsValues.number}:H${statsValues.number}`);
             statsValues.height = 45;
 
             statsValues.eachCell((cell, colNumber) => {
@@ -1435,7 +1454,7 @@ const AdminSales = () => {
     };
 
     return (
-        <div className="space-y-6 pb-10">
+        <div className="space-y-6 pb-4">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
@@ -1475,23 +1494,23 @@ const AdminSales = () => {
 
                     <button
                         onClick={handleDownloadPDF}
-                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-normal flex items-center justify-center gap-0 shrink-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden hover:sm:w-auto hover:sm:px-6 hover:sm:gap-2"
+                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white h-9 sm:h-12 px-3 sm:px-6 rounded-full font-normal flex items-center justify-center gap-2 shrink-0 transition-all duration-300 shadow-sm text-sm"
                         title="Download PDF Report"
                     >
                         <Download className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                        <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
-                            Download PDF
+                        <span className="hidden sm:block whitespace-nowrap">
+                            PDF Report
                         </span>
                     </button>
 
                     <button
                         onClick={handleDownloadExcel}
-                        className="bg-green-600 hover:bg-green-700 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-normal flex items-center justify-center gap-0 shrink-0 group transition-all duration-300 shadow-sm shadow-green-100 text-sm overflow-hidden hover:sm:w-auto hover:sm:px-6 hover:sm:gap-2"
+                        className="bg-green-600 hover:bg-green-700 text-white h-9 sm:h-12 px-3 sm:px-6 rounded-full font-normal flex items-center justify-center gap-2 shrink-0 transition-all duration-300 shadow-sm shadow-green-100 text-sm"
                         title="Download Excel Report"
                     >
                         <FileSpreadsheet className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                        <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
-                            Download Excel
+                        <span className="hidden sm:block whitespace-nowrap">
+                            Excel Report
                         </span>
                     </button>
                 </div>
@@ -1544,8 +1563,8 @@ const AdminSales = () => {
                         <h3 className="text-[16px] sm:text-[24px] font-normal text-black">Revenue & Net Profit</h3>
                         <p className="text-[10px] text-gray-400 font-normal">Monthly breakdown of sales and actual earnings</p>
                     </div>
-                    <div className="h-[300px] w-full min-w-0">
-                        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                    <div className="h-[250px] sm:h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%" debounce={50}>
                             <AreaChart data={graphData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -1564,6 +1583,7 @@ const AdminSales = () => {
                                     tickLine={false}
                                     tick={{ fill: '#64748B', fontSize: 12 }}
                                     dy={10}
+                                    minTickGap={10}
                                 />
                                 <YAxis hide domain={['auto', 'auto']} />
                                 <Tooltip
@@ -1614,11 +1634,12 @@ const AdminSales = () => {
                         <h3 className="text-[16px] sm:text-[24px] font-normal text-black">Total Orders</h3>
                         <p className="text-[12px] text-gray-400 font-normal">Number of orders per period</p>
                     </div>
-                    <div className="h-[300px] w-full min-w-0">
-                        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                    <div className="h-[250px] sm:h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%" debounce={50}>
                             <BarChart data={graphData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f3f3" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 12 }} dy={10} />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 12 }} dy={10} minTickGap={10} />
+                                <YAxis hide />
                                 <Tooltip
                                     cursor={{ fill: '#F3F4F6' }}
                                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
@@ -1688,7 +1709,7 @@ const AdminSales = () => {
                     </div>
                 </div>
 
-                <div className="block sm:hidden divide-y divide-gray-50 max-h-[600px] overflow-y-auto no-scrollbar p-2">
+                <div className="block sm:hidden divide-y divide-gray-50 p-2">
                     {tableData.length > 0 ? (
                         tableData.map((order) => (
                             <div key={order._id} className="p-3 bg-white rounded-2xl border border-gray-100 shadow-sm mb-3 flex items-center justify-between gap-3 group">
@@ -1698,7 +1719,7 @@ const AdminSales = () => {
                                     </div>
                                     <div className="min-w-0">
                                         <div className="flex items-center gap-2">
-                                            <p className="text-sm font-bold text-gray-900 font-urbanist truncate">#{order.dailySequence || (order._id || '').slice(-6).toUpperCase()}</p>
+                                            <p className="text-sm font-bold text-gray-900  truncate">#{order.dailySequence || (order._id || '').slice(-6).toUpperCase()}</p>
                                             <span className="text-[9px] text-gray-400 font-normal bg-gray-50 px-1.5 py-0.5 rounded-full border border-gray-100 italic">
                                                 {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             </span>
@@ -1804,7 +1825,7 @@ const AdminSales = () => {
                 isOpen={!!selectedOrder}
                 onClose={() => setSelectedOrder(null)}
                 currencySymbol={currencySymbol}
-                restaurant={restaurant}
+                restaurant={user?.restaurantDetails || restaurant}
             />
         </div>
     );

@@ -720,31 +720,31 @@ const AdminMenu = () => {
                                 toast.error("Restaurant details not loaded yet");
                             }
                         }}
-                        className="bg-white hover:bg-gray-50 text-gray-600 hover:text-black p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group/preview transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-gray-100 text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2"
+                        className="bg-white hover:bg-gray-50 text-gray-600 hover:text-black h-10 sm:h-12 px-2 sm:px-6 rounded-full font-normal flex items-center justify-center gap-2 transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-gray-100 text-sm"
                         title="Preview"
                     >
                         <Eye className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                        <span className="max-w-0 opacity-0 group-hover/preview:max-w-[120px] group-hover/preview:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                        <span className="hidden sm:block">
                             Preview
                         </span>
                     </button>
                     {/* Offers Button */}
                     <button
                         onClick={() => window.open(`/${encodeURIComponent(restaurantName)}/admin/offers`, '_self')}
-                        className="bg-white hover:bg-gray-50 text-gray-600 hover:text-black p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-gray-100 text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2"
+                        className="bg-white hover:bg-gray-50 text-gray-600 hover:text-black h-10 sm:h-12 px-2 sm:px-6 rounded-full font-normal flex items-center justify-center gap-2 transition-all duration-300 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] border border-gray-100 text-sm"
                         title="Manage Offers"
                     >
                         <Tag className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                        <span className="max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                        <span className="hidden sm:block">
                             Offers
                         </span>
                     </button>
                     <button
                         onClick={openModal}
-                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2"
+                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white h-10 sm:h-12 px-4 sm:px-6 rounded-full font-normal flex items-center justify-center gap-2 transition-all duration-300 shadow-sm text-sm"
                     >
                         <Plus className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                        <span className="max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                        <span className="hidden sm:block">
                             Add Item
                         </span>
                     </button>

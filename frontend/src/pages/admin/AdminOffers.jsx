@@ -252,10 +252,10 @@ const AdminOffers = () => {
                 </div>
                 <button
                     onClick={openModal}
-                    className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2"
+                    className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white h-10 sm:h-12 px-4 sm:px-6 rounded-full font-normal flex items-center justify-center gap-2 transition-all duration-300 shadow-sm text-sm"
                 >
                     <Plus className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                    <span className="max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                    <span className="hidden sm:block">
                         Add Offer
                     </span>
                 </button>
@@ -363,9 +363,9 @@ const AdminOffers = () => {
 
             {/* Offer Modal */}
             {isModalOpen && createPortal(
-                <div className="fixed inset-0 w-screen h-screen top-0 left-0 bg-black/70 backdrop-blur-xl flex items-center justify-center z-[99999] px-2">
+                <div className="fixed inset-0 w-full h-[100dvh] top-0 left-0 bg-black/70 backdrop-blur-xl flex items-end sm:items-center justify-center z-[99999] px-2">
                     <div className="fixed inset-0" onClick={() => setIsModalOpen(false)} />
-                    <div className="bg-white rounded-[2rem] w-full max-w-2xl max-h-[95vh] shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden relative z-10 flex flex-col">
+                    <div className="bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] w-full max-w-2xl max-h-[92dvh] sm:max-h-[95vh] shadow-2xl animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden relative z-10 flex flex-col">
                         <div className="flex justify-between items-center p-5 sm:p-6 border-b border-gray-100 bg-gray-50/50">
                             <h2 className="text-xl font-normal text-gray-800">{editingOffer ? 'Edit Offer' : 'Create New Offer'}</h2>
                             <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-200 text-gray-500 rounded-full transition-all">
@@ -529,7 +529,7 @@ const AdminOffers = () => {
                             </div>
                         )}
 
-                        <div className="p-5 sm:p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 shrink-0">
+                        <div className="p-5 sm:p-6 pb-8 sm:pb-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 shrink-0">
                             <button onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-sm font-normal text-gray-600 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition-colors">
                                 Cancel
                             </button>

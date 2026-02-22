@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
     User, Store, ClipboardList, CreditCard, Users,
     Bell, Activity, Save, Upload, Plus, Minus,
-    MapPin, Clock, Calendar, FileText, CheckCircle, XCircle
+    MapPin, Clock, Calendar, FileText, CheckCircle, XCircle, Loader2
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { authAPI, restaurantAPI, uploadAPI } from '../../utils/api';

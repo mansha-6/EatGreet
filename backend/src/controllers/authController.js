@@ -37,7 +37,6 @@ const registerUser = async (req, res) => {
                 role: user.role,
                 restaurantName: user.restaurantName,
                 currency: user.currency,
-                profilePicture: user.profilePicture,
                 token: generateToken(user._id),
             });
         } else {
@@ -57,7 +56,7 @@ const authUser = async (req, res) => {
     try {
         // Optimization: Only select fields needed for login and initial response
         // This avoids fetching potentially large arrays like 'payments' and 'staff'
-        const user = await User.findOne({ email }).select('name email password role restaurantName currency profilePicture');
+        const user = await User.findOne({ email }).select('name email password role restaurantName currency');
 
         if (user && (await user.matchPassword(password))) {
             res.json({
@@ -67,7 +66,6 @@ const authUser = async (req, res) => {
                 role: user.role,
                 restaurantName: user.restaurantName,
                 currency: user.currency,
-                profilePicture: user.profilePicture,
                 token: generateToken(user._id),
             });
         } else {
@@ -95,7 +93,6 @@ const getUserProfile = async (req, res) => {
                 city: user.city,
                 restaurantName: user.restaurantName,
                 currency: user.currency,
-                profilePicture: user.profilePicture,
                 restaurantDetails: user.restaurantDetails
             });
         } else {

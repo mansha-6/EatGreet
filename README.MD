@@ -1,99 +1,117 @@
-# 🍽️ EatGreet - Modern Restaurant Ecosystem
+# Restaurant CMS
 
-**EatGreet** is a premium, high-performance MERN stack ecosystem designed for modern restaurants. It features a multi-tenant architecture, real-time order tracking, 3D menu visualization, and a sophisticated admin dashboard.
+A modern, responsive Content Management System (CMS) designed for restaurants to streamline their operations. This application allows restaurant owners to manage their dashboard, menu items, food categories, and general settings with ease.
 
----
+## 🚀 Technlogy Stack
 
-## 🌐 System Architecture (Overall View)
+This project is built using the latest web technologies for speed, scalability, and developer experience:
 
-EatGreet operates as a unified ecosystem where different modules communicate in real-time:
-
-*   **Core API (Backend):** A Node/Express server handling authentication, multi-tenant database routing, and business logic.
-*   **Real-time Engine:** Socket.io layer for instant communication between the Admin Dashboard and the Kitchen Display System (KDS).
-*   **Admin Dashboard (Frontend):** A React-based interface for restaurant owners to manage menus, track sales, and configure settings.
-*   **Kitchen KDS:** A specialized view for chefs to see and update order statuses in real-time.
-*   **Multi-Tenant Database:** Isolated MongoDB collections for each restaurant to ensure data privacy and performance.
-
----
-
-## ✨ Key Features & Modules
-
-### 👑 Admin & Super-Admin
-- **Global Management:** Super-Admins can manage all restaurants and users.
-- **Sales Analytics:** Visual charts for revenue, orders, and expense tracking.
-- **Tenant Isolation:** Every restaurant has its own slug (e.g., `eatgreet.com/my-cafe`).
-
-### � Menu & 3D Visuals
-- **Dynamic Categories:** Create and organize food categories with drag-and-drop ease.
-- **3D Model Viewer:** Support for `.glb` and `.gltf` files to show customers 3D views of food.
-- **Cloud Imagery:** High-speed image delivery via Cloudinary integration.
-
-### 🔔 Real-time Operations
-- **Instant Orders:** Kitchen receives orders the second they are placed.
-- **Status Sync:** Live updates on "Preparing", "Ready", and "Delivered" states.
-
----
-
-## 🛠️ Technology Stack
-
-### Frontend
-- **Framework:** [React 19](https://react.dev/)
+- **Frontend Framework:** [React](https://react.dev/) (v19)
 - **Build Tool:** [Vite](https://vitejs.dev/)
-- **Styling:** Tailwind CSS & Framer Motion
-- **Real-time:** Socket.io Client
-- **Typography:** [Inter](https://rsms.me/inter/) (Professional, high-readability font)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
 
-### Backend
-- **Runtime:** Node.js with Express
-- **Database:** MongoDB (Mongoose)
-- **Real-time Engine:** Socket.io
-- **File Storage:** Cloudinary
-- **Security:** JWT Authentication & Bcrypt
+## ✨ Features
 
----
+- **Dashboard:** A visual overview of key metrics and restaurant performance.
+- **Menu Management:** Easily add, edit, or remove menu items.
+- **Category Management:** Organize food items into specific categories.
+- **Authentication:** Secure Login and Signup pages.
+- **Settings:** Configure application and restaurant preferences.
+- **Responsive Design:** Optimized for seamless usage across different devices.
 
 ## 📂 Project Structure
 
-```text
-EatGreet/
-├── backend/                # Express API & Socket.io Server (Port 5002)
-│   ├── src/
-│   │   ├── controllers/    # Business logic (Auth, Orders, Stats)
-│   │   ├── models/         # Multi-tenant MongoDB Schemas
-│   │   ├── routes/         # API Endpoint definitions
-│   │   ├── middleware/     # Tenant resolution & JWT protection
-│   │   └── utils/          # Helpers (Seeding, Cloudinary)
-│   └── index.js            # Server entry point
-├── frontend/               # React Application (Vite)
-│   ├── src/
-│   │   ├── components/     # UI Elements (MediaSlider, Charts)
-│   │   ├── context/        # Global state (Socket, Settings)
-│   │   ├── pages/          # Auth, Admin, Kitchen, & SuperAdmin views
-│   │   └── utils/          # Axios API services
-│   └── index.html          # Application shell
-└── README.md
+The project is currently organized with a frontend-focused structure:
+
+```
+restaurant-cms/
+├── frontend/           # Frontend source code
+│   ├── public/         # Static assets
+│   ├── src/            # Source files (components, pages, etc.)
+│   ├── index.html      # Entry HTML file
+│   ├── package.json    # Dependencies and scripts
+│   └── vite.config.js  # Vite configuration
+└── README.md           # Project documentation
 ```
 
----
+## 🛠️ Getting Started
 
-## 🚀 Quick Startup
+Follow these steps to run the project locally on your machine.
 
-### 1. Prerequisites
-- Node.js (v18+)
-- MongoDB Atlas account
-- Cloudinary API keys
+### Prerequisites
 
-### 2. Configure Environment Variables
-- **Backend (`/backend/.env`):** Define your `PORT` (e.g., `3000`) and other secrets.
-- **Frontend (`/frontend/.env`):** Set `VITE_API_BASE_URL` using your server's port (e.g., `http://localhost:YOUR_SERVER_PORT/api`).
+- [Node.js](https://nodejs.org/) (version 16 or higher recommended)
+- [npm](https://www.npmjs.com/) (usually installed with Node.js)
 
-### 3. Run Both Servers
+### Installation
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/your-username/EatGreet.git
+   cd EatGreet
+   ```
+
+2. **Navigate to the frontend directory:**
+
+   ```bash
+   cd frontend
+   ```
+
+3. **Install dependencies:**
+
+   ```bash
+   npm install
+   ```
+
+### Running the Application
+
+To start the development server:
+
 ```bash
-# Terminal 1 (Backend)
-cd backend && npm run dev
+npm run dev
+```
+### Building for Production
 
-# Terminal 2 (Frontend)
-cd frontend && npm run dev
+To build the application for production deployment:
+
+```bash
+npm run build
 ```
 
----
+## 🌐 Deployment
+
+To run this application live, you need to deploy both the Frontend and the Backend.
+
+### 1. Backend Deployment (Recommended: Render)
+Since this app uses **Socket.io** for real-time notifications and order updates, we recommend **Render** or **Railway** for the backend, as Vercel's serverless platform does not support permanent WebSocket connections.
+
+1. Create a new "Web Service" on [Render](https://render.com/).
+2. Connect your GitHub repository.
+3. Set the **Root Directory** to `backend`.
+4. Set the **Build Command** to `npm install`.
+5. Set the **Start Command** to `node index.js`.
+6. Add the following **Environment Variables**:
+   - `MONGO_URI`: Your MongoDB connection string.
+   - `JWT_SECRET`: A secure random string.
+   - `PORT`: `5001`.
+   - `NODE_ENV`: `production`.
+   - `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`.
+
+### 2. Frontend Deployment (Recommended: Vercel)
+Vercel is the best platform for your React/Vite frontend.
+
+1. Connect your GitHub repository to [Vercel](https://vercel.com/).
+2. Select the `frontend` directory as the project root.
+3. Vercel will automatically detect **Vite** settings.
+4. Add the following **Environment Variable**:
+   - `VITE_API_BASE_URL`: The URL of your deployed backend (e.g., `https://eatgreet-api.onrender.com/api`).
+5. Deploy!
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📄 License
+
+This project is open-source and available under the [MIT License](LICENSE).

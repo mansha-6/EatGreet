@@ -203,10 +203,10 @@ const AdminCategory = () => {
                 <div className="flex gap-2 items-center">
                     <button
                         onClick={() => { setEditingCategory(null); setNewCategoryName(''); setIsModalOpen(true); }}
-                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2"
+                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white h-10 sm:h-12 px-4 sm:px-6 rounded-full font-normal flex items-center justify-center gap-2 transition-all duration-300 shadow-sm text-sm"
                     >
                         <Plus className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                        <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                        <span className="hidden sm:block">
                             Add Category
                         </span>
                     </button>
@@ -354,9 +354,9 @@ const AdminCategory = () => {
             </div>
 
             {isModalOpen && createPortal(
-                <div className="fixed inset-0 w-screen h-screen top-0 left-0 bg-black/70 backdrop-blur-xl flex items-center justify-center z-[99999] px-4">
+                <div className="fixed inset-0 w-full h-[100dvh] top-0 left-0 bg-black/70 backdrop-blur-xl flex items-end sm:items-center justify-center z-[99999] px-2 sm:px-4">
                     <div className="fixed inset-0" onClick={closeModal} />
-                    <div className="bg-white rounded-[2rem] w-full max-w-md p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in-95 duration-200 relative z-10 max-h-[90vh] overflow-y-auto no-scrollbar">
+                    <div className="bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] w-full max-w-md p-6 sm:p-8 pb-10 sm:pb-8 shadow-2xl animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 relative z-10 max-h-[92dvh] sm:max-h-[90vh] overflow-y-auto no-scrollbar">
                         <div className="flex justify-between items-center mb-4 sm:mb-6">
                             <h2 className="text-xl sm:text-2xl font-normal text-gray-800">{editingCategory ? 'Edit Category' : 'Add New Category'}</h2>
                             <button onClick={closeModal} className="p-2 hover:bg-gray-100 rounded-full transition-colors">

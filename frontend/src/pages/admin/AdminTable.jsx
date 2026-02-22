@@ -7,6 +7,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { restaurantAPI, orderAPI } from '../../utils/api';
 import { useSocket } from '../../context/SocketContext';
 import logo from '../../assets/logo-m.svg';
+import EatGreetLogo from '../../assets/logo-full.png';
 
 const AdminTable = () => {
     const [tables, setTables] = useState(() => {
@@ -29,23 +30,51 @@ const AdminTable = () => {
     const [isInvoicePreviewOpen, setIsInvoicePreviewOpen] = useState(false);
     const [invoiceOrder, setInvoiceOrder] = useState(null);
 
-    const syncTableCount = async (count) => {
+    const syncTableCount = async (count, tableList) => {
         try {
-            await restaurantAPI.updateDetails({ totalTables: count });
+            await restaurantAPI.updateDetails({ 
+                totalTables: count,
+                tableNumbers: tableList?.map(String) // Ensure strings for consistency
+            });
         } catch (error) {
-            console.error("Failed to sync table count", error);
+            console.error("Failed to sync tables", error);
         }
     };
 
     const socket = useSocket();
 
+    // Initial Mount
     useEffect(() => {
-        localStorage.setItem('admin_tables', JSON.stringify(tables));
+        const init = async () => {
+            try {
+                const { data } = await restaurantAPI.getDetails();
+                setRestaurant(data);
+                setRestaurantName(data.name || 'restaurant');
+
+                const backendTableNumbers = data.restaurantDetails?.tableNumbers || [];
+                const backendTableCount = data.restaurantDetails?.totalTables || data.totalTables || 0;
+
+                // Sync with backend as source of truth
+                if (backendTableNumbers.length > 0) {
+                    setTables(backendTableNumbers.map(Number));
+                } else if (backendTableCount > 0) {
+                    // Fallback for old data with only totalTables count
+                    setTables(Array.from({ length: backendTableCount }, (_, i) => i + 1));
+                }
+            } catch (err) {
+                console.error("Init failed", err);
+            }
+            fetchActiveOrders();
+        };
+        init();
+    }, []);
+
+    // Handle Table State Changes
+    useEffect(() => {
         if (tables.length > 0) {
-            syncTableCount(tables.length);
+            localStorage.setItem('admin_tables', JSON.stringify(tables));
+            syncTableCount(tables.length, tables);
         }
-        fetchRestaurantDetails();
-        fetchActiveOrders();
     }, [tables]);
 
     // Socket Listener for Real-Time Table Status
@@ -89,15 +118,6 @@ const AdminTable = () => {
         }
     };
 
-    const fetchRestaurantDetails = async () => {
-        try {
-            const { data } = await restaurantAPI.getDetails();
-            setRestaurant(data);
-            setRestaurantName(data.name || 'restaurant');
-        } catch (error) {
-            console.error("Failed to fetch restaurant details", error);
-        }
-    };
 
     const addTable = () => {
         const numericTables = tables.map(Number);
@@ -128,17 +148,22 @@ const AdminTable = () => {
             const printWindow = window.open('', '_blank');
             if (!printWindow) return;
 
-            const subtotal = order.items?.reduce((acc, it) => acc + (it.price * (it.quantity || 1)), 0) || 0;
-            const cgst = subtotal * 0.025;
-            const sgst = subtotal * 0.025;
-            const grandTotal = subtotal + cgst + sgst;
+            const orderStats = (() => {
+                const subtotal = order.items?.reduce((acc, it) => acc + (it.price * (it.quantity || 1)), 0) || 0;
+                const cgst = subtotal * 0.025;
+                const sgst = subtotal * 0.025;
+                const totalRaw = subtotal + cgst + sgst;
+                const grandTotal = Math.round(totalRaw);
+                const roundOff = grandTotal - totalRaw;
+                return { subtotal, cgst, sgst, totalRaw, grandTotal, roundOff };
+            })();
 
-            const itemsRows = (order.items || []).map(it => `
+            const itemsRows = (order.items || []).map((it, i) => `
                 <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;">
-                    <div style="flex: 1;">${it.name}</div>
+                    <div style="flex: 1;">${i + 1}. ${it.name}</div>
                     <div style="width: 30px; text-align: center;">${it.quantity || 1}</div>
-                    <div style="width: 60px; text-align: right;">${currencySymbol}${(it.price || 0).toFixed(2)}</div>
-                    <div style="width: 70px; text-align: right;">${currencySymbol}${(it.price * (it.quantity || 1)).toFixed(2)}</div>
+                    <div style="width: 60px; text-align: right;">${(it.price || 0).toFixed(2)}</div>
+                    <div style="width: 70px; text-align: right;">${(it.price * (it.quantity || 1)).toFixed(2)}</div>
                 </div>
             `).join('');
 
@@ -168,8 +193,10 @@ const AdminTable = () => {
                 </head>
                 <body>
                     <div class="header">
-                        <div class="restaurant-name">${restaurant?.name || 'EatGreet Restaurant'}</div>
-                        <div class="restaurant-info font-normal" style="margin-top: 5px;">${restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</div>
+                    <img src="${EatGreetLogo}" style="height: 25px; width: auto; margin: 0 auto 15px; display: block; opacity: 0.8;" />
+                    ${restaurant?.logo ? `<img src="${restaurant.logo}" style="height: 55px; width: auto; margin-bottom: 10px; object-contain" />` : ''}
+                    <div class="restaurant-name">${restaurant?.name || 'EatGreet Restaurant'}</div>
+                    <div class="restaurant-info font-normal" style="margin-top: 5px; font-style: italic;">${restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</div>
                         ${(restaurant?.businessEmail || restaurant?.restaurantDetails?.businessEmail) ? `<div class="restaurant-info">Email: ${restaurant.businessEmail || restaurant.restaurantDetails.businessEmail}</div>` : ''}
                         ${(restaurant?.gstNumber || restaurant?.restaurantDetails?.gstNumber) ? `<div class="restaurant-info">GST: ${restaurant.gstNumber || restaurant.restaurantDetails.gstNumber}</div>` : ''}
                         ${(restaurant?.contactNumber || restaurant?.restaurantDetails?.contactNumber) ? `<div class="restaurant-info" style="margin-top: 2px;">Tel: ${restaurant.contactNumber || restaurant.restaurantDetails.contactNumber}</div>` : ''}
@@ -177,18 +204,19 @@ const AdminTable = () => {
 
                     <div class="divider"></div>
                     <div class="info-row"><span>Name:</span> <span>${order.customerInfo?.name || 'Guest'}</span></div>
+                    ${order.customerInfo?.phone ? `<div class="info-row"><span>Tel:</span> <span>${order.customerInfo.phone}</span></div>` : ''}
                     <div class="divider"></div>
                     
                     <div class="info-row">
                         <span>Date: ${new Date(order.createdAt).toLocaleDateString()}</span>
-                        <span>Dine In: ${order.tableNumber || 'N/A'}</span>
+                        <span>Table: ${order.tableNumber || 'N/A'}</span>
                     </div>
                     <div class="info-row">
                         <span>Time: ${new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                     <div class="info-row">
                         <span>Cashier: Admin</span>
-                        <span>Bill No: ${order._id.slice(-4)}</span>
+                        <span>Bill No: ${order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id.slice(-4)}</span>
                     </div>
 
                     <div class="divider"></div>
@@ -205,35 +233,42 @@ const AdminTable = () => {
                     <div class="divider"></div>
                     <div class="info-row" style="font-weight: bold;">
                         <span>Total Qty: ${order.items?.reduce((acc, it) => acc + (it.quantity || 1), 0)}</span>
-                        <span>Sub Total: ${currencySymbol}${subtotal.toFixed(2)}</span>
+                        <span>Sub Total: ${currencySymbol}${orderStats.subtotal.toFixed(2)}</span>
                     </div>
                     <div class="info-row">
                         <span>CGST@2.5%</span>
-                        <span>${currencySymbol}${cgst.toFixed(2)}</span>
+                        <span>${currencySymbol}${orderStats.cgst.toFixed(2)}</span>
                     </div>
                     <div class="info-row">
                         <span>SGST@2.5%</span>
-                        <span>${currencySymbol}${sgst.toFixed(2)}</span>
+                        <span>${currencySymbol}${orderStats.sgst.toFixed(2)}</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Total</span>
+                        <span>${currencySymbol}${orderStats.totalRaw.toFixed(2)}</span>
+                    </div>
+                    <div class="info-row">
+                        <span>Round Off</span>
+                        <span>${currencySymbol}${orderStats.roundOff.toFixed(2)}</span>
                     </div>
                     <div class="divider"></div>
-                    <div class="info-row" style="font-size: 16px; font-weight: bold;">
+                    <div class="info-row" style="font-size: 18px; font-weight: bold;">
                         <span>Grand Total</span>
-                        <span>${currencySymbol}${grandTotal.toFixed(2)}</span>
+                        <span>${currencySymbol}${orderStats.grandTotal.toFixed(2)}</span>
                     </div>
                     <div class="divider"></div>
                     
-                    <div class="footer">Thank You Visit Again</div>
+                    <div class="footer">THANK YOU VISIT AGAIN</div>
                 </body>
                 <script>
                     window.onload = () => { window.print(); window.close(); }
                 </script>
-                </html>
             `;
+
             printWindow.document.write(html);
             printWindow.document.close();
-        } catch (e) {
-            console.error('Print failed', e);
-            toast.error('Print failed');
+        } catch (error) {
+            console.error("Print error", error);
         }
     };
 
@@ -257,10 +292,10 @@ const AdminTable = () => {
                 <div className="flex gap-2 items-center">
                     <button
                         onClick={addTable}
-                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2"
+                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white h-10 sm:h-12 px-4 sm:px-6 rounded-full font-normal flex items-center justify-center gap-2 transition-all duration-300 shadow-sm text-sm"
                     >
                         <Plus className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                        <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                        <span className="hidden sm:block">
                             Add Table
                         </span>
                     </button>
@@ -276,7 +311,7 @@ const AdminTable = () => {
                     return (
                         <div key={table}
                             className={`bg-white rounded-2xl md:rounded-[2rem] p-4 md:p-5 aspect-square shadow-sm border-2 transition-all group relative flex flex-col items-center justify-center text-center overflow-hidden
-                                ${isLive ? 'border-[#FD6941] bg-[#FD6941]' : 'border-gray-100 hover:border-gray-200'}
+                                ${isLive ? 'border-[#FD6941] bg-orange-50/30' : 'border-gray-100 hover:border-gray-200'}
                             `}
                         >
                             {/* Top Actions Bar - Delete only on Right */}
@@ -292,7 +327,7 @@ const AdminTable = () => {
 
                             {/* Center Content */}
                             <div className="flex flex-col items-center mb-8 sm:mb-10">
-                                <span className={`text-3xl md:text-5xl font-normal mb-1 tracking-tighter font-urbanist transition-colors duration-500 ${isLive ? 'text-[#FD6941]' : 'text-gray-900'}`}>
+                                <span className={`text-3xl md:text-5xl font-normal mb-1 tracking-tighter  transition-colors duration-500 ${isLive ? 'text-[#FD6941]' : 'text-gray-900'}`}>
                                     {table}
                                 </span>
                                 <div className={`px-4 sm:px-5 py-1 sm:py-1.5 rounded-full text-[8px] sm:text-[9px] font-normal uppercase tracking-[0.2em] shadow-sm border transition-all duration-500
@@ -329,7 +364,7 @@ const AdminTable = () => {
                                     disabled={!isLive}
                                     className={`w-7 h-7 md:w-9 md:h-9 flex items-center justify-center rounded-lg md:rounded-xl transition-all border shadow-sm group/icon
                                         ${isLive
-                                            ? 'bg-[#FD6941] text-[#FD6941] border-[#FD6941]/20 hover:bg-[#FD6941] hover:text-white hover:scale-110 active:scale-95'
+                                            ? 'bg-[#FD6941] text-white border-[#FD6941]/20 hover:scale-110 active:scale-95'
                                             : 'bg-gray-50/50 text-gray-200 border-gray-100 cursor-not-allowed'}
                                     `}
                                     title="Preview Order"
@@ -346,7 +381,7 @@ const AdminTable = () => {
                                     disabled={!isLive}
                                     className={`w-7 h-7 md:w-9 md:h-9 flex items-center justify-center rounded-lg md:rounded-xl transition-all border shadow-sm group/icon
                                         ${isLive
-                                            ? 'bg-[#FD6941] text-[#FD6941] border-[#FD6941]/20 hover:bg-[#FD6941] hover:text-white hover:scale-110 active:scale-95'
+                                            ? 'bg-[#FD6941] text-white border-[#FD6941]/20 hover:scale-110 active:scale-95'
                                             : 'bg-gray-50/50 text-gray-200 border-gray-100 cursor-not-allowed'}
                                     `}
                                     title="Invoice"
@@ -373,7 +408,7 @@ const AdminTable = () => {
                                     <X className="w-4 h-4 md:w-5 md:h-5" />
                                 </button>
 
-                                <h2 className="text-3xl md:text-4xl font-normal font-urbanist text-gray-900 tracking-tighter mt-4 md:mt-4">Table {selectedTableOrder.tableNumber}</h2>
+                                <h2 className="text-3xl md:text-4xl font-normal  text-gray-900 tracking-tighter mt-4 md:mt-4">Table {selectedTableOrder.tableNumber}</h2>
                                 <p className="text-gray-400 text-[10px] font-normal uppercase tracking-[0.3em] mt-2">Live Order View</p>
                             </div>
 
@@ -385,7 +420,7 @@ const AdminTable = () => {
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-gray-400 text-[9px] font-normal uppercase tracking-wider mb-0.5">Ordering Person</p>
-                                        <p className="text-lg font-normal text-gray-900 font-urbanist leading-tight">{selectedTableOrder.customerInfo?.name || 'Guest User'}</p>
+                                        <p className="text-lg font-normal text-gray-900  leading-tight">{selectedTableOrder.customerInfo?.name || 'Guest User'}</p>
                                     </div>
                                 </div>
 
@@ -404,7 +439,7 @@ const AdminTable = () => {
                                                     </p>
                                                 </div>
                                             </div>
-                                            <p className="text-sm font-normal text-gray-900 font-urbanist">{currencySymbol}{item.price}</p>
+                                            <p className="text-sm font-normal text-gray-900 ">{currencySymbol}{item.price}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -413,12 +448,12 @@ const AdminTable = () => {
                                 <div className="p-6 md:p-8 bg-gray-50 rounded-2xl md:rounded-[3rem] text-gray-900 flex justify-between items-center border border-gray-100 relative overflow-hidden group shadow-sm">
                                     <div className="relative z-10">
                                         <p className="text-[11px] text-gray-400 font-normal uppercase tracking-[0.1em] mb-1.5">Grand Total Amount</p>
-                                        <p className="text-3xl sm:text-5xl font-normal font-urbanist tracking-tighter">
+                                        <p className="text-3xl sm:text-5xl font-normal  tracking-tighter">
                                             {currencySymbol}{selectedTableOrder.totalAmount?.toFixed(2) || (selectedTableOrder.items?.reduce((acc, it) => acc + (it.price * (it.quantity || 1)), 0) * 1.05).toFixed(2)}
                                         </p>
                                     </div>
                                     <div className="relative z-10 w-12 h-12 md:w-16 md:h-16 bg-white rounded-full flex items-center justify-center border border-gray-200 shadow-sm">
-                                        <span className="text-2xl md:text-3xl text-gray-300 font-light font-urbanist">#</span>
+                                        <span className="text-2xl md:text-3xl text-gray-300 font-light ">#</span>
                                     </div>
                                     {/* Subtle Ambient Glow */}
                                     <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-[#FD6941]/30 blur-[60px] rounded-full" />
@@ -445,8 +480,9 @@ const AdminTable = () => {
             {/* QR Code Modal */}
             {
                 qrModal.isOpen && createPortal(
-                    <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-xl flex items-center justify-center p-4">
-                        <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+                <div className="fixed inset-0 w-full h-[100dvh] z-[99999] bg-black/60 backdrop-blur-xl flex items-end sm:items-center justify-center p-2 sm:p-4">
+                    <div className="fixed inset-0" onClick={() => setQrModal({ ...qrModal, isOpen: false })} />
+                    <div className="bg-white w-full max-w-sm rounded-t-[2.5rem] sm:rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-5 sm:zoom-in duration-200 relative z-10">
                             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                                 <h2 className="text-xl font-normal text-gray-800">Table {qrModal.tableNo} QR Code</h2>
                                 <button
@@ -498,26 +534,34 @@ const AdminTable = () => {
                 )
             }
 
-            {/* Invoice Preview Modal */}
+            {/* Invoice Preview Modal - Standardized UI */}
             {isInvoicePreviewOpen && invoiceOrder && createPortal(
-                <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-xl flex items-center justify-center p-4">
-                    <div className="bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                            <h2 className="text-xl font-normal text-gray-800">Invoice Preview</h2>
-                            <button
-                                onClick={() => {
-                                    setIsInvoicePreviewOpen(false);
-                                    setInvoiceOrder(null);
-                                }}
-                                className="w-10 h-10 bg-white shadow-sm border border-gray-100 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
+                <div className="fixed inset-0 w-full h-[100dvh] z-[99999] bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
+                    <div className="fixed inset-0" onClick={() => setIsInvoicePreviewOpen(false)} />
+                    <div className="bg-gradient-to-br from-gray-50 to-white w-full max-w-2xl max-h-[92dvh] sm:max-h-[90vh] rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl relative flex flex-col border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-5 sm:zoom-in duration-300">
 
-                        <div className="p-8 max-h-[70vh] overflow-y-auto no-scrollbar bg-gray-100/30">
-                            <div className="bg-white mx-auto shadow-sm border border-gray-200 p-8 font-mono text-black relative" style={{ width: '100%', maxWidth: '380px' }}>
+                        <button
+                            onClick={() => setIsInvoicePreviewOpen(false)}
+                            className="absolute top-4 right-4 sm:top-6 sm:right-6 w-10 h-10 sm:w-11 sm:h-11 bg-white/90 backdrop-blur-md shadow-sm rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-white transition-all z-[60] border border-gray-100"
+                        >
+                            <X className="w-5 h-5 sm:w-6 sm:h-6" />
+                        </button>
+
+                        <div className="p-2 sm:p-8 overflow-y-auto custom-scrollbar flex items-start sm:items-center justify-center bg-gray-100/50 h-full flex-1">
+                            <div className="bg-white mx-auto shadow-sm border border-gray-200 p-4 sm:p-8 font-mono text-black relative my-2 sm:my-8" style={{ width: '100%', maxWidth: '380px' }}>
+                                <button
+                                    onClick={() => handlePrint(invoiceOrder)}
+                                    className="absolute top-4 right-4 p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors no-print"
+                                    title="Print Thermal Receipt"
+                                >
+                                    <Printer className="w-5 h-5" />
+                                </button>
+
                                 <div className="text-center mb-6">
+                                    <img src={EatGreetLogo} alt="EatGreet" className="h-6 mx-auto mb-4 object-contain opacity-70" />
+                                    {restaurant?.logo && (
+                                        <img src={restaurant.logo} alt="Restaurant Logo" className="h-12 mx-auto mb-3 object-contain" />
+                                    )}
                                     <h2 className="text-xl font-normal uppercase mb-2 tracking-tight">{restaurant?.name || 'EatGreet Restaurant'}</h2>
                                     <p className="text-[12px] leading-tight mb-1 font-normal italic">{restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</p>
                                     {(restaurant?.businessEmail || restaurant?.restaurantDetails?.businessEmail) && (
@@ -536,6 +580,12 @@ const AdminTable = () => {
                                     <span>Name:</span>
                                     <span className="font-normal">{invoiceOrder.customerInfo?.name || 'Guest'}</span>
                                 </div>
+                                {invoiceOrder.customerInfo?.phone && (
+                                    <div className="flex justify-between text-[13px] mb-1">
+                                        <span>Tel:</span>
+                                        <span className="font-normal">{invoiceOrder.customerInfo.phone}</span>
+                                    </div>
+                                )}
                                 <div className="border-t border-dashed border-black my-4"></div>
 
                                 <div className="flex justify-between text-[13px] mb-1">
@@ -546,12 +596,13 @@ const AdminTable = () => {
                                     <span>Time: {new Date(invoiceOrder.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                 </div>
                                 <div className="flex justify-between text-[13px] mb-1">
-                                    <span>Bill No: {invoiceOrder._id.slice(-4)}</span>
+                                    <span>Cashier: Admin</span>
+                                    <span>Bill No: {invoiceOrder.dailySequence ? String(invoiceOrder.dailySequence).padStart(3, '0') : invoiceOrder._id.slice(-4)}</span>
                                 </div>
 
                                 <div className="border-t border-dashed border-black my-4"></div>
-                                <div className="flex justify-between font-normal text-[11px] mb-2 uppercase">
-                                    <span style={{ flex: 1 }}>Item</span>
+                                <div className="flex justify-between font-normal text-[13px] mb-2 uppercase">
+                                    <span style={{ flex: 1 }}>No.Item</span>
                                     <span style={{ width: '30px', textAlign: 'center' }}>Qty</span>
                                     <span style={{ width: '60px', textAlign: 'right' }}>Price</span>
                                     <span style={{ width: '70px', textAlign: 'right' }}>Amt</span>
@@ -561,7 +612,7 @@ const AdminTable = () => {
                                 <div className="space-y-2 mb-4">
                                     {(invoiceOrder.items || []).map((it, i) => (
                                         <div key={i} className="flex justify-between text-[13px]">
-                                            <span style={{ flex: 1 }}>{it.name}</span>
+                                            <span style={{ flex: 1 }}>{i + 1}.{it.name}</span>
                                             <span style={{ width: '30px', textAlign: 'center' }}>{it.quantity || 1}</span>
                                             <span style={{ width: '60px', textAlign: 'right' }}>{(it.price || 0).toFixed(2)}</span>
                                             <span style={{ width: '70px', textAlign: 'right' }}>{(it.price * (it.quantity || 1)).toFixed(2)}</span>
@@ -570,35 +621,47 @@ const AdminTable = () => {
                                 </div>
 
                                 <div className="border-t border-dashed border-black my-4"></div>
-                                <div className="flex justify-between font-normal text-[13px] mb-1">
-                                    <span>Sub Total</span>
-                                    <span>{currencySymbol}{(invoiceOrder.items?.reduce((acc, it) => acc + (it.price * (it.quantity || 1)), 0) || 0).toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between text-[13px] mb-1">
-                                    <span>CGST@2.5%</span>
-                                    <span>{currencySymbol}{((invoiceOrder.items?.reduce((acc, it) => acc + (it.price * (it.quantity || 1)), 0) || 0) * 0.025).toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between text-[13px] mb-1">
-                                    <span>SGST@2.5%</span>
-                                    <span>{currencySymbol}{((invoiceOrder.items?.reduce((acc, it) => acc + (it.price * (it.quantity || 1)), 0) || 0) * 0.025).toFixed(2)}</span>
-                                </div>
-                                <div className="border-t border-dashed border-black my-4"></div>
-                                <div className="flex justify-between font-normal text-lg">
-                                    <span>Grand Total</span>
-                                    <span>{currencySymbol}{(invoiceOrder.totalAmount || (invoiceOrder.items?.reduce((acc, it) => acc + (it.price * (it.quantity || 1)), 0) * 1.05)).toFixed(2)}</span>
-                                </div>
-                                <div className="border-t border-dashed border-black my-4"></div>
-                                <div className="text-center font-normal text-[14px] uppercase mt-4">Thank You Visit Again</div>
-                            </div>
-                        </div>
+                                {(() => {
+                                    const subtotal = invoiceOrder.items?.reduce((acc, it) => acc + (it.price * (it.quantity || 1)), 0) || 0;
+                                    const cgst = subtotal * 0.025;
+                                    const sgst = subtotal * 0.025;
+                                    const totalRaw = subtotal + cgst + sgst;
+                                    const grandTotal = Math.round(totalRaw);
+                                    const roundOff = grandTotal - totalRaw;
 
-                        <div className="p-6 bg-gray-50 border-t border-gray-100">
-                            <button
-                                onClick={() => handlePrint(invoiceOrder)}
-                                className="w-full bg-[#FD6941] text-white py-4 rounded-2xl font-normal flex items-center justify-center gap-2 hover:bg-[#FD6941] transition-all shadow-lg active:scale-[0.98]"
-                            >
-                                <Printer className="w-5 h-5" /> Print Invoice
-                            </button>
+                                    return (
+                                        <>
+                                            <div className="flex justify-between font-normal text-[13px] mb-1">
+                                                <span>Total Qty: {invoiceOrder.items?.reduce((acc, it) => acc + (it.quantity || 1), 0)}</span>
+                                                <span>Sub Total: {currencySymbol}{subtotal.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between text-[13px] mb-1">
+                                                <span>CGST@2.5%</span>
+                                                <span>{currencySymbol}{cgst.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between text-[13px] mb-1">
+                                                <span>SGST@2.5%</span>
+                                                <span>{currencySymbol}{sgst.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between font-normal text-[13px] mb-1">
+                                                <span>Total</span>
+                                                <span>{currencySymbol}{totalRaw.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between text-[13px] mb-1">
+                                                <span>Round Off</span>
+                                                <span>{currencySymbol}{roundOff.toFixed(2)}</span>
+                                            </div>
+                                            <div className="border-t border-dashed border-black my-4"></div>
+                                            <div className="flex justify-between font-normal text-lg mb-4">
+                                                <span>Grand Total</span>
+                                                <span>{currencySymbol}{grandTotal.toFixed(2)}</span>
+                                            </div>
+                                        </>
+                                    )
+                                })()}
+                                <div className="border-t border-dashed border-black my-4"></div>
+                                <div className="text-center font-normal text-[16px] uppercase tracking-widest mt-6">THANK YOU VISIT AGAIN</div>
+                            </div>
                         </div>
                     </div>
                 </div>,

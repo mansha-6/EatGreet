@@ -127,7 +127,11 @@ const AdminProfile = () => {
                             <label className="text-xs font-normal text-gray-400 uppercase tracking-wider">Restaurant Name</label>
                             <div className="flex items-center gap-3 text-gray-700 font-normal">
                                 <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400">
-                                    <Building className="w-4 h-4" />
+                                    {user?.restaurantDetails?.logo ? (
+                                        <img src={user.restaurantDetails.logo} alt="Logo" className="w-5 h-5 object-contain" />
+                                    ) : (
+                                        <Building className="w-4 h-4" />
+                                    )}
                                 </div>
                                 {profile.restaurantName}
                             </div>

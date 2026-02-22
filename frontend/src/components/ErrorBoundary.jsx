@@ -34,7 +34,7 @@ class ErrorBoundary extends React.Component {
                             <AlertTriangle className="w-10 h-10 text-red-500" />
                         </div>
 
-                        <h1 className="text-3xl font-black font-urbanist text-gray-900 tracking-tighter mb-4">
+                        <h1 className="text-3xl font-black text-gray-900 tracking-tighter mb-4">
                             Something went wrong
                         </h1>
 

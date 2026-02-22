@@ -23,6 +23,7 @@ const getRestaurantDetails = async (req, res) => {
                 location: user.restaurantDetails.location,
                 operatingHours: user.restaurantDetails.operatingHours,
                 monthlyExpense: user.restaurantDetails.monthlyExpense || 0,
+                tableNumbers: user.restaurantDetails.tableNumbers || [],
                 orderPreferences: user.orderPreferences,
                 bankDetails: user.bankDetails,
                 notificationPreferences: user.notificationPreferences,
@@ -57,6 +58,7 @@ const updateRestaurantDetails = async (req, res) => {
             user.restaurantDetails.cuisineType = req.body.cuisineType || user.restaurantDetails.cuisineType;
             user.restaurantDetails.businessEmail = req.body.businessEmail || user.restaurantDetails.businessEmail;
             user.restaurantDetails.totalTables = req.body.totalTables ?? user.restaurantDetails.totalTables;
+            user.restaurantDetails.tableNumbers = req.body.tableNumbers || user.restaurantDetails.tableNumbers;
             user.restaurantDetails.monthlyExpense = req.body.monthlyExpense !== undefined ? Number(req.body.monthlyExpense) : user.restaurantDetails.monthlyExpense;
 
             // New Fields

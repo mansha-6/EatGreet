@@ -17,23 +17,23 @@ import { useNavigate } from 'react-router-dom';
 const DashboardCard = ({ value, label, icon, subValue, isCurrency }) => {
     const { currencySymbol } = useSettings();
     return (
-        <div className="bg-white rounded-[1.8rem] sm:rounded-[2.4rem] px-5 sm:px-7 py-4 sm:py-6 flex items-center h-[110px] sm:h-[160px] shadow-[0_8px_30px_rgb(0,0,0,0.02)] relative border border-gray-50/50 hover:border-[#FD6941]/20 hover:shadow-[0_8px_30px_rgb(253,105,65,0.05)] transition-all duration-500 group overflow-hidden">
+        <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] px-4 sm:px-6 py-4 sm:py-6 flex items-center h-[110px] sm:h-[160px] shadow-sm relative border border-gray-100 hover:border-[#FD6941]/20 transition-all duration-500 group overflow-hidden">
             <div className="absolute top-0 right-0 w-24 h-24 bg-[#FD6941]/5 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform duration-700" />
-            <div className="flex items-center gap-4 sm:gap-6 relative z-10">
+            <div className="flex items-center gap-4 sm:gap-6 relative z-10 w-full">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#F3F3F3] group-hover:bg-[#FD6941]/10 rounded-2xl flex items-center justify-center shrink-0 transition-colors duration-500">
                     <img src={icon} alt="icon" className="w-6 h-6 sm:w-8 sm:h-8 opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" style={{ filter: 'grayscale(100%) brightness(0.5)' }} />
                 </div>
-                <div className="flex flex-col">
-                    <h3 className="text-[22px] sm:text-[32px] lg:text-[38px] font-normal text-black leading-none flex items-baseline tracking-tight">
-                        {isCurrency && <span className="text-[14px] sm:text-[22px] lg:text-[26px] mr-1 font-normal opacity-40">{currencySymbol}</span>}
+                <div className="flex flex-col min-w-0">
+                    <h3 className="text-[20px] sm:text-[28px] lg:text-[34px] font-normal text-black leading-none flex items-baseline tracking-tight">
+                        {isCurrency && <span className="text-[13px] sm:text-[20px] lg:text-[24px] mr-1 font-normal opacity-40">{currencySymbol}</span>}
                         {value}
                         {subValue !== undefined && (
-                            <span className="text-[12px] sm:text-[22px] lg:text-[26px] text-gray-300 font-normal ml-1">
+                            <span className="text-[11px] sm:text-[20px] lg:text-[24px] text-gray-300 font-normal ml-1">
                                 /{subValue}
                             </span>
                         )}
                     </h3>
-                    <p className={`text-[12px] sm:text-[14px] lg:text-[16px] text-gray-400 mt-1 sm:mt-2 font-normal tracking-tight ${label === 'Occupied Tables' ? 'whitespace-pre-line max-w-[80px]' : 'truncate max-w-[100px]'} sm:max-w-full sm:whitespace-normal uppercase text-[10px] sm:text-xs font-medium opacity-60`}>
+                    <p className={`text-[9px] sm:text-[11px] lg:text-[13px] text-gray-400 mt-1 sm:mt-2 font-medium tracking-wider uppercase opacity-60 ${label === 'Occupied Tables' ? 'whitespace-pre-line max-w-[80px]' : 'truncate'} sm:max-w-full sm:whitespace-normal`}>
                         {label}
                     </p>
                 </div>
@@ -58,8 +58,8 @@ const TimeStatusGauge = ({ value }) => {
     const activeCount = Math.round(percent * numTicks);
 
     return (
-        <div className="bg-white rounded-[2rem] p-8 h-[320px] shadow-sm flex flex-col relative overflow-hidden transition-all border border-transparent">
-            <h3 className="text-[24px] font-normal text-black mb-1">Time Status</h3>
+        <div className="bg-white rounded-[2rem] p-6 sm:p-8 h-[300px] sm:h-[320px] shadow-sm flex flex-col relative overflow-hidden transition-all border border-transparent">
+            <h3 className="text-[14px] sm:text-[20px] lg:text-[24px] font-normal text-black mb-1">Time Status</h3>
 
             <div className="flex-1 flex items-center justify-center relative translate-y-[-10px]">
                 <svg width="100%" height="240" viewBox="0 0 360 230" className="overflow-visible">
@@ -105,12 +105,12 @@ const TimeStatusGauge = ({ value }) => {
 
                 <div className="absolute inset-0 flex flex-col items-center justify-center pt-24">
                     <div className="flex items-baseline gap-1">
-                        <span className="text-[56px] font-normal text-black tracking-tight leading-none">
+                        <span className="text-[40px] sm:text-[56px] font-normal text-black tracking-tight leading-none">
                             {value || 0}
                         </span>
-                        <span className="text-[28px] font-normal text-black">min</span>
+                        <span className="text-[20px] sm:text-[28px] font-normal text-black">min</span>
                     </div>
-                    <span className="text-[16px] text-gray-400 font-normal mt-1">Avg. Wait Time</span>
+                    <span className="text-[12px] sm:text-[16px] text-gray-400 font-normal mt-1">Avg. Wait Time</span>
                 </div>
             </div>
 
@@ -322,8 +322,8 @@ const AdminDashboard = () => {
     return (
         <div className="min-h-screen bg-transparent px-2 sm:px-4 pt-0 pb-4 sm:pt-0 sm:pb-8 space-y-4 md:space-y-6">
             <div className="space-y-1">
-                <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-normal text-black tracking-tight leading-none">Dashboard</h1>
-                <p className="text-[12px] sm:text-[18px] text-gray-400 font-normal">Welcome back, Admin</p>
+                <h1 className="text-[20px] sm:text-[24px] lg:text-[28px] font-normal text-black tracking-tight leading-none">Dashboard</h1>
+                <p className="text-[11px] sm:text-[13px] lg:text-[14px] text-gray-400 font-normal uppercase tracking-widest opacity-60">Welcome back, Admin</p>
             </div>
 
             {/* Main Content Grid - 1 Column on Mobile, 12 on Desktop */}
@@ -331,32 +331,26 @@ const AdminDashboard = () => {
                 {/* Left Column (Span 8) */}
                 <div className="lg:col-span-8 flex flex-col gap-4 sm:gap-6">
                     {/* Top Row: KPI Cards */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
-                        <div className="col-span-1">
-                            <DashboardCard value={stats.activeOrders || 0} label="Active Orders" icon={activityIcon} />
-                        </div>
-                        <div className="col-span-1">
-                            <DashboardCard
-                                value={stats.dineIn || 0}
-                                subValue={stats.totalTables || 0}
-                                label="Occupied Tables"
-                                icon={tableIcon}
-                            />
-                        </div>
-                        <div className="col-span-2 md:col-span-1">
-                            <DashboardCard value={(stats.todayRevenue || 0).toLocaleString()} label="Today Revenue" icon={revenueIcon} isCurrency />
-                        </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                        <DashboardCard value={stats.activeOrders || 0} label="Active Orders" icon={activityIcon} />
+                        <DashboardCard
+                            value={stats.dineIn || 0}
+                            subValue={stats.totalTables || 0}
+                            label="Occupied Tables"
+                            icon={tableIcon}
+                        />
+                        <DashboardCard value={(stats.todayRevenue || 0).toLocaleString()} label="Today Revenue" icon={revenueIcon} isCurrency />
                     </div>
 
                     {/* Middle Row: Sales Analytics */}
-                    <div className="bg-white rounded-[1.5rem] sm:rounded-[2.8rem] p-4 sm:p-8 relative shadow-sm h-[400px] sm:h-[600px] lg:h-[740px] flex flex-col border border-transparent">
+                    <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-8 relative shadow-sm h-[320px] sm:h-[500px] lg:h-[620px] flex flex-col border border-gray-50/50">
                         <div className="flex justify-between items-center gap-2 mb-4 sm:mb-2">
                             <div
                                 className="flex flex-col cursor-pointer hover:opacity-80 transition-opacity"
                                 onClick={() => navigate(`/${restaurantSlug}/admin/sales`)}
                             >
-                                <h2 className="text-[16px] sm:text-[24px] font-normal text-black">Sales Analytics</h2>
-                                <p className="text-[12px] text-gray-400 font-normal">Today Breakdown</p>
+                                <h2 className="text-[14px] sm:text-[20px] lg:text-[24px] font-normal text-black leading-tight">Sales Analytics</h2>
+                                <p className="text-[11px] sm:text-[13px] text-gray-400 font-normal uppercase tracking-wider opacity-60">Today Breakdown</p>
                             </div>
 
                             <div className="flex items-center gap-2 sm:gap-3">
@@ -376,7 +370,7 @@ const AdminDashboard = () => {
                                         dataKey="name"
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{ fill: '#9CA3AF', fontSize: 13, fontWeight: 500, fontFamily: 'Plus Jakarta Sans' }}
+                                        tick={{ fill: '#9CA3AF', fontSize: 11, fontWeight: 500 }}
                                         dy={15}
                                     />
                                     <YAxis hide />
@@ -385,8 +379,8 @@ const AdminDashboard = () => {
                                         content={({ active, payload }) => {
                                             if (active && payload && payload.length) {
                                                 return (
-                                                    <div className="bg-white px-4 py-2 rounded-xl shadow-xl border border-gray-50">
-                                                        <p className="text-[14px] font-normal text-black font-urb">
+                                                    <div className="bg-white px-3 py-1.5 rounded-lg shadow-xl border border-gray-100">
+                                                        <p className="text-[13px] font-medium text-black">
                                                             {currencySymbol}{payload[0].value.toLocaleString()}
                                                         </p>
                                                     </div>
@@ -413,9 +407,9 @@ const AdminDashboard = () => {
                     </div>
 
                     {/* Live Active Feed */}
-                    <div className="bg-white rounded-[1.5rem] sm:rounded-[2.8rem] p-4 sm:p-8 shadow-sm flex flex-col h-[400px] sm:h-[500px] lg:h-[560px] border border-transparent">
+                    <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-8 shadow-sm flex flex-col h-[380px] sm:h-[500px] lg:h-[530px] border border-gray-50/50">
                         <div className="flex justify-between items-center mb-4 sm:mb-6">
-                            <h2 className="text-[16px] sm:text-[24px] font-normal text-black">Live Feed</h2>
+                            <h2 className="text-[14px] sm:text-[20px] lg:text-[24px] font-normal text-black leading-tight">Live Feed</h2>
                             <div
                                 onClick={() => navigate(`/${restaurantSlug}/admin/orders`)}
                                 className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-50 rounded-full flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors"
@@ -436,13 +430,13 @@ const AdminDashboard = () => {
                                             <img src={item.icon} alt={item.title} className="w-6 h-6 sm:w-9 sm:h-9 opacity-70" />
                                         </div>
                                         <div className="flex flex-col">
-                                            <h4 className="font-normal text-black text-[15px] sm:text-[18px] leading-tight">{item.title}</h4>
-                                            <p className="text-[12px] sm:text-[15px] text-gray-400 font-normal mt-0.5 truncate max-w-[100px] sm:max-w-[120px]">{item.sub}</p>
+                                            <h4 className="font-normal text-black text-[14px] sm:text-[17px] leading-tight">{item.title}</h4>
+                                            <p className="text-[11px] sm:text-[14px] text-gray-400 font-normal mt-0.5 truncate max-w-[100px] sm:max-w-[120px]">{item.sub}</p>
                                         </div>
                                     </div>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); navigate(`/${restaurantSlug}/admin/orders?orderId=${item.id}`); }}
-                                        className="bg-black text-white text-[12px] sm:text-[14px] font-normal px-4 sm:px-7 py-2 sm:py-3 rounded-full hover:bg-gray-800 transition-transform active:scale-95"
+                                        className="bg-black text-white text-[11px] sm:text-[13px] font-normal px-4 sm:px-6 py-2 sm:py-2.5 rounded-full hover:bg-gray-800 transition-transform active:scale-95"
                                     >
                                         View
                                     </button>

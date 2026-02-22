@@ -458,13 +458,13 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
 
                 <button
                     onClick={onClose}
-                    className="absolute top-6 right-6 w-11 h-11 bg-white/90 backdrop-blur-md shadow-sm rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-white transition-all z-50 border border-gray-100"
+                    className="absolute top-4 right-4 sm:top-6 sm:right-6 w-10 h-10 sm:w-11 sm:h-11 bg-white/90 backdrop-blur-md shadow-sm rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-white transition-all z-[60] border border-gray-100"
                 >
-                    <X className="w-6 h-6" />
+                    <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
 
-                <div className="p-8 overflow-y-auto custom-scrollbar flex items-center justify-center bg-gray-100/50 h-full">
-                    <div className="bg-white mx-auto shadow-sm border border-gray-200 p-8 font-mono text-black relative" style={{ width: '100%', maxWidth: '380px' }}>
+                <div className="p-4 sm:p-8 overflow-y-auto custom-scrollbar flex items-start sm:items-center justify-center bg-gray-100/50 h-full">
+                    <div className="bg-white mx-auto shadow-sm border border-gray-200 p-6 sm:p-8 font-mono text-black relative w-full max-w-[380px] my-4">
                         <button
                             onClick={handlePrint}
                             className="absolute top-4 right-4 p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors no-print"
@@ -723,7 +723,7 @@ const AdminSales = () => {
         const orders = isFiltered ? (s.totalOrders || 0) : (s.allTimeOrders || s.totalOrders || 0);
 
         // Net Profit Logic: Revenue - Expenses
-        const monthlyExpense = restaurant?.monthlyExpense || restaurant?.restaurantDetails?.monthlyExpense || 0;
+        const monthlyExpense = s.monthlyExpense || restaurant?.monthlyExpense || restaurant?.restaurantDetails?.monthlyExpense || 0;
         let totalExpense = 0;
 
         if (isFiltered && dateRange.start && dateRange.end) {
@@ -755,7 +755,8 @@ const AdminSales = () => {
     const graphData = useMemo(() => {
         const trend = analytics.charts?.revenueTrend || [];
         const isFiltered = !!(dateRange.start || dateRange.end);
-        const monthlyExpense = restaurant?.monthlyExpense || restaurant?.restaurantDetails?.monthlyExpense || 0;
+        const s = analytics.summary || {};
+        const monthlyExpense = s.monthlyExpense || restaurant?.monthlyExpense || restaurant?.restaurantDetails?.monthlyExpense || 0;
         const dailyExpense = monthlyExpense / 30;
 
         // 1. All Time View (Fixed 12-Month Jan-Dec Axis)
@@ -974,8 +975,10 @@ const AdminSales = () => {
                 };
             }, { revenue: 0, orders: 0 }) : { revenue: 0, orders: 0 };
 
-            // Calculate Net Profit for this specific range
-            // Use safe fallbacks for potentially undefined expense variables
+            const s = analytics.summary || {};
+            const monthlyExpense = s.monthlyExpense || restaurant?.monthlyExpense || restaurant?.restaurantDetails?.monthlyExpense || 0;
+            const dailyExpense = monthlyExpense / 30;
+
             const safeDailyExpense = typeof dailyExpense !== 'undefined' ? dailyExpense : 0;
             const safeMonthlyExpense = typeof monthlyExpense !== 'undefined' ? monthlyExpense : 0;
 
@@ -1161,6 +1164,10 @@ const AdminSales = () => {
                     orders: acc.orders + 1
                 };
             }, { revenue: 0, orders: 0 }) : { revenue: 0, orders: 0 };
+
+            const s = analytics.summary || {};
+            const monthlyExpense = s.monthlyExpense || restaurant?.monthlyExpense || restaurant?.restaurantDetails?.monthlyExpense || 0;
+            const dailyExpense = monthlyExpense / 30;
 
             const safeDailyExpense = typeof dailyExpense !== 'undefined' ? dailyExpense : 0;
             const safeMonthlyExpense = typeof monthlyExpense !== 'undefined' ? monthlyExpense : 0;

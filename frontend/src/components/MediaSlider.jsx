@@ -147,7 +147,9 @@ const MediaSlider = ({ media, interval = 30000, className = "", showArButton = t
                                 src={item.url}
                                 alt={item.name || '3D Model'}
                                 camera-controls
+                                enable-pan
                                 auto-rotate
+                                interpolation-decay="200"
                                 ar
                                 ar-modes="webxr scene-viewer quick-look"
                                 ar-scale="fixed"

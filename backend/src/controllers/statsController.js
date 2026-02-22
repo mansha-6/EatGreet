@@ -168,6 +168,7 @@ const getAdminStats = async (req, res) => {
                 cancellationRate,
                 dineIn: dineInCount,
                 totalTables,
+                monthlyExpense: req.user.restaurantDetails?.monthlyExpense || 0,
                 takeaway: totalOrders - dineInCount,
             },
             charts: {

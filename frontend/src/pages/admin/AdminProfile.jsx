@@ -65,9 +65,13 @@ const AdminProfile = () => {
                 <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-8">
                     <div className="relative shrink-0">
                         <div className="w-32 h-32 rounded-full bg-[#FD6941] border-4 border-white shadow-lg overflow-hidden flex items-center justify-center">
-                            <span className="text-4xl font-normal text-[#FD6941]">
-                                {profile.fullName.split(' ').map(n => n[0]).join('')}
-                            </span>
+                            {user?.profilePicture ? (
+                                <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-4xl font-normal text-white">
+                                    {profile.fullName.split(' ').map(n => n[0]).join('')}
+                                </span>
+                            )}
                         </div>
                     </div>
 

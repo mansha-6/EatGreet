@@ -177,7 +177,7 @@ const AdminSettings = () => {
         setUploadingLogo(true);
         const loadToast = toast.loading('Uploading logo...');
         try {
-            const res = await uploadAPI.uploadDirect(file);
+            const res = await uploadAPI.uploadDirectNew(file);
             const logoUrl = res.data.secure_url;
             setRestoDetails(prev => ({ ...prev, logo: logoUrl }));
             toast.success('Logo uploaded!', { id: loadToast });
@@ -195,7 +195,7 @@ const AdminSettings = () => {
         setUploadingProfilePic(true);
         const loadToast = toast.loading('Uploading profile picture...');
         try {
-            const res = await uploadAPI.uploadDirect(file);
+            const res = await uploadAPI.uploadDirectNew(file);
             const picUrl = res.data.secure_url;
             setProfile(prev => ({ ...prev, profilePicture: picUrl }));
             toast.success('Profile picture updated!', { id: loadToast });

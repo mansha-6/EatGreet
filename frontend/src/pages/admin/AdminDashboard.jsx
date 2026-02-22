@@ -17,23 +17,24 @@ import { useNavigate } from 'react-router-dom';
 const DashboardCard = ({ value, label, icon, subValue, isCurrency }) => {
     const { currencySymbol } = useSettings();
     return (
-        <div className="bg-white rounded-[1.2rem] sm:rounded-[2rem] px-4 sm:px-6 py-3 sm:py-4 flex items-center h-[100px] sm:h-[140px] shadow-sm relative border border-transparent hover:border-gray-50 transition-all">
-            <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#F3F3F3] rounded-full flex items-center justify-center shrink-0">
-                    <img src={icon} alt="icon" className="w-5 h-5 sm:w-6 sm:h-6 opacity-80" />
+        <div className="bg-white rounded-[1.8rem] sm:rounded-[2.4rem] px-5 sm:px-7 py-4 sm:py-6 flex items-center h-[110px] sm:h-[160px] shadow-[0_8px_30px_rgb(0,0,0,0.02)] relative border border-gray-50/50 hover:border-[#FD6941]/20 hover:shadow-[0_8px_30px_rgb(253,105,65,0.05)] transition-all duration-500 group overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-[#FD6941]/5 rounded-full -mr-12 -mt-12 group-hover:scale-110 transition-transform duration-700" />
+            <div className="flex items-center gap-4 sm:gap-6 relative z-10">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#F3F3F3] group-hover:bg-[#FD6941]/10 rounded-2xl flex items-center justify-center shrink-0 transition-colors duration-500">
+                    <img src={icon} alt="icon" className="w-6 h-6 sm:w-8 sm:h-8 opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500" style={{ filter: 'grayscale(100%) brightness(0.5)' }} />
                 </div>
                 <div className="flex flex-col">
-                    <h3 className="text-[18px] sm:text-[28px] lg:text-[32px] font-normal text-black leading-none flex items-baseline">
-                        {isCurrency && <span className="text-[14px] sm:text-[20px] lg:text-[24px] mr-1 font-normal">{currencySymbol}</span>}
+                    <h3 className="text-[22px] sm:text-[32px] lg:text-[38px] font-normal text-black leading-none flex items-baseline tracking-tight">
+                        {isCurrency && <span className="text-[14px] sm:text-[22px] lg:text-[26px] mr-1 font-normal opacity-40">{currencySymbol}</span>}
                         {value}
                         {subValue !== undefined && (
-                            <span className="text-[12px] sm:text-[20px] lg:text-[24px] text-gray-400 opacity-30 font-normal ml-1">
+                            <span className="text-[12px] sm:text-[22px] lg:text-[26px] text-gray-300 font-normal ml-1">
                                 /{subValue}
                             </span>
                         )}
                     </h3>
-                    <p className={`text-[11px] sm:text-[13px] lg:text-[14px] text-gray-400 mt-1 sm:mt-2 font-normal tracking-tight ${label === 'Occupied Tables' ? 'whitespace-pre-line max-w-[70px]' : 'truncate max-w-[80px]'} sm:max-w-full sm:whitespace-normal`}>
-                        {label === 'Occupied Tables' ? label.replace(' ', '\n') : label}
+                    <p className={`text-[12px] sm:text-[14px] lg:text-[16px] text-gray-400 mt-1 sm:mt-2 font-normal tracking-tight ${label === 'Occupied Tables' ? 'whitespace-pre-line max-w-[80px]' : 'truncate max-w-[100px]'} sm:max-w-full sm:whitespace-normal uppercase text-[10px] sm:text-xs font-medium opacity-60`}>
+                        {label}
                     </p>
                 </div>
             </div>
@@ -375,7 +376,7 @@ const AdminDashboard = () => {
                                         dataKey="name"
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{ fill: '#9CA3AF', fontSize: 13, fontWeight: 500, fontFamily: 'Urbanist' }}
+                                        tick={{ fill: '#9CA3AF', fontSize: 13, fontWeight: 500, fontFamily: 'Plus Jakarta Sans' }}
                                         dy={15}
                                     />
                                     <YAxis hide />

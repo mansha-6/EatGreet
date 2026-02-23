@@ -201,6 +201,7 @@ export const uploadAPI = {
       throw error;
     }
   },
+  uploadDirect: function () { return this.uploadDirectNew(...arguments); },
   cleanupFiles: (publicIds) => api.post('/upload/cleanup', { publicIds }),
 };
 

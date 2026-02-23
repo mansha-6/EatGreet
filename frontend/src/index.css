@@ -131,3 +131,43 @@ input[type=number] {
     outline: none !important;
     box-shadow: none !important;
 }
+
+/* ───── Leaflet Map z-index fixes ───── */
+/* Keep tiles/controls under fixed navbar, modals & dropdowns */
+.leaflet-container {
+    z-index: 0 !important;
+    font-family: 'Urbanist', sans-serif !important;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+    z-index: 1 !important;
+}
+
+.leaflet-pane {
+    z-index: 0 !important;
+}
+
+.leaflet-tile-pane {
+    z-index: 200 !important;
+}
+
+.leaflet-overlay-pane {
+    z-index: 400 !important;
+}
+
+.leaflet-marker-pane {
+    z-index: 600 !important;
+}
+
+.leaflet-shadow-pane {
+    z-index: 500 !important;
+}
+
+.leaflet-control-container {
+    z-index: 700 !important;
+}
+
+.leaflet-popup-pane {
+    z-index: 800 !important;
+}

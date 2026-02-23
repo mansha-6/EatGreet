@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Mail, Phone, MapPin, Building, Camera, Save, Shield, LogOut } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { authAPI } from '../../utils/api';
+import { authAPI, uploadAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
 
 const SuperAdminProfile = () => {
@@ -72,6 +72,29 @@ const SuperAdminProfile = () => {
         ), { duration: 5000 });
     };
 
+    const handleProfilePicUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const loadToast = toast.loading('Uploading profile picture...');
+        try {
+            const res = await uploadAPI.uploadDirect(file);
+            const picUrl = res.data.secure_url;
+
+            // Update profile on backend
+            await authAPI.updateProfile({ ...profile, profilePicture: picUrl });
+
+            // Update local state and context
+            const updatedUser = { ...user, profilePicture: picUrl };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            window.location.reload(); // Quick way to sync across context
+
+            toast.success('Profile picture updated!', { id: loadToast });
+        } catch (error) {
+            toast.error('Upload failed', { id: loadToast });
+        }
+    };
+
     return (
         <div className="space-y-6 max-w-7xl mx-auto">
             <div className="flex justify-between items-center">
@@ -93,9 +116,23 @@ const SuperAdminProfile = () => {
                 <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 flex flex-col items-center text-center h-fit">
                     <div className="relative mb-6">
                         <div className="w-32 h-32 rounded-full bg-black border-4 border-white shadow-lg overflow-hidden flex items-center justify-center">
-                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=300" alt="Super Admin" className="w-full h-full object-cover" />
+                            {user?.profilePicture ? (
+                                <img src={user.profilePicture} alt="Super Admin" className="w-full h-full object-cover" />
+                            ) : (
+                                <User className="w-16 h-16 text-white" />
+                            )}
                         </div>
-                        <button className="absolute bottom-0 right-0 p-2 bg-black text-white rounded-full shadow-md hover:bg-gray-800 transition-colors">
+                        <input
+                            type="file"
+                            id="super-admin-pic"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleProfilePicUpload}
+                        />
+                        <button
+                            onClick={() => document.getElementById('super-admin-pic').click()}
+                            className="absolute bottom-0 right-0 p-2 bg-black text-white rounded-full shadow-md hover:bg-gray-800 transition-colors"
+                        >
                             <Camera className="w-4 h-4" />
                         </button>
                     </div>

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Mail, Phone, MapPin, Building, LogOut, Settings } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Building, LogOut, Settings, Camera } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { authAPI, uploadAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
 
 const AdminProfile = () => {
@@ -47,6 +48,24 @@ const AdminProfile = () => {
         ), { duration: 5000 });
     };
 
+    const handleProfilePicUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const loadToast = toast.loading('Uploading profile picture...');
+        try {
+            const res = await uploadAPI.uploadDirect(file);
+            const picUrl = res.data.secure_url;
+            await authAPI.updateProfile({ name: user.name, profilePicture: picUrl });
+            const updatedUser = { ...user, profilePicture: picUrl };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            window.location.reload();
+            toast.success('Profile picture updated!', { id: loadToast });
+        } catch (error) {
+            toast.error('Upload failed', { id: loadToast });
+        }
+    };
+
     return (
         <div className="space-y-4 sm:space-y-6 max-w-5xl mx-auto">
             <div className="flex justify-between items-center">
@@ -64,7 +83,7 @@ const AdminProfile = () => {
                 {/* Profile Overview Card */}
                 <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-4 sm:gap-8">
                     <div className="relative shrink-0">
-                        <div className="w-20 h-20 sm:w-32 sm:h-32 rounded-full bg-[#FD6941]/10 border-4 border-white shadow-lg overflow-hidden flex items-center justify-center">
+                        <div className="w-20 h-20 sm:w-32 sm:h-32 rounded-full bg-[#FD6941]/10 border-4 border-white shadow-lg overflow-hidden flex items-center justify-center relative group">
                             {user?.profilePicture ? (
                                 <img src={user.profilePicture} alt={profile.fullName} className="w-full h-full object-cover" />
                             ) : (
@@ -73,6 +92,19 @@ const AdminProfile = () => {
                                 </span>
                             )}
                         </div>
+                        <input
+                            type="file"
+                            id="admin-profile-pic"
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleProfilePicUpload}
+                        />
+                        <button
+                            onClick={() => document.getElementById('admin-profile-pic').click()}
+                            className="absolute bottom-0 right-0 p-2 bg-black text-white rounded-full shadow-md hover:bg-gray-800 transition-colors z-10"
+                        >
+                            <Camera className="w-3 h-3 sm:w-4 h-4" />
+                        </button>
                     </div>
 
                     <div className="flex-1 text-center md:text-left space-y-1.5">

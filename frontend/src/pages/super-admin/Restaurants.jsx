@@ -43,7 +43,7 @@ export default function Restaurants() {
     };
 
     const getColor = (idx) => {
-        const colors = ['bg-blue-100 text-blue-600', 'bg-purple-100 text-purple-600', 'bg-[#FD6941] text-[#FD6941]', 'bg-emerald-100 text-emerald-600'];
+        const colors = ['bg-blue-100 text-blue-600', 'bg-purple-100 text-purple-600', 'bg-[#FD6941]/10 text-[#FD6941]', 'bg-emerald-100 text-emerald-600'];
         return colors[idx % colors.length];
     };
     return (
@@ -54,13 +54,13 @@ export default function Restaurants() {
                     <div className="space-y-1">
                         <div className="flex items-center gap-3">
                             <h1 className="text-4xl font-normal text-gray-900">Restaurants</h1>
-                            <span className="bg-[#FFEDE6] text-[#F15A2B] px-4 py-1 rounded-full text-sm font-normal">
+                            <span className="bg-[#FD6941]/10 text-[#FD6941] px-4 py-1 rounded-full text-sm font-normal">
                                 {restaurants.length} Total
                             </span>
                         </div>
                         <p className="text-gray-500 font-normal">Manage Partner restaurants, Monitor performance, Control access.</p>
                     </div>
-                    <button className="bg-[#F15A2B] hover:bg-[#d94e24] text-white px-8 py-3.5 rounded-full font-normal flex items-center justify-center gap-2 shadow-lg  transition-all active:scale-95">
+                    <button className="bg-[#FD6941] hover:bg-[#e15a35] text-white px-8 py-3.5 rounded-full font-normal flex items-center justify-center gap-2 shadow-lg  transition-all active:scale-95">
                         <Plus className="w-5 h-5" />
                         Add Restaurant
                     </button>

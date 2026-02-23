@@ -48,32 +48,36 @@ const AdminProfile = () => {
     };
 
     return (
-        <div className="space-y-6 max-w-5xl mx-auto">
+        <div className="space-y-4 sm:space-y-6 max-w-5xl mx-auto">
             <div className="flex justify-between items-center">
                 <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-normal text-black tracking-tight leading-none">My Profile</h1>
                 <Link
                     to={`/${user?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant'}/admin/settings`}
-                    className="px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full font-normal flex items-center gap-2 transition-colors shadow-sm"
+                    className="h-9 sm:h-auto px-3 sm:px-6 py-0 sm:py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full font-normal flex items-center gap-2 transition-colors shadow-sm text-sm"
                 >
-                    <Settings className="w-4 h-4" />
-                    Manage Profile & Settings
+                    <Settings className="w-4 h-4 shrink-0" />
+                    <span className="hidden sm:inline">Manage Profile &amp; Settings</span>
                 </Link>
             </div>
 
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6">
                 {/* Profile Overview Card */}
-                <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-8">
+                <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-4 sm:gap-8">
                     <div className="relative shrink-0">
-                        <div className="w-32 h-32 rounded-full bg-[#FD6941] border-4 border-white shadow-lg overflow-hidden flex items-center justify-center">
-                            <span className="text-4xl font-normal text-[#FD6941]">
-                                {profile.fullName.split(' ').map(n => n[0]).join('')}
-                            </span>
+                        <div className="w-20 h-20 sm:w-32 sm:h-32 rounded-full bg-[#FD6941]/10 border-4 border-white shadow-lg overflow-hidden flex items-center justify-center">
+                            {user?.profilePicture ? (
+                                <img src={user.profilePicture} alt={profile.fullName} className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-2xl sm:text-4xl font-normal text-[#FD6941]">
+                                    {profile.fullName.split(' ').map(n => n[0]).join('')}
+                                </span>
+                            )}
                         </div>
                     </div>
 
-                    <div className="flex-1 text-center md:text-left space-y-2">
-                        <h2 className="text-2xl font-normal text-gray-800">{profile.fullName}</h2>
-                        <p className="text-gray-500 font-normal">{profile.role}</p>
+                    <div className="flex-1 text-center md:text-left space-y-1.5">
+                        <h2 className="text-lg sm:text-2xl font-normal text-gray-800">{profile.fullName}</h2>
+                        <p className="text-sm text-gray-500 font-normal">{profile.role}</p>
                         <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-50 text-green-600 rounded-full text-xs font-normal">
                             <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                             Active
@@ -83,7 +87,7 @@ const AdminProfile = () => {
                     <div className="shrink-0 w-full md:w-auto">
                         <button
                             onClick={handleLogout}
-                            className="w-full md:w-auto px-6 py-3 bg-red-50 hover:bg-red-100 text-red-500 rounded-xl text-sm font-normal flex items-center justify-center gap-2 transition-colors"
+                            className="w-full md:w-auto px-6 py-2.5 sm:py-3 bg-red-50 hover:bg-red-100 text-red-500 rounded-xl text-sm font-normal flex items-center justify-center gap-2 transition-colors"
                         >
                             <LogOut className="w-4 h-4" />
                             Sign Out
@@ -92,27 +96,27 @@ const AdminProfile = () => {
                 </div>
 
                 {/* Read-Only Details Grid */}
-                <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
-                    <h3 className="text-lg font-normal text-gray-800 mb-6 flex items-center gap-2">
+                <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-8 shadow-sm border border-gray-100">
+                    <h3 className="text-base sm:text-lg font-normal text-gray-800 mb-4 sm:mb-6 flex items-center gap-2">
                         <User className="w-5 h-5 text-[#FD6941]" />
                         Account Details
                     </h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-5 sm:gap-y-8">
                         <div className="space-y-1">
-                            <label className="text-xs font-normal text-gray-400 uppercase tracking-wider">Email Address</label>
-                            <div className="flex items-center gap-3 text-gray-700 font-normal">
-                                <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400">
+                            <label className="text-[10px] sm:text-xs font-normal text-gray-400 uppercase tracking-wider">Email Address</label>
+                            <div className="flex items-center gap-3 text-gray-700 font-normal text-sm sm:text-base">
+                                <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 shrink-0">
                                     <Mail className="w-4 h-4" />
                                 </div>
-                                {profile.email}
+                                <span className="truncate">{profile.email}</span>
                             </div>
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-xs font-normal text-gray-400 uppercase tracking-wider">Phone Number</label>
-                            <div className="flex items-center gap-3 text-gray-700 font-normal">
-                                <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400">
+                            <label className="text-[10px] sm:text-xs font-normal text-gray-400 uppercase tracking-wider">Phone Number</label>
+                            <div className="flex items-center gap-3 text-gray-700 font-normal text-sm sm:text-base">
+                                <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 shrink-0">
                                     <Phone className="w-4 h-4" />
                                 </div>
                                 {profile.phone}
@@ -120,9 +124,9 @@ const AdminProfile = () => {
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-xs font-normal text-gray-400 uppercase tracking-wider">Restaurant Name</label>
-                            <div className="flex items-center gap-3 text-gray-700 font-normal">
-                                <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400">
+                            <label className="text-[10px] sm:text-xs font-normal text-gray-400 uppercase tracking-wider">Restaurant Name</label>
+                            <div className="flex items-center gap-3 text-gray-700 font-normal text-sm sm:text-base">
+                                <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 shrink-0">
                                     {user?.restaurantDetails?.logo ? (
                                         <img src={user.restaurantDetails.logo} alt="Logo" className="w-5 h-5 object-contain" />
                                     ) : (
@@ -134,9 +138,9 @@ const AdminProfile = () => {
                         </div>
 
                         <div className="space-y-1">
-                            <label className="text-xs font-normal text-gray-400 uppercase tracking-wider">Registered Address</label>
-                            <div className="flex items-center gap-3 text-gray-700 font-normal">
-                                <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400">
+                            <label className="text-[10px] sm:text-xs font-normal text-gray-400 uppercase tracking-wider">Registered Address</label>
+                            <div className="flex items-center gap-3 text-gray-700 font-normal text-sm sm:text-base">
+                                <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 shrink-0">
                                     <MapPin className="w-4 h-4" />
                                 </div>
                                 {profile.address}
@@ -144,7 +148,7 @@ const AdminProfile = () => {
                         </div>
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-gray-100 text-center">
+                    <div className="mt-6 pt-5 border-t border-gray-100 text-center">
                         <p className="text-xs text-gray-400">
                             Need to update these details? <Link to={`/${user?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant'}/admin/settings`} className="text-[#FD6941] font-normal hover:underline">Go to Settings</Link>
                         </p>

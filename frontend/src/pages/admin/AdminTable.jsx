@@ -9,6 +9,32 @@ import { useSocket } from '../../context/SocketContext';
 import logo from '../../assets/logo-m.svg';
 import EatGreetLogo from '../../assets/logo-full.png';
 
+const TableIcon = ({ className, style }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        className={className}
+        style={style}
+    >
+        <path
+            fill="currentColor"
+            d="M6.375 19.05 7.5 16.25c0.15 -0.38335 0.39165 -0.6875 0.725 -0.9125 0.33335 -0.225 0.70835 -0.3375 1.125 -0.3375h1.9v-4.025c-2.65 -0.08335 -4.85415 -0.45835 -6.6125 -1.125C2.879165 9.18335 2 8.4 2 7.5c0 -0.96665 0.975 -1.79165 2.925 -2.475C6.875 4.341665 9.23335 4 12 4c2.76665 0 5.125 0.341665 7.075 1.025C21.025 5.70835 22 6.53335 22 7.5c0 0.9 -0.87915 1.68335 -2.6375 2.35 -1.75835 0.66665 -3.9625 1.04165 -6.6125 1.125V15h1.9c0.4 0 0.77085 0.1125 1.1125 0.3375 0.34165 0.225 0.5875 0.52915 0.7375 0.9125l1.125 2.8c0.08335 0.23335 0.05835 0.45 -0.075 0.65s-0.325 0.3 -0.575 0.3c-0.13335 0 -0.2625 -0.04165 -0.3875 -0.125 -0.125 -0.08335 -0.2125 -0.19165 -0.2625 -0.325l-1.2 -3.05H8.9l-1.225 3.075c-0.05 0.13335 -0.1375 0.2375 -0.2625 0.3125 -0.125 0.075 -0.25415 0.1125 -0.3875 0.1125 -0.25 0 -0.44165 -0.1 -0.575 -0.3 -0.13335 -0.2 -0.15835 -0.41665 -0.075 -0.65ZM12 9.5c1.8 0 3.48335 -0.18335 5.05 -0.55 1.56665 -0.36665 2.75835 -0.85 3.575 -1.45 -0.81665 -0.6 -2.00835 -1.08335 -3.575 -1.45 -1.56665 -0.36665 -3.25 -0.55 -5.05 -0.55 -1.8 0 -3.48335 0.18335 -5.05 0.55 -1.56665 0.36665 -2.758335 0.85 -3.575 1.45 0.816665 0.6 2.00835 1.08335 3.575 1.45 1.56665 0.36665 3.25 0.55 5.05 0.55Z"
+        />
+    </svg>
+);
+
+const UserIcon = ({ className, style }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className={className} style={style}>
+        <path fill="currentColor" d="M12 11.9751c-1.1 0 -2 -0.35 -2.7 -1.05 -0.7 -0.7 -1.05 -1.6 -1.05 -2.7s0.35 -2 1.05 -2.7c0.7 -0.7 1.6 -1.05 2.7 -1.05s2 0.35 2.7 1.05c0.7 0.7 1.05 1.6 1.05 2.7s-0.35 2 -1.05 2.7c-0.7 0.7 -1.6 1.05 -2.7 1.05Zm-8 6.525v-0.85c0 -0.63335 0.158335 -1.175 0.475 -1.625 0.316665 -0.45 0.725 -0.79165 1.225 -1.025 1.11665 -0.5 2.1875 -0.875 3.2125 -1.125s2.05415 -0.375 3.0875 -0.375 2.05835 0.12915 3.075 0.3875c1.01665 0.25835 2.08265 0.63075 3.198 1.11725 0.52165 0.2355 0.9399 0.5769 1.25475 1.02425 0.31485 0.44735 0.47225 0.98765 0.47225 1.621v0.85c0 0.4125 -0.14685 0.7656 -0.4405 1.05925 -0.29385 0.29385 -0.647 0.44075 -1.0595 0.44075H5.5c-0.4125 0 -0.765585 -0.1469 -1.05925 -0.44075C4.146915 19.2657 4 18.9126 4 18.5001Zm1.5 0h13v-0.85c0 -0.26665 -0.07915 -0.52085 -0.2375 -0.7625 -0.15835 -0.24165 -0.35415 -0.42085 -0.5875 -0.5375 -1.06665 -0.51665 -2.04165 -0.87085 -2.925 -1.0625 -0.88335 -0.19165 -1.8 -0.2875 -2.75 -0.2875s-1.875 0.09585 -2.775 0.2875c-0.9 0.19165 -1.875 0.54585 -2.925 1.0625 -0.23335 0.11665 -0.425 0.29585 -0.575 0.5375 -0.15 0.24165 -0.225 0.49585 -0.225 0.7625v0.85Zm6.5 -8.025c0.65 0 1.1875 -0.2125 1.6125 -0.6375 0.425 -0.425 0.6375 -0.9625 0.6375 -1.6125s-0.2125 -1.1875 -0.6375 -1.6125c-0.425 -0.425 -0.9625 -0.6375 -1.6125 -0.6375s-1.1875 0.2125 -1.6125 0.6375c-0.425 0.425 -0.6375 0.9625 -0.6375 1.6125s0.2125 1.1875 0.6375 1.6125c0.425 0.425 0.9625 0.6375 1.6125 0.6375Z" />
+    </svg>
+);
+
+const ChecklistIcon = ({ className, style }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className={className} style={style}>
+        <path fill="currentColor" d="m5.55 16.52495 3.95 -3.95c0.15 -0.15 0.325 -0.2208 0.525 -0.2125 0.2 0.00835 0.37825 0.0875 0.53475 0.2375 0.1435 0.15 0.21525 0.325 0.21525 0.525s-0.075 0.375 -0.225 0.525l-4.475 4.475c-0.15 0.15 -0.325 0.225 -0.525 0.225s-0.375 -0.075 -0.525 -0.225l-2.50001 -2.5c-0.15 -0.15 -0.225 -0.325 -0.225 -0.525s0.075 -0.375 0.225 -0.525c0.15 -0.15 0.325 -0.2208 0.525 -0.2125 0.2 0.00835 0.375 0.0792 0.525 0.2125l1.97501 1.95Zm0 -8L9.5 4.574975c0.15 -0.15 0.325 -0.220835 0.525 -0.2125 0.2 0.008335 0.37825 0.0875 0.53475 0.2375 0.1435 0.15 0.21525 0.325 0.21525 0.524975 0 0.2 -0.075 0.375 -0.225 0.525l-4.475 4.475c-0.15 0.15 -0.325 0.225 -0.525 0.225s-0.375 -0.075 -0.525 -0.225l-2.50001 -2.5c-0.15 -0.15 -0.225 -0.325 -0.225 -0.525s0.075 -0.375 0.225 -0.525c0.15 -0.15 0.325 -0.2208 0.525 -0.2125 0.2 0.00835 0.375 0.0792 0.525 0.2125l1.97501 1.95Zm8.2 8.225c-0.2125 0 -0.3906 -0.0723 -0.53425 -0.217 -0.14385 -0.1445 -0.21575 -0.32365 -0.21575 -0.5375 0 -0.21365 0.0719 -0.3913 0.21575 -0.533 0.14365 -0.14165 0.32175 -0.2125 0.53425 -0.2125h7.5c0.2125 0 0.39065 0.07235 0.5345 0.217 0.14365 0.1445 0.2155 0.3237 0.2155 0.5375 0 0.2137 -0.07185 0.39135 -0.2155 0.533 -0.14385 0.1417 -0.322 0.2125 -0.5345 0.2125h-7.5Zm0 -8c-0.2125 0 -0.3906 -0.0723 -0.53425 -0.217 -0.14385 -0.1445 -0.21575 -0.32365 -0.21575 -0.5375 0 -0.21365 0.0719 -0.3913 0.21575 -0.533 0.14365 -0.14165 0.32175 -0.2125 0.53425 -0.2125h7.5c0.2125 0 0.39065 0.07235 0.5345 0.217 0.14365 0.1445 0.2155 0.3237 0.2155 0.5375 0 0.2137 -0.07185 0.39135 -0.2155 0.533 -0.14385 0.1417 -0.322 0.2125 -0.5345 0.2125h-7.5Z" />
+    </svg>
+);
 const AdminTable = () => {
     const [tables, setTables] = useState(() => {
         const saved = localStorage.getItem('admin_tables');
@@ -32,7 +58,7 @@ const AdminTable = () => {
 
     const syncTableCount = async (count, tableList) => {
         try {
-            await restaurantAPI.updateDetails({ 
+            await restaurantAPI.updateDetails({
                 totalTables: count,
                 tableNumbers: tableList?.map(String) // Ensure strings for consistency
             });
@@ -292,10 +318,10 @@ const AdminTable = () => {
                 <div className="flex gap-2 items-center">
                     <button
                         onClick={addTable}
-                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white h-10 sm:h-12 px-4 sm:px-6 rounded-full font-normal flex items-center justify-center gap-2 transition-all duration-300 shadow-sm text-sm"
+                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2"
                     >
                         <Plus className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                        <span className="hidden sm:block">
+                        <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
                             Add Table
                         </span>
                     </button>
@@ -311,7 +337,7 @@ const AdminTable = () => {
                     return (
                         <div key={table}
                             className={`bg-white rounded-2xl md:rounded-[2rem] p-4 md:p-5 aspect-square shadow-sm border-2 transition-all group relative flex flex-col items-center justify-center text-center overflow-hidden
-                                ${isLive ? 'border-[#FD6941] bg-orange-50/30' : 'border-gray-100 hover:border-gray-200'}
+                                ${isLive ? 'border-[#FD6941] bg-[#FD6941]/5' : 'border-gray-100 hover:border-gray-200'}
                             `}
                         >
                             {/* Top Actions Bar - Delete only on Right */}
@@ -332,7 +358,7 @@ const AdminTable = () => {
                                 </span>
                                 <div className={`px-4 sm:px-5 py-1 sm:py-1.5 rounded-full text-[8px] sm:text-[9px] font-normal uppercase tracking-[0.2em] shadow-sm border transition-all duration-500
                                     ${isLive
-                                        ? 'bg-[#FD6941] text-white border-[#FD6941] '
+                                        ? 'bg-[#FD6941]/10 text-[#FD6941] border-[#FD6941]/30 '
                                         : 'bg-gray-50 text-gray-400 border-gray-100'}
                                 `}>
                                     {isLive ? 'Occupied' : 'Vacant'}
@@ -397,7 +423,7 @@ const AdminTable = () => {
             {/* Live Order Preview Modal */}
             {
                 isPreviewOpen && selectedTableOrder && createPortal(
-                    <div className="fixed inset-0 z-[99999] bg-black/60 backdrop-blur-xl flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-[99999] bg-black/40 backdrop-blur-xl flex items-center justify-center p-4">
                         <div className="bg-white w-full max-w-md rounded-3xl md:rounded-[3.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
                             {/* Premium Modal Header */}
                             <div className="relative p-6 md:p-8 pb-4 text-center">
@@ -408,7 +434,10 @@ const AdminTable = () => {
                                     <X className="w-4 h-4 md:w-5 md:h-5" />
                                 </button>
 
-                                <h2 className="text-3xl md:text-4xl font-normal  text-gray-900 tracking-tighter mt-4 md:mt-4">Table {selectedTableOrder.tableNumber}</h2>
+                                <div className="flex items-center justify-center gap-2 mt-4 md:mt-4">
+                                    <TableIcon className="w-6 h-6 md:w-8 md:h-8 text-[#FD6941]" />
+                                    <h2 className="text-3xl md:text-4xl font-normal text-gray-900 tracking-tighter">Table {selectedTableOrder.tableNumber}</h2>
+                                </div>
                                 <p className="text-gray-400 text-[10px] font-normal uppercase tracking-[0.3em] mt-2">Live Order View</p>
                             </div>
 
@@ -416,7 +445,7 @@ const AdminTable = () => {
                                 {/* Customer Card - Cleaner */}
                                 <div className="flex items-center gap-4 p-5 bg-gray-50/80 rounded-[2.5rem] border border-gray-100">
                                     <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-gray-400 border border-gray-100">
-                                        <User className="w-6 h-6" />
+                                        <UserIcon className="w-6 h-6" />
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-gray-400 text-[9px] font-normal uppercase tracking-wider mb-0.5">Ordering Person</p>
@@ -445,18 +474,22 @@ const AdminTable = () => {
                                 </div>
 
                                 {/* Total Amount Section - LIGHT THEME */}
-                                <div className="p-6 md:p-8 bg-gray-50 rounded-2xl md:rounded-[3rem] text-gray-900 flex justify-between items-center border border-gray-100 relative overflow-hidden group shadow-sm">
+                                <div
+                                    className="p-5 sm:p-6 rounded-[1.2rem] sm:rounded-[2rem] text-gray-900 flex justify-between items-center border border-gray-100 relative overflow-hidden group shadow-sm isolate"
+                                    style={{
+                                        background: 'radial-gradient(circle at bottom right, rgba(253, 105, 65, 0.08), transparent 70%), #F9FAFB',
+                                        transform: 'translateZ(0)'
+                                    }}
+                                >
                                     <div className="relative z-10">
-                                        <p className="text-[11px] text-gray-400 font-normal uppercase tracking-[0.1em] mb-1.5">Grand Total Amount</p>
-                                        <p className="text-3xl sm:text-5xl font-normal  tracking-tighter">
+                                        <p className="text-[9px] sm:text-[11px] text-gray-400 font-normal uppercase tracking-[0.1em] mb-1 sm:mb-1.5">Grand Total Amount</p>
+                                        <p className="text-2xl sm:text-4xl font-normal tracking-tighter">
                                             {currencySymbol}{selectedTableOrder.totalAmount?.toFixed(2) || (selectedTableOrder.items?.reduce((acc, it) => acc + (it.price * (it.quantity || 1)), 0) * 1.05).toFixed(2)}
                                         </p>
                                     </div>
-                                    <div className="relative z-10 w-12 h-12 md:w-16 md:h-16 bg-white rounded-full flex items-center justify-center border border-gray-200 shadow-sm">
-                                        <span className="text-2xl md:text-3xl text-gray-300 font-light ">#</span>
+                                    <div className="relative z-10 w-10 h-10 sm:w-12 sm:h-12 bg-white rounded-full flex items-center justify-center border border-gray-200 shadow-sm transition-transform group-hover:rotate-12">
+                                        <Hash className="w-4 h-4 sm:w-6 sm:h-6 text-gray-300 font-light" />
                                     </div>
-                                    {/* Subtle Ambient Glow */}
-                                    <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-[#FD6941]/30 blur-[60px] rounded-full" />
                                 </div>
 
                                 {/* Action Button */}
@@ -480,9 +513,9 @@ const AdminTable = () => {
             {/* QR Code Modal */}
             {
                 qrModal.isOpen && createPortal(
-                <div className="fixed inset-0 w-full h-[100dvh] z-[99999] bg-black/60 backdrop-blur-xl flex items-end sm:items-center justify-center p-2 sm:p-4">
-                    <div className="fixed inset-0" onClick={() => setQrModal({ ...qrModal, isOpen: false })} />
-                    <div className="bg-white w-full max-w-sm rounded-t-[2.5rem] sm:rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-5 sm:zoom-in duration-200 relative z-10">
+                    <div className="fixed inset-0 w-full h-[100dvh] z-[99999] bg-black/40 backdrop-blur-xl flex items-end sm:items-center justify-center p-2 sm:p-4">
+                        <div className="fixed inset-0" onClick={() => setQrModal({ ...qrModal, isOpen: false })} />
+                        <div className="bg-white w-full max-w-sm rounded-t-[2.5rem] sm:rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-5 sm:zoom-in duration-200 relative z-10">
                             <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                                 <h2 className="text-xl font-normal text-gray-800">Table {qrModal.tableNo} QR Code</h2>
                                 <button
@@ -536,7 +569,7 @@ const AdminTable = () => {
 
             {/* Invoice Preview Modal - Standardized UI */}
             {isInvoicePreviewOpen && invoiceOrder && createPortal(
-                <div className="fixed inset-0 w-full h-[100dvh] z-[99999] bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
+                <div className="fixed inset-0 w-full h-[100dvh] z-[99999] bg-black/40 backdrop-blur-xl flex items-end sm:items-center justify-center p-2 sm:p-4 animate-in fade-in duration-200">
                     <div className="fixed inset-0" onClick={() => setIsInvoicePreviewOpen(false)} />
                     <div className="bg-gradient-to-br from-gray-50 to-white w-full max-w-2xl max-h-[92dvh] sm:max-h-[90vh] rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl relative flex flex-col border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-5 sm:zoom-in duration-300">
 

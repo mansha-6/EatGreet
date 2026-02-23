@@ -6,11 +6,11 @@ const KitchenLayout = () => {
     const { restaurantName } = useParams();
 
     return (
-        <div className="min-h-screen bg-[#F5F5F5] font-sans text-gray-900 selection:bg-[#FD6941] selection:text-[#FD6941]">
+        <div className="min-h-screen bg-[#F8F9FA] text-[#1A1A1A] selection:bg-[#FD6941]/30 selection:text-[#FD6941]">
             <DynamicNavbar />
 
             {/* Content Container */}
-            <main className="px-10 pb-12 overflow-y-auto">
+            <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6 lg:px-[30px] py-6 w-full no-scrollbar">
                 <Outlet />
             </main>
         </div>

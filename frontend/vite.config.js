@@ -20,4 +20,15 @@ export default defineConfig({
       },
     },
   },
+  optimizeDeps: {
+    include: ['three', 'react-is'],
+  },
+  build: {
+    rollupOptions: {
+      external: [],
+    },
+    commonjsOptions: {
+      include: [/three/, /react-is/, /node_modules/],
+    },
+  },
 })

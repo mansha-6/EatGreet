@@ -102,10 +102,13 @@ const CustomerLayout = () => {
     // -- Handlers --
     const addToCart = (item) => {
         const itemId = item._id || item.id;
+        // Use displayPrice (discounted) if available, otherwise fall back to original price
+        const effectivePrice = item.displayPrice !== undefined ? item.displayPrice : item.price;
         setCart(prev => ({
             ...prev,
             [itemId]: {
                 ...item,
+                cartPrice: effectivePrice,  // actual price to charge (with discount)
                 qty: (prev[itemId]?.qty || 0) + 1
             }
         }));

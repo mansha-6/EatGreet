@@ -455,7 +455,7 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
     };
 
     return createPortal(
-        <div className="fixed inset-0 w-full h-[100dvh] z-[9999] flex items-end sm:items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200" onClick={onClose}>
+        <div className="fixed inset-0 w-full h-[100dvh] z-[9999] flex items-end sm:items-center justify-center p-2 sm:p-4 bg-black/40 backdrop-blur-xl animate-in fade-in duration-200" onClick={onClose}>
             <div className="bg-gradient-to-br from-gray-50 to-white w-full max-w-2xl max-h-[92dvh] sm:max-h-[90vh] rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl relative flex flex-col border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-5 sm:zoom-in-95" onClick={e => e.stopPropagation()}>
 
                 <button
@@ -1455,23 +1455,25 @@ const AdminSales = () => {
                     <p className="text-[12px] sm:text-[18px] text-gray-400 font-normal">Financial Overview & Analytics</p>
                 </div>
                 <div className="flex flex-row items-center justify-end gap-1.5 sm:gap-2 w-full md:w-auto overflow-x-auto no-scrollbar pb-1">
-                    <div className="flex items-center shrink-0">
+                    <div className="flex items-center flex-1 sm:flex-none shrink-0">
                         <button
                             onClick={() => setIsDatePickerOpen(true)}
-                            className="bg-white border border-gray-100 text-gray-700 text-[10px] sm:text-[13px] rounded-full px-4 sm:px-6 py-2 sm:py-3 outline-none shadow-sm transition-all hover:border-gray-300 flex items-center gap-2 font-normal"
+                            className="w-full sm:w-auto h-9 sm:h-12 bg-white border border-gray-100 text-gray-700 text-[10px] sm:text-[13px] rounded-full px-4 sm:px-6 outline-none shadow-sm transition-all hover:border-gray-300 flex items-center gap-2 font-normal justify-between sm:justify-start"
                         >
-                            <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
-                            {dateRange.start ? (
-                                <span>
-                                    {new Date(dateRange.start).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                                    <span className="mx-1 text-gray-300">-</span>
-                                    {dateRange.end ? new Date(dateRange.end).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Today'}
-                                </span>
-                            ) : (
-                                <span className="text-gray-400">Select Date Range</span>
-                            )}                <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 ml-1" />
+                            <div className="flex items-center gap-2">
+                                <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 shrink-0" />
+                                {dateRange.start ? (
+                                    <span>
+                                        {new Date(dateRange.start).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                        <span className="mx-1 text-gray-300">-</span>
+                                        {dateRange.end ? new Date(dateRange.end).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Today'}
+                                    </span>
+                                ) : (
+                                    <span className="text-gray-400">Select Date Range</span>
+                                )}
+                            </div>
+                            <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 ml-1 shrink-0" />
                         </button>
-
                     </div>
 
                     {/* Render DatePicker conditionally outside the button but relative to it if needed, or just as a modal */}
@@ -1487,23 +1489,23 @@ const AdminSales = () => {
 
                     <button
                         onClick={handleDownloadPDF}
-                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white h-9 sm:h-12 px-3 sm:px-6 rounded-full font-normal flex items-center justify-center gap-2 shrink-0 transition-all duration-300 shadow-sm text-sm"
+                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-normal flex items-center justify-center gap-0 shrink-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden hover:sm:w-auto hover:sm:px-6 hover:sm:gap-2"
                         title="Download PDF Report"
                     >
                         <Download className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                        <span className="hidden sm:block whitespace-nowrap">
-                            PDF Report
+                        <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                            Download PDF
                         </span>
                     </button>
 
                     <button
                         onClick={handleDownloadExcel}
-                        className="bg-green-600 hover:bg-green-700 text-white h-9 sm:h-12 px-3 sm:px-6 rounded-full font-normal flex items-center justify-center gap-2 shrink-0 transition-all duration-300 shadow-sm shadow-green-100 text-sm"
+                        className="bg-green-600 hover:bg-green-700 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-normal flex items-center justify-center gap-0 shrink-0 group transition-all duration-300 shadow-sm shadow-green-100 text-sm overflow-hidden hover:sm:w-auto hover:sm:px-6 hover:sm:gap-2"
                         title="Download Excel Report"
                     >
                         <FileSpreadsheet className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                        <span className="hidden sm:block whitespace-nowrap">
-                            Excel Report
+                        <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                            Download Excel
                         </span>
                     </button>
                 </div>
@@ -1551,14 +1553,27 @@ const AdminSales = () => {
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Graph: Sales & Net Profit */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-[1.5rem] shadow-sm">
-                    <div className="mb-6">
-                        <h3 className="text-[16px] sm:text-[24px] font-normal text-black">Revenue & Net Profit</h3>
-                        <p className="text-[10px] text-gray-400 font-normal">Monthly breakdown of sales and actual earnings</p>
+                <div className="lg:col-span-2 bg-white p-6 rounded-[1.5rem] shadow-sm overflow-hidden">
+                    <div className="mb-6 flex items-start justify-between gap-4">
+                        <div>
+                            <h3 className="text-[16px] sm:text-[24px] font-normal text-black">Revenue &amp; Net Profit</h3>
+                            <p className="text-[10px] text-gray-400 font-normal">Monthly breakdown of sales and actual earnings</p>
+                        </div>
+                        {/* Legend */}
+                        <div className="hidden sm:flex items-center gap-3 shrink-0 pt-1">
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-2.5 h-2.5 rounded-full bg-[#FD6941] shrink-0"></div>
+                                <span className="text-[11px] font-normal text-gray-500">Total Revenue</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <div className="w-2.5 h-2.5 rounded-full bg-black shrink-0"></div>
+                                <span className="text-[11px] font-normal text-gray-500">Net Profit</span>
+                            </div>
+                        </div>
                     </div>
-                    <div className="h-[250px] sm:h-[300px] w-full">
+                    <div className="h-[220px] sm:h-[300px] w-full outline-none" tabIndex={-1} style={{ WebkitTapHighlightColor: 'transparent' }}>
                         <ResponsiveContainer width="100%" height="100%" debounce={50}>
-                            <AreaChart data={graphData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                            <AreaChart data={graphData} margin={{ top: 10, right: 5, left: 5, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#FD6941" stopOpacity={0.1} />
@@ -1588,14 +1603,9 @@ const AdminSales = () => {
                                         padding: '12px'
                                     }}
                                     itemStyle={{ fontSize: '13px', fontWeight: 500 }}
+                                    itemSorter={(item) => item.name === 'Total Revenue' ? 0 : 1}
                                 />
-                                <Legend
-                                    verticalAlign="top"
-                                    align="right"
-                                    height={36}
-                                    iconType="circle"
-                                    formatter={(value) => <span className="text-[12px] font-normal text-slate-600 mr-4">{value}</span>}
-                                />
+
                                 <Area
                                     type="monotone"
                                     dataKey="totalRevenue"
@@ -1690,7 +1700,7 @@ const AdminSales = () => {
                                                     setPaymentFilter(mode);
                                                     setIsFilterOpen(false);
                                                 }}
-                                                className={`w-full text-left px-4 py-2 text-xs sm:text-sm font-normal hover:bg-[#FD6941] transition-colors ${paymentFilter === mode ? 'text-[#FD6941] bg-[#FD6941]' : 'text-gray-600'}`}
+                                                className={`w-full text-left px-4 py-2 text-xs sm:text-sm font-normal transition-colors rounded-lg mx-1 w-[calc(100%-8px)] ${paymentFilter === mode ? 'text-[#FD6941] bg-[#FD6941]/10' : 'text-gray-600 hover:bg-gray-50'}`}
                                             >
                                                 {mode}
                                             </button>
@@ -1705,36 +1715,37 @@ const AdminSales = () => {
                 <div className="block sm:hidden divide-y divide-gray-50 p-2">
                     {tableData.length > 0 ? (
                         tableData.map((order) => (
-                            <div key={order._id} className="p-3 bg-white rounded-2xl border border-gray-100 shadow-sm mb-3 flex items-center justify-between gap-3 group">
-                                <div className="flex items-center gap-3 flex-1 min-w-0">
-                                    <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 border border-transparent group-hover:scale-105 transition-transform">
-                                        <UtensilsCrossed className="w-5 h-5 text-gray-400" />
+                            <div key={order._id} className="px-3.5 py-3 bg-white rounded-2xl border border-gray-100 shadow-sm mb-3 flex items-center justify-between gap-3 group">
+                                {/* Left: icon + Order ID · time · items */}
+                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                    <div className="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100">
+                                        <UtensilsCrossed className="w-3.5 h-3.5 text-gray-400" />
                                     </div>
-                                    <div className="min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <p className="text-sm font-bold text-gray-900  truncate">#{order.dailySequence || (order._id || '').slice(-6).toUpperCase()}</p>
-                                            <span className="text-[9px] text-gray-400 font-normal bg-gray-50 px-1.5 py-0.5 rounded-full border border-gray-100 italic">
-                                                {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2 mt-0.5">
-                                            <span className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-md ${(order.paymentMethod || 'Cash').toLowerCase() === 'online' ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600'
-                                                }`}>
-                                                {order.paymentMethod || 'Cash'}
-                                            </span>
-                                            <span className="text-[10px] text-gray-400 font-normal">
-                                                {order.items?.reduce((acc, i) => acc + (i.quantity || 1), 0) || 0} items
-                                            </span>
-                                        </div>
+                                    <div className="flex items-center gap-1 min-w-0 overflow-hidden">
+                                        <span className="text-sm font-bold text-gray-900 shrink-0 truncate">
+                                            #{order.dailySequence || (order._id || '').slice(-6).toUpperCase()}
+                                        </span>
+                                        <span className="text-gray-200 text-xs shrink-0">·</span>
+                                        <span className="text-[10px] text-gray-400 italic shrink-0">
+                                            {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </span>
+                                        <span className="text-gray-200 text-xs shrink-0">·</span>
+                                        <span className="text-[10px] text-gray-400 shrink-0">
+                                            {order.items?.reduce((acc, i) => acc + (i.quantity || 1), 0) || 0} items
+                                        </span>
                                     </div>
                                 </div>
-                                <div className="flex flex-col items-end gap-1.5">
-                                    <p className="text-sm font-bold text-gray-900 leading-none">{formatCurrency(order.totalAmount, currencySymbol)}</p>
+                                {/* Right: amount + invoice button */}
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <span className="text-sm font-bold text-gray-900">
+                                        {formatCurrency(order.totalAmount || 0, currencySymbol)}
+                                    </span>
                                     <button
                                         onClick={() => setSelectedOrder(order)}
-                                        className="px-4 py-1.5 bg-[#FD6941] text-white rounded-lg text-xs font-normal hover:bg-[#FD6941] transition-all active:scale-95 shadow-sm "
+                                        className="w-8 h-8 rounded-full bg-[#FD6941] text-white flex items-center justify-center hover:bg-[#FD6941]/90 transition-all active:scale-95 shadow-sm shrink-0"
+                                        title="View Invoice"
                                     >
-                                        View
+                                        <FileText size={14} />
                                     </button>
                                 </div>
                             </div>

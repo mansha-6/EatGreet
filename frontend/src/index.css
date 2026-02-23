@@ -111,3 +111,23 @@ input::-webkit-inner-spin-button {
 input[type=number] {
     -moz-appearance: textfield;
 }
+
+/* Remove focus outline from Recharts chart elements */
+.recharts-wrapper,
+.recharts-wrapper *,
+.recharts-wrapper svg,
+.recharts-wrapper svg *,
+.recharts-surface,
+.recharts-surface * {
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    box-shadow: none;
+}
+
+.recharts-wrapper:focus,
+.recharts-wrapper *:focus,
+.recharts-wrapper svg:focus,
+.recharts-surface:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}

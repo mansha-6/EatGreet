@@ -342,7 +342,7 @@ const Menu = () => {
                 menuItem: item._id,
                 name: item.name,
                 quantity: item.qty,
-                price: item.price
+                price: item.cartPrice ?? item.price
             })),
             totalAmount: grandTotal,
             instruction: customerDetails.notes
@@ -370,7 +370,7 @@ const Menu = () => {
     };
 
     const totalItems = Object.values(cart).reduce((acc, item) => acc + item.qty, 0);
-    const subTotal = Object.values(cart).reduce((acc, item) => acc + (item.price * item.qty), 0);
+    const subTotal = Object.values(cart).reduce((acc, item) => acc + ((item.cartPrice ?? item.price) * item.qty), 0);
     const tax = Math.round(subTotal * 0.05); // 5% Tax
     const grandTotal = subTotal + tax;
 
@@ -825,7 +825,7 @@ const Menu = () => {
                                                     </div>
                                                 </div>
                                                 <div className="text-right self-center">
-                                                    <span className="text-[#FD6941] font-normal text-sm whitespace-nowrap">{activeSymbol}{item.price * item.qty}</span>
+                                                    <span className="text-[#FD6941] font-normal text-sm whitespace-nowrap">{activeSymbol}{((item.cartPrice ?? item.price) * item.qty).toFixed(0)}</span>
                                                 </div>
                                             </div>
                                         ))}

@@ -240,12 +240,12 @@ const SuperAdminSettings = () => {
                             </SectionCard>
 
                             <SectionCard title="User Actions" icon={Lock}>
-                                <div className="p-4 bg-[#FD6941] rounded-xl mb-4">
+                                <div className="p-6 bg-[#FD6941]/5 rounded-[1.5rem] mb-4 border border-[#FD6941]/10">
                                     <h4 className="font-bold text-[#FD6941] mb-1">Reset User Password</h4>
-                                    <p className="text-xs text-[#FD6941] mb-3">Send a password reset link to a specific user.</p>
+                                    <p className="text-xs text-gray-500 mb-4">Send a password reset link to a specific user.</p>
                                     <div className="flex gap-2">
-                                        <input type="email" placeholder="Enter user email" className="flex-1 px-3 py-2 rounded-lg text-sm border-none focus:ring-1 focus:ring-[#FD6941]" />
-                                        <button className="px-4 py-2 bg-[#FD6941] text-white rounded-lg text-sm font-bold">Send Reset</button>
+                                        <input type="email" placeholder="Enter user email" className="flex-1 px-4 py-2 rounded-xl text-sm border border-gray-100 focus:outline-none focus:ring-1 focus:ring-[#FD6941] bg-white" />
+                                        <button className="px-6 py-2 bg-[#FD6941] hover:bg-[#e15a35] text-white rounded-xl text-sm font-bold shadow-sm transition-all">Send Reset</button>
                                     </div>
                                 </div>
                             </SectionCard>
@@ -347,7 +347,7 @@ const SidebarItem = ({ icon: Icon, label, isActive, onClick }) => (
 const SectionCard = ({ title, icon: Icon, children }) => (
     <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
         <div className="flex items-center gap-4 mb-6">
-            <div className="p-3 bg-[#FD6941] rounded-xl text-[#FD6941]">
+            <div className="p-3 bg-[#FD6941] rounded-xl text-white shadow-sm shadow-[#FD6941]/20">
                 <Icon className="w-6 h-6" />
             </div>
             <h3 className="text-lg font-bold text-gray-800">{title}</h3>
@@ -373,8 +373,8 @@ const ToggleItem = ({ title, description }) => (
             <h4 className="font-bold text-gray-800 text-sm">{title}</h4>
             <p className="text-xs text-gray-500">{description}</p>
         </div>
-        <div className="w-12 h-6 bg-[#FD6941] rounded-full relative cursor-pointer">
-            <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1 shadow-sm"></div>
+        <div className="w-12 h-6 bg-[#FD6941] rounded-full relative cursor-pointer shadow-inner">
+            <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1 shadow-md"></div>
         </div>
     </div>
 );

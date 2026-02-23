@@ -74,7 +74,7 @@ export default function Payments() {
                     <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-gray-500 text-sm font-normal">Pending</span>
-                            <div className="p-2 bg-[#FD6941] text-[#FD6941] rounded-full"><Calendar className="w-5 h-5" /></div>
+                            <div className="p-2 bg-[#FD6941] text-white rounded-full"><Calendar className="w-5 h-5" /></div>
                         </div>
                         <h3 className="text-3xl font-normal text-gray-900">{currencySymbol}{stats.pendingAmount.toLocaleString()}</h3>
                         <p className="text-[#FD6941] text-xs font-normal mt-2">Due this week</p>
@@ -144,7 +144,7 @@ export default function Payments() {
                                             </td>
                                             <td className="px-6 py-4 text-center">
                                                 <span className={`px-3 py-1 rounded-full text-[10px] font-normal uppercase tracking-wide border ${txn.status === 'Completed' ? 'bg-green-50 text-green-600 border-green-100' :
-                                                    txn.status === 'Pending' ? 'bg-[#FD6941] text-[#FD6941] border-[#FD6941]' :
+                                                    txn.status === 'Pending' ? 'bg-[#FD6941]/10 text-[#FD6941] border-[#FD6941]/20' :
                                                         'bg-red-50 text-red-600 border-red-100'
                                                     }`}>
                                                     {txn.status}

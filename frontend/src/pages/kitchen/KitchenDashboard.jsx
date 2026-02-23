@@ -144,17 +144,22 @@ export default function KitchenDashboard() {
     );
 
     return (
-        <div className="max-w-[1600px] mx-auto pb-6 sm:pb-12">
-            <header className="mb-6 sm:mb-10 pl-2">
-                <h1 className="text-[32px] sm:text-[44px] font-bold text-gray-900 tracking-tight leading-tight mb-1 sm:mb-2">Kitchen Dashboard</h1>
-            </header>
+        <div className="w-full pb-6 sm:pb-12">
+            <div className="space-y-1 mb-6">
+                <h1 className="text-[20px] sm:text-[24px] lg:text-[28px] font-normal text-black tracking-tight leading-none">Kitchen Dashboard</h1>
+                <p className="text-[11px] sm:text-[13px] lg:text-[14px] text-gray-400 font-normal uppercase tracking-widest opacity-60">Manage incoming and active preparation orders</p>
+            </div>
 
-            <div className="bg-white rounded-[1.5rem] sm:rounded-[3rem] p-5 sm:p-12 shadow-sm border border-gray-100 min-h-[70vh] sm:min-h-[80vh]">
-                <div className="mb-6 sm:mb-10 pl-1 sm:pl-2">
-                    <h2 className="text-[22px] sm:text-[28px] font-bold text-gray-900 tracking-tight">Active Order</h2>
+            <div className="bg-white rounded-[1.5rem] sm:rounded-[2.8rem] p-4 sm:p-8 relative shadow-sm min-h-[70vh] sm:min-h-[80vh] border border-transparent">
+                <div className="mb-6 flex justify-between items-center px-2">
+                    <h2 className="text-[14px] sm:text-[20px] lg:text-[24px] font-normal text-black leading-tight">Active Orders</h2>
+                    <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+                        <span className="w-1.5 h-1.5 bg-[#FD6941] rounded-full animate-pulse"></span>
+                        <span className="text-[10px] sm:text-[12px] font-normal uppercase tracking-wider text-gray-400 opacity-60">{groupedRounds.length} Orders</span>
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     <AnimatePresence mode="popLayout">
                         {groupedRounds.map((round) => (
                             <motion.div
@@ -164,65 +169,66 @@ export default function KitchenDashboard() {
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 onClick={() => handleStatusUpdate(round._id, round.items.map(it => it.originalIndex), round.status)}
-                                className={`bg-[#F8F8F8] rounded-[1.8rem] sm:rounded-[2.5rem] p-6 sm:p-10 flex flex-col relative group cursor-pointer overflow-hidden border-2 transition-all duration-300 min-h-[380px] sm:min-h-[420px] ${round.status === 'preparing' ? 'border-[#FD6941]/20 ring-1 ring-[#FD6941]/10 bg-white' : 'border-transparent hover:border-gray-200'
+                                className={`bg-[#F9FAFB] rounded-[1.5rem] sm:rounded-[2.2rem] p-6 sm:p-9 flex flex-col relative group cursor-pointer overflow-hidden border border-gray-50 transition-all duration-300 shadow-sm hover:shadow-md min-h-[380px] sm:min-h-[460px] ${round.status === 'preparing'
+                                    ? 'border-[#FD6941]/20 bg-white'
+                                    : 'hover:border-gray-100'
                                     }`}
                             >
                                 {/* Order ID Header */}
-                                <div className="mb-4 sm:mb-6">
+                                <div className="mb-5 sm:mb-6">
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <h3 className="text-lg sm:text-xl font-bold text-gray-900">Table {round.tableNumber}</h3>
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">Order #{round.dailySequence ? String(round.dailySequence).padStart(3, '0') : round._id.slice(-4).toUpperCase()}</p>
+                                            <h3 className="text-[20px] sm:text-[26px] font-normal text-black leading-tight">Order #{round.dailySequence ? String(round.dailySequence).padStart(3, '0') : round._id.slice(-4).toUpperCase()}</h3>
+                                            <p className="text-[12px] sm:text-[14px] text-gray-400 font-normal uppercase tracking-[0.1em] opacity-60 mt-1">Table {round.tableNumber}</p>
                                         </div>
-                                        <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${round.roundSequence > 1 ? 'bg-blue-50 text-blue-600' : 'bg-gray-100 text-gray-500'
+                                        <div className={`px-4 py-1.5 rounded-full text-[10px] font-normal uppercase tracking-widest shadow-sm ${round.roundSequence > 1 ? 'bg-blue-50 text-blue-600 border border-blue-50' : 'bg-gray-50 text-gray-400'
                                             }`}>
-                                            {round.roundSequence > 1 ? `Round ${round.roundSequence}` : 'New Order'}
+                                            {round.roundSequence > 1 ? `Round ${round.roundSequence}` : 'Fresh'}
                                         </div>
                                     </div>
-                                    <div className="h-[1px] bg-gray-200 mt-3 sm:mt-4 w-full opacity-60"></div>
+                                    <div className="h-[1px] bg-gray-100 mt-5 w-full"></div>
                                 </div>
 
                                 {/* Items Table Area */}
                                 <div className="flex-1">
-                                    <div className="flex justify-between items-center mb-5 px-1">
-                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.1em]">Items</span>
-                                        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-[0.1em]">Qty</span>
+                                    <div className="flex justify-between items-center mb-3 px-1">
+                                        <span className="text-[10px] sm:text-[12px] text-gray-400 font-normal uppercase tracking-wider opacity-60">Prep Items</span>
+                                        <span className="text-[10px] sm:text-[12px] text-gray-400 font-normal uppercase tracking-wider opacity-60">Qty</span>
                                     </div>
 
                                     <ul className="space-y-4">
                                         {round.items.map((item, idx) => (
-                                            <li key={idx} className="flex justify-between items-start group/item px-1">
+                                            <li key={idx} className="flex justify-between items-center group/item px-1">
                                                 <div className="flex flex-col">
-                                                    <span className={`text-[17px] font-bold ${round.status === 'preparing' ? 'text-gray-900' : 'text-gray-700'}`}>{item.name}</span>
-                                                    {item.status === 'ready' && <span className="text-[10px] text-green-500 font-bold uppercase tracking-tighter">Ready to Serve</span>}
+                                                    <span className={`text-[15px] sm:text-[18px] font-normal leading-tight ${round.status === 'preparing' ? 'text-black' : 'text-gray-500'}`}>{item.name}</span>
+                                                    {item.status === 'ready' && <span className="text-[10px] text-green-500 font-normal uppercase tracking-wider mt-1">Ready</span>}
                                                 </div>
-                                                <span className="text-[17px] font-bold text-gray-900 min-w-[24px] text-right bg-white w-8 h-8 flex items-center justify-center rounded-lg shadow-sm border border-gray-100">{item.quantity}</span>
+                                                <span className="text-[15px] sm:text-[18px] font-normal text-black bg-white w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center rounded-full shadow-sm border border-gray-50">{item.quantity}</span>
                                             </li>
                                         ))}
                                     </ul>
                                 </div>
 
                                 {/* Cooking Instructions Divider & Section */}
-                                <div className="mt-6 sm:mt-8">
-                                    <div className="h-[1px] bg-gray-200 w-full opacity-60 mb-4 sm:mb-6"></div>
-                                    <div className="px-1 flex justify-between items-end">
-                                        <div className="max-w-[70%]">
-                                            <h4 className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-[0.1em] mb-2 sm:mb-3">Notes</h4>
-                                            <p className="text-[12px] sm:text-[13px] text-gray-500 leading-relaxed font-normal line-clamp-2 italic">
-                                                {round.instruction || "Standard preparation"}
+                                <div className="mt-4 sm:mt-6 bg-[#F3F5F7] -mx-4 sm:-mx-6 p-3 sm:p-4 rounded-[1rem] border border-gray-50/50">
+                                    <div className="px-1 flex flex-col gap-1.5">
+                                        <h4 className="text-[10px] font-normal text-gray-400 uppercase tracking-wider opacity-60">Instructions</h4>
+                                        <div className="flex justify-between items-end">
+                                            <p className="text-[11px] sm:text-[13px] text-gray-500 leading-snug font-normal italic tracking-tight">
+                                                "{round.instruction || "Standard prep requested"}"
                                             </p>
-                                        </div>
-                                        <div className="text-right">
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{round.timeLabel}</span>
+                                            <div className="text-right ml-2 shrink-0">
+                                                <span className="text-[9px] sm:text-[10px] font-normal text-gray-400 bg-white px-1.5 py-0.5 rounded-md border border-gray-50">{round.timeLabel}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Status Pulse Badge (Always Visible when preparing) */}
                                 {round.status === 'preparing' && (
-                                    <div className="absolute bottom-10 right-10 flex items-center gap-2 bg-[#FD6941] px-4 py-2 rounded-full shadow-lg ">
-                                        <span className="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-                                        <span className="text-[10px] font-black text-white uppercase tracking-widest">Cooking</span>
+                                    <div className="absolute top-6 right-8 flex items-center gap-2 bg-[#FD6941] px-4 py-2 rounded-full shadow-lg shadow-[#FD6941]/10 border border-white/20 backdrop-blur-sm">
+                                        <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></span>
+                                        <span className="text-[10px] font-normal text-white uppercase tracking-widest">Live</span>
                                     </div>
                                 )}
                             </motion.div>

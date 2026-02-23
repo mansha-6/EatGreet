@@ -35,7 +35,7 @@ export default function Users() {
                                 placeholder="Search users..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+                                className="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-[#FD6941] w-64"
                             />
                         </div>
                         <button className="p-2.5 bg-white border border-gray-200 rounded-full hover:bg-gray-50 text-gray-600">

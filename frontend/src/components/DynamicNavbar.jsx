@@ -9,6 +9,20 @@ import { useAdminNotifications } from '../hooks/useAdminNotifications';
 import logo from '../assets/logo-full.png';
 import tableIcon from '../assets/Table-Bar--Streamline-Sharp-Material.svg';
 
+const CustomTableIcon = ({ className = '' }) => {
+    const isWhite = className.includes('text-white');
+    const filter = isWhite
+        ? 'brightness(0) invert(1)' // white
+        : 'brightness(0) saturate(100%) invert(69%) sepia(5%) saturate(410%) hue-rotate(179deg) brightness(90%) contrast(90%)'; // gray-400
+    return (
+        <img
+            src={tableIcon}
+            alt="Table"
+            style={{ filter, width: '20px', height: '20px', flexShrink: 0 }}
+        />
+    );
+};
+
 const DynamicNavbar = ({ customerProps }) => {
     const location = useLocation();
     const navigate = useNavigate();
@@ -50,7 +64,7 @@ const DynamicNavbar = ({ customerProps }) => {
                     { label: 'Menu', path: `/${restaurantSlug}/admin/menu`, icon: Utensils },
                     { label: 'Category', path: `/${restaurantSlug}/admin/category`, icon: Layers },
                     { label: 'Order', path: `/${restaurantSlug}/admin/orders`, icon: ShoppingBag },
-                    { label: 'Table', path: `/${restaurantSlug}/admin/table`, icon: Table2 },
+                    { label: 'Table', path: `/${restaurantSlug}/admin/table`, icon: CustomTableIcon },
                     { label: 'Sales', path: `/${restaurantSlug}/admin/sales`, icon: TrendingUp },
                 ];
             default:
@@ -82,36 +96,35 @@ const DynamicNavbar = ({ customerProps }) => {
 
     // 1. KITCHEN VIEW (Simplified)
     if (viewType === 'KITCHEN') {
+        const titleName = user?.name || 'Kitchen';
         return (
-            <nav className="bg-[#F5F5F5] px-10 py-8 flex justify-between items-center sticky top-0 z-50">
-                <Link to="/" className="flex items-center gap-3 transition-transform hover:scale-105">
-                    <img src={user?.restaurantDetails?.logo || logo} alt="EatGreet" className="h-10 w-auto object-contain" onError={(e) => e.target.src = logo} />
+            <header className="px-4 sm:px-[30px] py-3 flex justify-between items-center sticky top-0 z-[100] bg-transparent backdrop-blur-md border-b border-gray-100 md:border-b-0 transition-all">
+                <Link to="/" className="flex items-center gap-3 transition-transform hover:scale-105 shrink-0">
+                    <img src={logo} alt="EatGreet" className="h-7 sm:h-9 w-auto object-contain" />
                 </Link>
                 <div className="flex items-center gap-6">
                     <div className="relative group">
-                        <button className="bg-white rounded-full pl-2 pr-6 py-2 flex items-center gap-4 shadow-[0_2px_10px_rgba(0,0,0,0.03)] border border-gray-100 transition-all hover:shadow-md group">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#FD6941] to-red-500 p-[2px] shadow-inner">
-                                <div className="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden">
-                                    {user?.profilePicture ? (
-                                        <img src={user.profilePicture} alt="Kitchen" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <img src={`https://ui-avatars.com/api/?name=${user?.name || 'Kitchen'}&background=FD6941&color=fff`} alt="Kitchen" className="w-full h-full object-cover" />
-                                    )}
-                                </div>
+                        <div className="w-9 h-9 sm:w-auto sm:h-auto flex items-center justify-center sm:gap-3 p-0 sm:pl-1.5 sm:pr-4 sm:py-1.5 bg-white rounded-full shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all shrink-0">
+                            <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden sm:border-2 sm:border-gray-50 shrink-0">
+                                {user?.profilePicture ? (
+                                    <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+                                ) : (
+                                    <img src={`https://ui-avatars.com/api/?name=${titleName}&background=FD6941&color=fff`} alt="Profile" className="w-full h-full object-cover" />
+                                )}
                             </div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-base font-bold text-gray-800 tracking-tight">{user?.name || 'Kitchen'}</span>
-                                <ChevronDown size={18} className="text-gray-400 group-hover:text-gray-900 transition-colors" />
+                            <div className="hidden md:flex items-center gap-2">
+                                <span className="text-sm font-normal text-gray-800">{titleName}</span>
+                                <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
                             </div>
-                        </button>
-                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[60] overflow-hidden">
-                            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-4 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors">
+                        </div>
+                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] overflow-hidden">
+                            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-4 text-sm font-normal text-red-600 hover:bg-red-50 transition-colors">
                                 <LogOut size={18} /> Logout
                             </button>
                         </div>
                     </div>
                 </div>
-            </nav>
+            </header >
         );
     }
 
@@ -121,7 +134,7 @@ const DynamicNavbar = ({ customerProps }) => {
             <header className="bg-white shadow-sm sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
                     <Link to={`${baseUrl}/menu`} className="flex items-center gap-2">
-                        <img src={customerProps?.logo || logo} alt="EatGreet" className="h-8 w-auto object-contain" />
+                        <img src={logo} alt="EatGreet" className="h-8 w-auto object-contain" />
                     </Link>
 
                     <div className="flex items-center gap-2 md:gap-4">
@@ -175,7 +188,7 @@ const DynamicNavbar = ({ customerProps }) => {
                     </button>
 
                     <Link to={viewType === 'SUPER_ADMIN' ? '/super-admin' : `/${restaurantSlug}/admin`} className="block">
-                        <img src={user?.restaurantDetails?.logo || logo} alt="EatGreet" className="h-7 sm:h-9 w-auto object-contain" />
+                        <img src={logo} alt="EatGreet" className="h-7 sm:h-9 w-auto object-contain" />
                     </Link>
                 </div>
 
@@ -193,7 +206,7 @@ const DynamicNavbar = ({ customerProps }) => {
                 </nav>
 
                 {/* Right Actions */}
-                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                <div className="flex items-center gap-0.5 sm:gap-3 shrink-0">
                     <Link
                         to={viewType === 'SUPER_ADMIN' ? '/super-admin/settings' : `/${restaurantSlug}/admin/settings`}
                         className="w-9 h-9 sm:w-11 sm:h-11 bg-white hover:bg-gray-50 rounded-full flex items-center justify-center transition-all shadow-sm border border-gray-100 text-gray-600 hover:text-black"
@@ -228,8 +241,8 @@ const DynamicNavbar = ({ customerProps }) => {
                                         <div className="max-h-[60vh] overflow-y-auto custom-scrollbar">
                                             {notifications.length > 0 ? (
                                                 notifications.map((notif) => (
-                                                    <div key={notif.id} onClick={() => markAsRead(notif.id)} className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors flex gap-3 ${!notif.read ? 'bg-[#FD6941]' : ''}`}>
-                                                        <div className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center ${notif.type === 'newOrder' ? 'bg-green-100 text-green-600' : notif.type === 'completed' ? 'bg-blue-100 text-blue-600' : 'bg-[#FD6941] text-[#FD6941]'}`}>
+                                                    <div key={notif.id} onClick={() => markAsRead(notif.id)} className={`p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors flex gap-3 ${!notif.read ? 'bg-[#FD6941]/5' : ''}`}>
+                                                        <div className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center ${notif.type === 'newOrder' ? 'bg-green-100 text-green-600' : notif.type === 'completed' ? 'bg-blue-100 text-blue-600' : 'bg-[#FD6941] text-white'}`}>
                                                             <Bell className="w-5 h-5 fill-current" />
                                                         </div>
                                                         <div className="flex-1 min-w-0">
@@ -261,8 +274,8 @@ const DynamicNavbar = ({ customerProps }) => {
                     )}
 
                     <div className="relative group/profile">
-                        <div className="flex items-center gap-3 pl-1.5 pr-1.5 sm:pr-4 py-1.5 bg-white rounded-full shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all">
-                            <div className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-gray-200 overflow-hidden border-2 border-gray-50">
+                        <div className="w-9 h-9 sm:w-auto sm:h-auto flex items-center justify-center sm:gap-3 p-0 sm:pl-1.5 sm:pr-4 sm:py-1.5 bg-white rounded-full shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all shrink-0">
+                            <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden sm:border-2 sm:border-gray-50 shrink-0">
                                 {user?.profilePicture ? (
                                     <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
@@ -303,16 +316,16 @@ const DynamicNavbar = ({ customerProps }) => {
                     ></div>
 
                     {/* Drawer Content - Flush Left, Rounded Right */}
-                    <div className="fixed top-0 left-0 bottom-0 w-[290px] bg-white rounded-r-[2.5rem] shadow-2xl z-[151] flex flex-col overflow-hidden animate-in slide-in-from-left duration-300 ring-1 ring-black/5">
-                        <div className="px-8 pt-12 pb-6 text-center relative border-b border-gray-50/50">
+                    <div className="fixed top-0 left-0 bottom-0 w-[260px] bg-white rounded-r-[2rem] shadow-2xl z-[151] flex flex-col overflow-hidden animate-in slide-in-from-left duration-300 ring-1 ring-black/5">
+                        <div className="px-6 pt-10 pb-5 text-center relative border-b border-gray-50/50">
                             <button
                                 onClick={() => setIsMenuOpen(false)}
-                                className="absolute top-6 left-6 w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 active:scale-90 transition-transform"
+                                className="absolute top-4 left-4 w-7 h-7 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 active:scale-90 transition-transform"
                             >
-                                <X size={16} />
+                                <X size={14} />
                             </button>
 
-                            <div className="w-[88px] h-[88px] rounded-full bg-gradient-to-tr from-[#FD6941] to-orange-300 mx-auto mb-4 p-[3px] shadow-lg">
+                            <div className="w-[72px] h-[72px] rounded-full bg-gradient-to-tr from-[#FD6941] to-red-500 mx-auto mb-3 p-[2px] shadow-sm">
                                 <div className="w-full h-full rounded-full bg-white p-[2px]">
                                     {user?.profilePicture ? (
                                         <img src={user.profilePicture} alt="Profile" className="w-full h-full rounded-full object-cover" />
@@ -326,21 +339,11 @@ const DynamicNavbar = ({ customerProps }) => {
                                 </div>
                             </div>
 
-                            <h3 className="text-[22px] font-normal text-gray-900 tracking-tight leading-tight">{user?.name || 'Admin'}</h3>
-                            <button
-                                onClick={() => {
-                                    navigate(viewType === 'SUPER_ADMIN' ? '/super-admin/profile' : `/${restaurantSlug}/admin/profile`);
-                                    setIsMenuOpen(false);
-                                }}
-                                className="mt-1 text-xs text-[#FD6941] font-normal block mx-auto active:opacity-70 transition-opacity"
-                            >
-                                View Profile
-                                <span className="ml-1 bg-orange-100 px-1.5 py-0.5 rounded-full text-[9px] uppercase font-bold align-middle">New</span>
-                            </button>
+                            <h3 className="text-lg font-normal text-gray-900 tracking-tight leading-tight">{user?.name || 'Admin'}</h3>
                         </div>
 
                         {/* Nav Items Section */}
-                        <nav className="flex-1 overflow-y-auto px-4 py-8 flex flex-col gap-1.5 no-scrollbar">
+                        <nav className="flex-1 overflow-y-auto px-3 py-6 flex flex-col gap-1 no-scrollbar">
                             {navItems.map((item) => {
                                 const active = location.pathname === item.path || (item.path !== '/' && location.pathname.endsWith(item.path));
                                 const Icon = item.icon;
@@ -350,30 +353,26 @@ const DynamicNavbar = ({ customerProps }) => {
                                         key={item.path}
                                         to={item.path}
                                         onClick={() => setIsMenuOpen(false)}
-                                        className={`flex items-center gap-4 px-6 py-4 rounded-2xl transition-all duration-300 active:scale-[0.98] ${active
-                                            ? 'bg-black text-white shadow-xl shadow-black/10'
-                                            : 'text-gray-500'
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 active:scale-[0.98] ${active
+                                            ? 'bg-black text-white shadow-md shadow-black/10'
+                                            : 'text-gray-500 hover:bg-gray-50'
                                             }`}
                                     >
-                                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${active ? 'bg-white/10' : 'bg-gray-50'}`}>
-                                            {Icon && <Icon className={`w-5 h-5 ${active ? 'text-white' : 'text-gray-400'}`} />}
-                                        </div>
-                                        <span className="text-[17px] font-normal tracking-tight">{item.label}</span>
+                                        <Icon className={`w-5 h-5 shrink-0 ${active ? 'text-white' : 'text-gray-400'}`} />
+                                        <span className="text-base font-normal tracking-tight">{item.label}</span>
                                     </Link>
                                 );
                             })}
                         </nav>
 
                         {/* Logout Section */}
-                        <div className="px-6 py-6 border-t border-gray-50">
+                        <div className="px-5 py-5 border-t border-gray-50">
                             <button
                                 onClick={handleLogout}
-                                className="w-full flex items-center gap-4 px-6 py-4 rounded-2xl text-red-500 active:bg-red-50 transition-all font-normal active:scale-95"
+                                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 active:bg-red-100 transition-all font-normal active:scale-95 border border-transparent hover:border-red-100"
                             >
-                                <div className="w-9 h-9 bg-red-50 rounded-xl flex items-center justify-center">
-                                    <LogOut size={20} className="text-red-500" />
-                                </div>
-                                <span className="text-[17px] tracking-tight">Logout</span>
+                                <LogOut size={18} className="shrink-0 text-red-500" />
+                                <span className="text-base tracking-tight">Logout</span>
                             </button>
                         </div>
                     </div>

@@ -245,34 +245,39 @@ const AdminOffers = () => {
 
     return (
         <div className="space-y-6 relative pb-10">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex justify-between items-center gap-4">
                 <div>
-                    <h1 className="text-2xl sm:text-3xl font-semibold text-gray-900 tracking-tight">Offers & Promos</h1>
-                    <p className="text-sm text-gray-500 mt-1">Manage discounts and promotional campaigns</p>
+                    <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-normal text-black tracking-tight leading-none">Offers & Promos</h1>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-2">Manage discounts and promotional campaigns</p>
                 </div>
-                <button
-                    onClick={openModal}
-                    className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white h-10 sm:h-12 px-4 sm:px-6 rounded-full font-normal flex items-center justify-center gap-2 transition-all duration-300 shadow-sm text-sm"
-                >
-                    <Plus className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                    <span className="hidden sm:block">
-                        Add Offer
-                    </span>
-                </button>
+                <div className="flex gap-2 items-center">
+                    <button
+                        onClick={openModal}
+                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2"
+                    >
+                        <Plus className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
+                        <span className="max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                            Add Offer
+                        </span>
+                    </button>
+                </div>
             </div>
 
             <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 shadow-sm border border-gray-100 min-h-[calc(100vh-12rem)]">
-                <div className="flex flex-col sm:flex-row items-center mb-6 sm:mb-8 gap-4 justify-between">
-                    <h2 className="text-[16px] sm:text-[22px] font-normal text-black w-full sm:w-auto">All Offers</h2>
-                    <div className="relative w-full sm:w-80">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5 z-10" />
-                        <input
-                            type="text"
-                            placeholder="Search by title or code..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 bg-gray-50 border-none rounded-full text-sm focus:outline-none focus:ring-1 focus:ring-[#FD6941] transition-all"
-                        />
+                <div className="flex flex-row items-center mb-5 gap-2 sm:gap-4 justify-between">
+                    <h2 className="text-[14px] sm:text-[22px] font-normal text-black shrink-0">All Offers</h2>
+
+                    <div className="flex items-center gap-1.5 sm:gap-3 flex-1 justify-end min-w-0">
+                        <div className="relative flex-1 sm:flex-none max-w-[200px] sm:max-w-none sm:w-80">
+                            <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5 sm:w-5 sm:h-5 z-10" />
+                            <input
+                                type="text"
+                                placeholder="Search..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full pl-8 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 bg-gray-50 border-none sm:border-solid rounded-full text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-[#FD6941] transition-all"
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -330,12 +335,16 @@ const AdminOffers = () => {
                                 </div>
 
                                 <div className="mt-auto pt-4 flex items-center justify-between border-t border-gray-100">
-                                    <div className="flex flex-col gap-1 items-start">
-                                        <span className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">USE CODE</span>
-                                        <code className="text-[#FD6941] bg-[#FD6941]/10 px-2.5 py-1 rounded-md text-sm font-bold tracking-wider border border-[#FD6941]/20">
-                                            {offer.code}
-                                        </code>
-                                    </div>
+                                    {offer.code ? (
+                                        <div className="flex flex-col gap-1 items-start">
+                                            <span className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">USE CODE</span>
+                                            <code className="text-[#FD6941] bg-[#FD6941]/10 px-2.5 py-1 rounded-md text-sm font-bold tracking-wider border border-[#FD6941]/20">
+                                                {offer.code}
+                                            </code>
+                                        </div>
+                                    ) : (
+                                        <div></div>
+                                    )}
                                     {offer.discountPercentage > 0 && (
                                         <div className="text-right flex flex-col items-end">
                                             <span className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">DISCOUNT</span>
@@ -348,7 +357,7 @@ const AdminOffers = () => {
                             </div>
 
                             {/* Overlay Controls */}
-                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2 z-20">
+                            <div className="absolute top-3 right-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex gap-2 z-20">
                                 <button className="p-2 bg-white/90 backdrop-blur-md shadow-sm text-gray-600 rounded-lg hover:bg-white hover:text-blue-600 transition-colors" onClick={() => handleEdit(offer)}>
                                     <Pencil className="w-4 h-4" />
                                 </button>
@@ -365,15 +374,15 @@ const AdminOffers = () => {
             {isModalOpen && createPortal(
                 <div className="fixed inset-0 w-full h-[100dvh] top-0 left-0 bg-black/70 backdrop-blur-xl flex items-end sm:items-center justify-center z-[99999] px-2">
                     <div className="fixed inset-0" onClick={() => setIsModalOpen(false)} />
-                    <div className="bg-white rounded-t-[2.5rem] sm:rounded-[2.5rem] w-full max-w-2xl max-h-[92dvh] sm:max-h-[95vh] shadow-2xl animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden relative z-10 flex flex-col">
-                        <div className="flex justify-between items-center p-5 sm:p-6 border-b border-gray-100 bg-gray-50/50">
+                    <div className="bg-white rounded-t-[2rem] sm:rounded-[2.5rem] w-full max-w-2xl max-h-[92dvh] sm:max-h-[95vh] shadow-2xl animate-in slide-in-from-bottom-5 sm:zoom-in-95 duration-200 overflow-hidden relative z-10 flex flex-col">
+                        <div className="flex justify-between items-center p-4 sm:p-6 border-b border-gray-100 bg-gray-50/50">
                             <h2 className="text-xl font-normal text-gray-800">{editingOffer ? 'Edit Offer' : 'Create New Offer'}</h2>
                             <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-200 text-gray-500 rounded-full transition-all">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto no-scrollbar p-5 sm:p-6 space-y-6">
+                        <div className="flex-1 overflow-y-auto no-scrollbar p-4 sm:p-6 space-y-5 sm:space-y-6">
 
                             {/* Type Selection */}
                             <div className="space-y-2">
@@ -529,11 +538,11 @@ const AdminOffers = () => {
                             </div>
                         )}
 
-                        <div className="p-5 sm:p-6 pb-8 sm:pb-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3 shrink-0">
-                            <button onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-sm font-normal text-gray-600 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition-colors">
+                        <div className="p-4 sm:p-6 pb-6 sm:pb-6 border-t border-gray-100 bg-gray-50 flex flex-col-reverse sm:flex-row justify-end gap-3 shrink-0">
+                            <button onClick={() => setIsModalOpen(false)} className="w-full sm:w-auto px-5 py-3 sm:py-2.5 text-sm font-normal text-gray-600 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition-colors">
                                 Cancel
                             </button>
-                            <button onClick={handleSave} className="px-6 py-2.5 text-sm font-normal text-white bg-[#FD6941] rounded-full hover:bg-[#FD6941] transition-colors shadow-sm  flex items-center gap-2">
+                            <button onClick={handleSave} className="w-full sm:w-auto px-6 py-3 sm:py-2.5 text-sm font-normal text-white bg-[#FD6941] rounded-full hover:bg-[#FD6941] transition-colors shadow-sm  flex items-center justify-center gap-2">
                                 {uploadProgress > 0 && uploadProgress < 100 ? (
                                     <>
                                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />

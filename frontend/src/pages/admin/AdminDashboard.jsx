@@ -4,13 +4,44 @@ import {
 } from 'recharts';
 import { ArrowUpRight, ChevronDown } from 'lucide-react';
 import activityIcon from '../../assets/activity.svg';
-import tableIcon from '../../assets/Table-Bar--Streamline-Sharp-Material.svg';
 import revenueIcon from '../../assets/trending-up.svg';
-// import kitchenIcon from '../../assets/Chef-Toque-Hat--Streamline-Flex.svg';
 import { statsAPI, orderAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
 import { useSocket } from '../../context/SocketContext';
 import { useNavigate } from 'react-router-dom';
+
+const TableIcon = ({ className, style }) => (
+    <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        className={className}
+        style={style}
+    >
+        <path
+            fill="currentColor"
+            d="M6.375 19.05 7.5 16.25c0.15 -0.38335 0.39165 -0.6875 0.725 -0.9125 0.33335 -0.225 0.70835 -0.3375 1.125 -0.3375h1.9v-4.025c-2.65 -0.08335 -4.85415 -0.45835 -6.6125 -1.125C2.879165 9.18335 2 8.4 2 7.5c0 -0.96665 0.975 -1.79165 2.925 -2.475C6.875 4.341665 9.23335 4 12 4c2.76665 0 5.125 0.341665 7.075 1.025C21.025 5.70835 22 6.53335 22 7.5c0 0.9 -0.87915 1.68335 -2.6375 2.35 -1.75835 0.66665 -3.9625 1.04165 -6.6125 1.125V15h1.9c0.4 0 0.77085 0.1125 1.1125 0.3375 0.34165 0.225 0.5875 0.52915 0.7375 0.9125l1.125 2.8c0.08335 0.23335 0.05835 0.45 -0.075 0.65s-0.325 0.3 -0.575 0.3c-0.13335 0 -0.2625 -0.04165 -0.3875 -0.125 -0.125 -0.08335 -0.2125 -0.19165 -0.2625 -0.325l-1.2 -3.05H8.9l-1.225 3.075c-0.05 0.13335 -0.1375 0.2375 -0.2625 0.3125 -0.125 0.075 -0.25415 0.1125 -0.3875 0.1125 -0.25 0 -0.44165 -0.1 -0.575 -0.3 -0.13335 -0.2 -0.15835 -0.41665 -0.075 -0.65ZM12 9.5c1.8 0 3.48335 -0.18335 5.05 -0.55 1.56665 -0.36665 2.75835 -0.85 3.575 -1.45 -0.81665 -0.6 -2.00835 -1.08335 -3.575 -1.45 -1.56665 -0.36665 -3.25 -0.55 -5.05 -0.55 -1.8 0 -3.48335 0.18335 -5.05 0.55 -1.56665 0.36665 -2.758335 0.85 -3.575 1.45 0.816665 0.6 2.00835 1.08335 3.575 1.45 1.56665 0.36665 3.25 0.55 5.05 0.55Z"
+        />
+    </svg>
+);
+
+const UserIcon = ({ className, style }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className={className} style={style}>
+        <path fill="currentColor" d="M12 11.9751c-1.1 0 -2 -0.35 -2.7 -1.05 -0.7 -0.7 -1.05 -1.6 -1.05 -2.7s0.35 -2 1.05 -2.7c0.7 -0.7 1.6 -1.05 2.7 -1.05s2 0.35 2.7 1.05c0.7 0.7 1.05 1.6 1.05 2.7s-0.35 2 -1.05 2.7c-0.7 0.7 -1.6 1.05 -2.7 1.05Zm-8 6.525v-0.85c0 -0.63335 0.158335 -1.175 0.475 -1.625 0.316665 -0.45 0.725 -0.79165 1.225 -1.025 1.11665 -0.5 2.1875 -0.875 3.2125 -1.125s2.05415 -0.375 3.0875 -0.375 2.05835 0.12915 3.075 0.3875c1.01665 0.25835 2.08265 0.63075 3.198 1.11725 0.52165 0.2355 0.9399 0.5769 1.25475 1.02425 0.31485 0.44735 0.47225 0.98765 0.47225 1.621v0.85c0 0.4125 -0.14685 0.7656 -0.4405 1.05925 -0.29385 0.29385 -0.647 0.44075 -1.0595 0.44075H5.5c-0.4125 0 -0.765585 -0.1469 -1.05925 -0.44075C4.146915 19.2657 4 18.9126 4 18.5001Zm1.5 0h13v-0.85c0 -0.26665 -0.07915 -0.52085 -0.2375 -0.7625 -0.15835 -0.24165 -0.35415 -0.42085 -0.5875 -0.5375 -1.06665 -0.51665 -2.04165 -0.87085 -2.925 -1.0625 -0.88335 -0.19165 -1.8 -0.2875 -2.75 -0.2875s-1.875 0.09585 -2.775 0.2875c-0.9 0.19165 -1.875 0.54585 -2.925 1.0625 -0.23335 0.11665 -0.425 0.29585 -0.575 0.5375 -0.15 0.24165 -0.225 0.49585 -0.225 0.7625v0.85Zm6.5 -8.025c0.65 0 1.1875 -0.2125 1.6125 -0.6375 0.425 -0.425 0.6375 -0.9625 0.6375 -1.6125s-0.2125 -1.1875 -0.6375 -1.6125c-0.425 -0.425 -0.9625 -0.6375 -1.6125 -0.6375s-1.1875 0.2125 -1.6125 0.6375c-0.425 0.425 -0.6375 0.9625 -0.6375 1.6125s0.2125 1.1875 0.6375 1.6125c0.425 0.425 0.9625 0.6375 1.6125 0.6375Z" />
+    </svg>
+);
+
+const TimeIcon = ({ className, style }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className={className} style={style}>
+        <path fill="currentColor" d="M12.825 11.7v-4.275c0 -0.21665 -0.07085 -0.39585 -0.2125 -0.5375s-0.32085 -0.2125 -0.5375 -0.2125c-0.21665 0 -0.39585 0.07085 -0.5375 0.2125s-0.2125 0.32085 -0.2125 0.5375V12c0 0.1 0.01665 0.19165 0.05 0.275 0.03335 0.08335 0.08335 0.16665 0.15 0.25l3.6 3.725c0.15 0.16665 0.3375 0.24585 0.5625 0.2375 0.225 -0.00835 0.4125 -0.0875 0.5625 -0.2375 0.15 -0.15 0.225 -0.33335 0.225 -0.55 0 -0.21665 -0.075 -0.4 -0.225 -0.55l-3.425 -3.45ZM12 22c-1.36665 0 -2.65835 -0.2625 -3.875 -0.7875 -1.21665 -0.525 -2.27915 -1.24165 -3.1875 -2.15 -0.908335 -0.90835 -1.625 -1.97085 -2.15 -3.1875C2.2625 14.65835 2 13.36665 2 12s0.2625 -2.65835 0.7875 -3.875c0.525 -1.21665 1.241665 -2.27915 2.15 -3.1875 0.90835 -0.908335 1.97085 -1.625 3.1875 -2.15C9.34165 2.2625 10.63335 2 12 2s2.65835 0.2625 3.875 0.7875c1.21665 0.525 2.27915 1.241665 3.1875 2.15 0.90835 0.90835 1.625 1.97085 2.15 3.1875C21.7375 9.34165 22 10.63335 22 12s-0.2625 2.65835 -0.7875 3.875c-0.525 1.21665 -1.24165 2.27915 -2.15 3.1875s-1.97085 1.625 -3.1875 2.15C14.65835 21.7375 13.36665 22 12 22Zm0 -1.5c2.33335 0 4.33335 -0.83335 6 -2.5 1.66665 -1.66665 2.5 -3.66665 2.5 -6s-0.83335 -4.33335 -2.5 -6c-1.66665 -1.666665 -3.66665 -2.5 -6 -2.5s-4.33335 0.833335 -6 2.5c-1.666665 1.66665 -2.5 3.66665 -2.5 6s0.833335 4.33335 2.5 6c1.66665 1.66665 3.66665 2.5 6 2.5Z" />
+    </svg>
+);
+
+const ChecklistIcon = ({ className, style }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className={className} style={style}>
+        <path fill="currentColor" d="m5.55 16.52495 3.95 -3.95c0.15 -0.15 0.325 -0.2208 0.525 -0.2125 0.2 0.00835 0.37825 0.0875 0.53475 0.2375 0.1435 0.15 0.21525 0.325 0.21525 0.525s-0.075 0.375 -0.225 0.525l-4.475 4.475c-0.15 0.15 -0.325 0.225 -0.525 0.225s-0.375 -0.075 -0.525 -0.225l-2.50001 -2.5c-0.15 -0.15 -0.225 -0.325 -0.225 -0.525s0.075 -0.375 0.225 -0.525c0.15 -0.15 0.325 -0.2208 0.525 -0.2125 0.2 0.00835 0.375 0.0792 0.525 0.2125l1.97501 1.95Zm0 -8L9.5 4.574975c0.15 -0.15 0.325 -0.220835 0.525 -0.2125 0.2 0.008335 0.37825 0.0875 0.53475 0.2375 0.1435 0.15 0.21525 0.325 0.21525 0.524975 0 0.2 -0.075 0.375 -0.225 0.525l-4.475 4.475c-0.15 0.15 -0.325 0.225 -0.525 0.225s-0.375 -0.075 -0.525 -0.225l-2.50001 -2.5c-0.15 -0.15 -0.225 -0.325 -0.225 -0.525s0.075 -0.375 0.225 -0.525c0.15 -0.15 0.325 -0.2208 0.525 -0.2125 0.2 0.00835 0.375 0.0792 0.525 0.2125l1.97501 1.95Zm8.2 8.225c-0.2125 0 -0.3906 -0.0723 -0.53425 -0.217 -0.14385 -0.1445 -0.21575 -0.32365 -0.21575 -0.5375 0 -0.21365 0.0719 -0.3913 0.21575 -0.533 0.14365 -0.14165 0.32175 -0.2125 0.53425 -0.2125h7.5c0.2125 0 0.39065 0.07235 0.5345 0.217 0.14365 0.1445 0.2155 0.3237 0.2155 0.5375 0 0.2137 -0.07185 0.39135 -0.2155 0.533 -0.14385 0.1417 -0.322 0.2125 -0.5345 0.2125h-7.5Zm0 -8c-0.2125 0 -0.3906 -0.0723 -0.53425 -0.217 -0.14385 -0.1445 -0.21575 -0.32365 -0.21575 -0.5375 0 -0.21365 0.0719 -0.3913 0.21575 -0.533 0.14365 -0.14165 0.32175 -0.2125 0.53425 -0.2125h7.5c0.2125 0 0.39065 0.07235 0.5345 0.217 0.14365 0.1445 0.2155 0.3237 0.2155 0.5375 0 0.2137 -0.07185 0.39135 -0.2155 0.533 -0.14385 0.1417 -0.322 0.2125 -0.5345 0.2125h-7.5Z" />
+    </svg>
+);
 
 // --- COMPONENTS ---
 
@@ -19,8 +50,12 @@ const DashboardCard = ({ value, label, icon, subValue, isCurrency }) => {
     return (
         <div className="bg-white rounded-[1.2rem] sm:rounded-[2rem] px-4 sm:px-6 py-3 sm:py-4 flex items-center h-[100px] sm:h-[140px] shadow-sm relative border border-transparent hover:border-gray-50 transition-all">
             <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#F3F3F3] rounded-full flex items-center justify-center shrink-0">
-                    <img src={icon} alt="icon" className="w-5 h-5 sm:w-6 sm:h-6 opacity-80" />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-[#F3F3F3] rounded-full flex items-center justify-center shrink-0 text-black/80">
+                    {typeof icon === 'string' ? (
+                        <img src={icon} alt="icon" className="w-5 h-5 sm:w-6 sm:h-6 opacity-80" />
+                    ) : (
+                        React.createElement(icon, { className: "w-5 h-5 sm:w-6 sm:h-6" })
+                    )}
                 </div>
                 <div className="flex flex-col">
                     <h3 className="text-[18px] sm:text-[28px] lg:text-[32px] font-normal text-black leading-none flex items-baseline">
@@ -32,8 +67,8 @@ const DashboardCard = ({ value, label, icon, subValue, isCurrency }) => {
                             </span>
                         )}
                     </h3>
-                    <p className={`text-[11px] sm:text-[13px] lg:text-[14px] text-gray-400 mt-1 sm:mt-2 font-normal tracking-tight ${label === 'Occupied Tables' ? 'whitespace-pre-line max-w-[70px]' : 'truncate max-w-[80px]'} sm:max-w-full sm:whitespace-normal`}>
-                        {label === 'Occupied Tables' ? label.replace(' ', '\n') : label}
+                    <p className="text-[11px] sm:text-[13px] lg:text-[14px] text-gray-400 mt-1 sm:mt-2 font-normal tracking-tight truncate max-w-[100px] sm:max-w-full">
+                        {label}
                     </p>
                 </div>
             </div>
@@ -255,7 +290,7 @@ const AdminDashboard = () => {
                     id: o._id,
                     title: `Order #${o.dailySequence ? String(o.dailySequence).padStart(3, '0') : o._id.slice(-4)}`,
                     sub: (o.items || []).map(i => i.name || 'Item').join(', '),
-                    icon: tableIcon
+                    icon: UserIcon
                 }));
             setFeedItems(activeOrdersList);
 
@@ -336,13 +371,13 @@ const AdminDashboard = () => {
                             value={stats.dineIn || 0}
                             subValue={stats.totalTables || 0}
                             label="Occupied Tables"
-                            icon={tableIcon}
+                            icon={TableIcon}
                         />
                         <DashboardCard value={(stats.todayRevenue || 0).toLocaleString()} label="Today Revenue" icon={revenueIcon} isCurrency />
                     </div>
 
                     {/* Middle Row: Sales Analytics */}
-                    <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-8 relative shadow-sm h-[320px] sm:h-[500px] lg:h-[620px] flex flex-col border border-gray-50/50">
+                    <div className="bg-white rounded-[1.5rem] sm:rounded-[2.8rem] p-4 sm:p-8 relative shadow-sm h-[400px] sm:h-[600px] lg:h-[740px] flex flex-col border border-transparent">
                         <div className="flex justify-between items-center gap-2 mb-4 sm:mb-2">
                             <div
                                 className="flex flex-col cursor-pointer hover:opacity-80 transition-opacity"
@@ -401,12 +436,12 @@ const AdminDashboard = () => {
                 {/* Right Column (Span 4) */}
                 <div className="lg:col-span-4 flex flex-col gap-4 sm:gap-6">
                     {/* Time Status Gauge */}
-                    <div className="hidden sm:block">
+                    <div className="block">
                         <TimeStatusGauge value={stats.avgWaitTime || 0} />
                     </div>
 
                     {/* Live Active Feed */}
-                    <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-8 shadow-sm flex flex-col h-[380px] sm:h-[500px] lg:h-[530px] border border-gray-50/50">
+                    <div className="bg-white rounded-[1.5rem] sm:rounded-[2.8rem] p-4 sm:p-8 shadow-sm flex flex-col h-[400px] sm:h-[500px] lg:h-[560px] border border-transparent">
                         <div className="flex justify-between items-center mb-4 sm:mb-6">
                             <h2 className="text-[14px] sm:text-[20px] lg:text-[24px] font-normal text-black leading-tight">Live Feed</h2>
                             <div
@@ -425,8 +460,12 @@ const AdminDashboard = () => {
                                     className="flex items-center justify-between p-3 sm:p-5 bg-[#F9FAFB] rounded-[1.2rem] sm:rounded-[2.2rem] border border-gray-50 hover:bg-white hover:border-gray-100 transition-all cursor-pointer group"
                                 >
                                     <div className="flex items-center gap-3 sm:gap-5">
-                                        <div className="w-12 h-12 sm:w-[72px] sm:h-[72px] rounded-full bg-[#F3F5F7] flex items-center justify-center shrink-0 group-hover:bg-white transition-colors">
-                                            <img src={item.icon} alt={item.title} className="w-6 h-6 sm:w-9 sm:h-9 opacity-70" />
+                                        <div className="w-12 h-12 sm:w-[72px] sm:h-[72px] rounded-full bg-[#F3F5F7] flex items-center justify-center shrink-0 group-hover:bg-white transition-colors text-black/70">
+                                            {typeof item.icon === 'string' ? (
+                                                <img src={item.icon} alt={item.title} className="w-6 h-6 sm:w-9 sm:h-9 opacity-70" />
+                                            ) : (
+                                                React.createElement(item.icon, { className: "w-6 h-6 sm:w-9 sm:h-9" })
+                                            )}
                                         </div>
                                         <div className="flex flex-col">
                                             <h4 className="font-normal text-black text-[14px] sm:text-[17px] leading-tight">{item.title}</h4>

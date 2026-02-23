@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import {
     User, Store, ClipboardList, CreditCard, Users,
     Bell, Activity, Save, Upload, Plus, Minus,
@@ -8,14 +8,15 @@ import toast from 'react-hot-toast';
 import { authAPI, restaurantAPI, uploadAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
 
+// Lazy load the map to isolate Leaflet from main bundle
+const LocationPickerMap = lazy(() => import('../../components/LocationPickerMap'));
+
 const AdminSettings = () => {
     const settings = useSettings();
     const user = settings?.user;
     const updateSettings = settings?.updateSettings;
     const [activeTab, setActiveTab] = useState('profile');
     const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
-
-    if (!settings) return null;
 
     const [profile, setProfile] = useState({
         name: user?.name || '',
@@ -101,6 +102,9 @@ const AdminSettings = () => {
         };
         fetchResto();
     }, []); // Only fetch once on mount to avoid overwriting edits
+
+    // Guard AFTER all hooks (Rules of Hooks: no early return before hooks)
+    if (!settings) return null;
 
     const handleProfileChange = (e) => {
         const { name, value } = e.target;
@@ -339,7 +343,7 @@ const AdminSettings = () => {
                     {activeTab !== 'subscription' && (
                         <button
                             onClick={handleSaveProfile}
-                            className="bg-[#FD6941] hover:bg-[#FD6941] text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl font-normal flex items-center justify-center gap-2 transition-all shadow-sm w-full sm:w-auto text-sm sm:text-base"
+                            className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-normal flex items-center justify-center gap-2 transition-all shadow-sm w-full sm:w-auto text-sm sm:text-base"
                         >
                             <Save className="w-4 h-4" />
                             Save Changes
@@ -490,22 +494,29 @@ const AdminSettings = () => {
                                         </p>
                                     </div>
 
-                                    {/* Mock Map */}
+                                    {/* Real Interactive Map */}
                                     <div>
-                                        <label className="block text-xs font-normal text-gray-400 mb-2">Map Preview</label>
-                                        <div className="h-48 bg-gray-100 rounded-2xl relative overflow-hidden border border-gray-100 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:16px_16px]">
-                                            <div className="absolute top-4 left-4 bg-white px-3 py-1.5 rounded-full shadow-sm flex items-center gap-2">
-                                                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                                                <span className="text-[10px] font-normal text-gray-600">Location Active</span>
+                                        <label className="block text-xs font-normal text-gray-400 mb-3">Pick Location on Map</label>
+                                        <Suspense fallback={
+                                            <div className="h-56 rounded-2xl bg-gray-100 animate-pulse flex items-center justify-center text-xs text-gray-400">
+                                                Loading map...
                                             </div>
-                                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black">
-                                                <MapPin className="w-8 h-8 fill-current drop-shadow-md" />
-                                            </div>
-                                            <div className="absolute bottom-4 right-4 flex flex-col gap-2">
-                                                <button className="w-8 h-8 bg-white rounded-lg shadow-sm flex items-center justify-center text-gray-600 hover:bg-gray-50"><Plus className="w-4 h-4" /></button>
-                                                <button className="w-8 h-8 bg-white rounded-lg shadow-sm flex items-center justify-center text-gray-600 hover:bg-gray-50"><Minus className="w-4 h-4" /></button>
-                                            </div>
-                                        </div>
+                                        }>
+                                            <LocationPickerMap
+                                                lat={parseFloat(restoDetails.location.lat) || 23.0225}
+                                                lng={parseFloat(restoDetails.location.lng) || 72.5714}
+                                                onLocationSelect={(lat, lng) => {
+                                                    setRestoDetails(prev => ({
+                                                        ...prev,
+                                                        location: { lat: lat.toFixed(6), lng: lng.toFixed(6) }
+                                                    }));
+                                                }}
+                                                onAddressUpdate={(address) => {
+                                                    setRestoDetails(prev => ({ ...prev, address }));
+                                                    toast.success('Address updated from map!', { duration: 2000 });
+                                                }}
+                                            />
+                                        </Suspense>
                                     </div>
                                 </div>
                             </SectionCard>
@@ -577,31 +588,31 @@ const AdminSettings = () => {
                     {/* Subscription Information */}
                     {activeTab === 'subscription' && (
                         <div className="space-y-6">
-                            <div className="bg-gradient-to-r from-[#FD6941] to-[#FD6941] rounded-[2rem] p-8 text-white shadow-lg">
+                            <div className="bg-gradient-to-br from-[#FD6941]/10 to-transparent border border-[#FD6941]/20 rounded-[2rem] p-8 shadow-sm">
                                 <div className="flex justify-between items-start mb-6">
                                     <div>
                                         <p className="text-[#FD6941] text-sm font-normal mb-1">Current Plan</p>
-                                        <h2 className="text-3xl font-normal">Premium Enterprise</h2>
+                                        <h2 className="text-3xl font-normal text-gray-900">Premium Enterprise</h2>
                                     </div>
-                                    <span className="px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-xs font-normal border border-white/30">
+                                    <span className="px-4 py-1.5 bg-[#FD6941]/10 text-[#FD6941] rounded-full text-xs font-normal border border-[#FD6941]/20">
                                         Active
                                     </span>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                                     <div>
-                                        <p className="text-[#FD6941] text-xs mb-1">Price</p>
-                                        <p className="font-normal text-xl">$199<span className="text-sm font-normal text-[#FD6941]">/mo</span></p>
+                                        <p className="text-gray-500 text-xs mb-1">Price</p>
+                                        <p className="font-normal text-xl text-gray-900">$199<span className="text-sm font-normal text-gray-500">/mo</span></p>
                                     </div>
                                     <div>
-                                        <p className="text-[#FD6941] text-xs mb-1">Expiry Date</p>
-                                        <p className="font-normal text-xl">Dec 31, 2026</p>
+                                        <p className="text-gray-500 text-xs mb-1">Expiry Date</p>
+                                        <p className="font-normal text-xl text-gray-900">Dec 31, 2026</p>
                                     </div>
                                     <div>
-                                        <p className="text-[#FD6941] text-xs mb-1">Next Billing</p>
-                                        <p className="font-normal text-xl">Jan 01, 2027</p>
+                                        <p className="text-gray-500 text-xs mb-1">Next Billing</p>
+                                        <p className="font-normal text-xl text-gray-900">Jan 01, 2027</p>
                                     </div>
                                 </div>
-                                <button className="bg-white text-[#FD6941] px-6 py-3 rounded-xl font-normal hover:bg-[#FD6941] transition-colors shadow-sm">
+                                <button className="bg-[#FD6941] text-white px-6 py-3 rounded-xl font-normal hover:bg-[#FD6941]/90 transition-colors shadow-sm">
                                     Renew / Upgrade Plan
                                 </button>
                             </div>
@@ -764,12 +775,12 @@ const SidebarItem = ({ icon: Icon, label, isActive, onClick }) => (
     <button
         onClick={onClick}
         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
-            ? 'bg-[#FD6941] text-white shadow-md '
+            ? 'bg-[#FD6941]/10 text-[#FD6941] font-medium shadow-sm'
             : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
             }`}
     >
-        <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'}`} />
-        <span className="text-sm font-normal">{label}</span>
+        <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-[#FD6941]' : 'text-gray-400 group-hover:text-gray-600'}`} />
+        <span className="text-sm">{label}</span>
     </button>
 );
 

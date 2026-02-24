@@ -89,7 +89,7 @@ const DynamicNavbar = ({ customerProps }) => {
     // --- Customer Logic Helper ---
     // If we are in customer view, we rely on props passed from CustomerLayout because state is managed there.
     const {
-        cart, favorites, tableNo, setShowBill, totalItems, baseUrl
+        cart, tableNo, setShowBill, totalItems, baseUrl
     } = customerProps || {};
 
     // --- Render ---
@@ -150,14 +150,7 @@ const DynamicNavbar = ({ customerProps }) => {
                             </>
                         )}
 
-                        <Link to={`${baseUrl}/favorites`} className="p-2 hover:bg-gray-100 rounded-full transition-colors relative group">
-                            <Heart className="w-5 h-5 text-gray-600 group-hover:text-red-500" />
-                            {favorites && Object.keys(favorites).length > 0 && (
-                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#FD6941] rounded-full text-[10px] text-white flex items-center justify-center border border-white">
-                                    {Object.keys(favorites).length}
-                                </span>
-                            )}
-                        </Link>
+
 
                         <button onClick={() => setShowBill && setShowBill(true)} className="relative p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors">
                             <ShoppingBag className="w-5 h-5" />

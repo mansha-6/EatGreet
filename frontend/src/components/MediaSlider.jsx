@@ -181,7 +181,7 @@ const MediaSlider = ({ media, interval = 30000, className = "", showArButton = t
             {/* Navigation Dots if more than 1 item */}
             {validMedia.length > 1 && (
                 <>
-                    <div className={`absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex gap-2 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
+                    <div className={`absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2 transition-opacity duration-300 ${showControls ? 'opacity-100' : 'opacity-0'}`}>
                         {validMedia.map((_, index) => (
                             <button
                                 key={index}
@@ -193,15 +193,15 @@ const MediaSlider = ({ media, interval = 30000, className = "", showArButton = t
 
                     <button
                         onClick={prevSlide}
-                        className={`absolute left-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 flex items-center justify-center bg-white/10 text-white rounded-full transition-all backdrop-blur-md border border-white/10 shadow-sm ${showControls ? 'opacity-100' : 'opacity-0'}`}
+                        className={`absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 flex items-center justify-center bg-white/80 text-gray-500 rounded-full transition-all backdrop-blur-sm border border-gray-100 shadow-sm ${showControls ? 'opacity-100' : 'opacity-0'} hover:bg-white hover:text-gray-700 active:scale-95`}
                     >
-                        <ChevronLeft className="w-3.5 h-3.5" />
+                        <ChevronLeft className="w-4 h-4" />
                     </button>
                     <button
                         onClick={nextSlide}
-                        className={`absolute right-2 top-1/2 -translate-y-1/2 z-20 w-7 h-7 flex items-center justify-center bg-white/10 text-white rounded-full transition-all backdrop-blur-md border border-white/10 shadow-sm ${showControls ? 'opacity-100' : 'opacity-0'}`}
+                        className={`absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 flex items-center justify-center bg-white/80 text-gray-500 rounded-full transition-all backdrop-blur-sm border border-gray-100 shadow-sm ${showControls ? 'opacity-100' : 'opacity-0'} hover:bg-white hover:text-gray-700 active:scale-95`}
                     >
-                        <ChevronRight className="w-3.5 h-3.5" />
+                        <ChevronRight className="w-4 h-4" />
                     </button>
                 </>
             )}

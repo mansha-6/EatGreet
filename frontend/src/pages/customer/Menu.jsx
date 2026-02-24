@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import { MENU_ITEMS_KEY, CATEGORIES_KEY } from '../../constants';
 import {
-    Search, Heart, Plus, Minus, ShoppingBag,
+    Search, Plus, Minus, ShoppingBag,
     ChevronRight, Star, Clock, Flame, UtensilsCrossed, X, Box, SlidersHorizontal
 } from 'lucide-react';
 import MediaSlider from '../../components/MediaSlider';
@@ -64,7 +64,6 @@ const Menu = () => {
     const { user, currencySymbol: contextSymbol } = useSettings();
     const {
         cart, addToCart, removeFromCart, clearCart,
-        favorites, toggleFavorite,
         showBill, setShowBill,
         tableNo, setTableNo,
         restaurantId,
@@ -625,25 +624,9 @@ const Menu = () => {
                                 <div className="flex items-center justify-between md:justify-center mt-auto">
                                     {/* Mobile: Rating (Default) OR Like (In Cart) */}
                                     <div className="flex md:hidden items-center">
-                                        {cart[item._id] ? (
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    toggleFavorite(item);
-                                                }}
-                                                disabled={isPreviewMode}
-                                                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all shadow-sm border ${favorites[item._id]
-                                                    ? 'bg-red-50 border-red-100 text-red-500/90'
-                                                    : 'bg-white border-gray-200 text-gray-400'
-                                                    } ${isPreviewMode ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
-                                            >
-                                                <Heart className={`w-4 h-4 transition-transform duration-300 ${favorites[item._id] ? 'fill-current scale-110' : ''}`} />
-                                            </button>
-                                        ) : (
-                                            <span className="flex items-center gap-1 bg-green-50 text-green-700 px-1 py-0.5 rounded-md font-normal text-[9px]">
-                                                <Star className="w-2 h-2 fill-current" /> {item.rating || '4.5'}
-                                            </span>
-                                        )}
+                                        <span className="flex items-center gap-1 bg-green-50 text-green-700 px-1 py-0.5 rounded-md font-normal text-[9px]">
+                                            <Star className="w-2 h-2 fill-current" /> {item.rating || '4.5'}
+                                        </span>
                                     </div>
 
                                     <div className="flex items-center gap-2 justify-end">
@@ -679,20 +662,7 @@ const Menu = () => {
                                             </button>
                                         )}
 
-                                        {/* Desktop Like Button OR Mobile Like (only if NOT in cart) */}
-                                        <button
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                toggleFavorite(item);
-                                            }}
-                                            disabled={isPreviewMode}
-                                            className={`${cart[item._id] ? 'hidden md:flex' : 'flex'} w-8 h-8 md:w-14 md:h-14 rounded-full items-center justify-center transition-all shadow-sm border ${favorites[item._id]
-                                                ? 'bg-red-50 border-red-100 text-red-500'
-                                                : 'bg-white border-gray-200 text-gray-400 hover:text-red-500 hover:bg-gray-50'
-                                                } ${isPreviewMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                        >
-                                            <Heart className={`w-4 h-4 md:w-7 md:h-7 transition-transform duration-300 ${favorites[item._id] ? 'fill-current scale-110' : ''}`} />
-                                        </button>
+
 
 
 
@@ -1081,14 +1051,7 @@ const Menu = () => {
 
                                 {/* Fixed Action Bar at Bottom */}
                                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-gray-100 flex items-center justify-center gap-6 z-20">
-                                    <button
-                                        onClick={() => toggleFavorite(selectedItem)}
-                                        className="flex items-center gap-3 group"
-                                    >
-                                        <div className={`w-12 h-12 md:w-14 md:h-14 rounded-full flex items-center justify-center transition-colors ${favorites[selectedItem._id] ? 'bg-red-100 text-red-500' : 'bg-white border border-gray-200 text-gray-400 group-hover:bg-red-50 group-hover:text-red-500'}`}>
-                                            <Heart className={`w-6 h-6 md:w-7 md:h-7 ${favorites[selectedItem._id] ? 'fill-current' : ''}`} />
-                                        </div>
-                                    </button>
+
 
                                     { /* AR Button (Visible if models exist) */}
                                     {(selectedItem.models && selectedItem.models.length > 0) && (

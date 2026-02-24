@@ -585,6 +585,10 @@ const AdminSales = () => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [restaurant, setRestaurant] = useState(null);
 
+    // Expense Logic (moved here for global scope within component)
+    const monthlyExpense = restaurant?.monthlyExpense || restaurant?.restaurantDetails?.monthlyExpense || 0;
+    const dailyExpense = monthlyExpense / 30;
+
     // State for Date Filter
     // defaulting to empty so it shows "All Time" data initially (per user request "not impact to data")
     const [dateRange, setDateRange] = useState({ start: '', end: '' });
@@ -761,8 +765,6 @@ const AdminSales = () => {
     const graphData = useMemo(() => {
         const trend = analytics.charts?.revenueTrend || [];
         const isFiltered = !!(dateRange.start || dateRange.end);
-        const monthlyExpense = restaurant?.monthlyExpense || restaurant?.restaurantDetails?.monthlyExpense || 0;
-        const dailyExpense = monthlyExpense / 30;
 
         // 1. All Time View (Fixed 12-Month Jan-Dec Axis)
         if (!isFiltered) {
@@ -906,44 +908,41 @@ const AdminSales = () => {
                 const ratio = imgProps.width / imgProps.height;
                 const w = 24;
                 const h = w / ratio;
-                doc.addImage(logoImg, 'PNG', margin, yPos, w, h);
-
-                const textX = margin + w + 10;
+                
+                // Calculate total width of brand block (Logo + Space + Name)
                 doc.setFontSize(22);
                 doc.setFont("helvetica", "bold");
+                const nameWidth = doc.getTextWidth(restaurant?.name || 'EatGreet Restaurant');
+                const totalWidth = w + 10 + nameWidth; // 10 is the medium space
+                const startX = (pageWidth - totalWidth) / 2;
+
+                doc.addImage(logoImg, 'PNG', startX, yPos, w, h);
+
                 doc.setTextColor(...textDark);
-                doc.text(restaurant?.name || 'EatGreet Restaurant', textX, yPos + 8);
+                doc.text(restaurant?.name || 'EatGreet Restaurant', startX + w + 10, yPos + (h / 2) + 2);
 
                 doc.setFontSize(10);
                 doc.setFont("helvetica", "normal");
                 doc.setTextColor(...textGray);
+                yPos += h + 8;
 
-                let detailsY = yPos + 14;
                 if (restaurant?.address) {
-                    doc.text(restaurant.address, textX, detailsY);
-                    detailsY += 5;
+                    doc.text(restaurant.address, pageWidth / 2, yPos, { align: 'center' });
+                    yPos += 5;
                 }
                 const contactParts = [];
                 if (restaurant?.contactNumber) contactParts.push(`Tel: ${restaurant.contactNumber}`);
                 if (restaurant?.businessEmail) contactParts.push(`Email: ${restaurant.businessEmail}`);
                 if (contactParts.length > 0) {
-                    doc.text(contactParts.join(' | '), textX, detailsY);
+                    doc.text(contactParts.join(' | '), pageWidth / 2, yPos, { align: 'center' });
+                    yPos += 12;
                 }
-
-                yPos = Math.max(yPos + h + 10, detailsY + 15);
             } else {
                 doc.setFontSize(22);
                 doc.setFont("helvetica", "bold");
                 doc.setTextColor(...textDark);
-                doc.text(restaurant?.name || 'EatGreet Restaurant', margin, yPos + 8);
-
-                doc.setFontSize(10);
-                doc.setFont("helvetica", "normal");
-                doc.setTextColor(...textGray);
-                yPos += 16;
-                if (restaurant?.address) { doc.text(restaurant.address, margin, yPos); yPos += 5; }
-                if (restaurant?.contactNumber) { doc.text(`Tel: ${restaurant.contactNumber}`, margin, yPos); yPos += 5; }
-                yPos += 10;
+                doc.text(restaurant?.name || 'EatGreet Restaurant', pageWidth / 2, yPos + 8, { align: 'center' });
+                yPos += 20;
             }
 
             // Divider
@@ -985,26 +984,20 @@ const AdminSales = () => {
                 };
             }, { revenue: 0, orders: 0 }) : { revenue: 0, orders: 0 };
 
-            // Calculate Net Profit for this specific range
-            // Use safe fallbacks for potentially undefined expense variables
-            const safeDailyExpense = typeof dailyExpense !== 'undefined' ? dailyExpense : 0;
-            const safeMonthlyExpense = typeof monthlyExpense !== 'undefined' ? monthlyExpense : 0;
-
-            let totalExpenses = 0;
+            let totalEx = 0;
             if (dateRange.start && dateRange.end) {
                 const start = new Date(dateRange.start);
                 const end = new Date(dateRange.end);
                 const daysDiff = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
-                totalExpenses = safeDailyExpense * daysDiff;
+                totalEx = dailyExpense * daysDiff;
             } else {
-                totalExpenses = safeMonthlyExpense; // Fallback
+                totalEx = monthlyExpense; 
             }
 
             const pdfRevenue = pdfStats.revenue;
             const pdfOrders = pdfStats.orders;
             const pdfAov = pdfOrders > 0 ? (pdfRevenue / pdfOrders) : 0;
-            // Profit is Revenue - Expenses
-            const pdfProfit = pdfRevenue - totalExpenses;
+            const pdfProfit = pdfRevenue - totalEx;
 
             doc.setFontSize(12);
             doc.setFont("helvetica", "bold");
@@ -1014,15 +1007,17 @@ const AdminSales = () => {
             const summaryData = [
                 [
                     { content: 'TOTAL REVENUE', styles: { fontStyle: 'bold', textColor: textGray, fontSize: 8 } },
+                    { content: 'TOTAL EXPENSES', styles: { fontStyle: 'bold', textColor: textGray, fontSize: 8 } },
                     { content: 'NET PROFIT', styles: { fontStyle: 'bold', textColor: textGray, fontSize: 8 } },
                     { content: 'TOTAL ORDERS', styles: { fontStyle: 'bold', textColor: textGray, fontSize: 8 } },
                     { content: 'AVG ORDER VALUE', styles: { fontStyle: 'bold', textColor: textGray, fontSize: 8 } },
                 ],
                 [
-                    { content: formatCurrencyPDF(pdfRevenue), styles: { fontSize: 16, fontStyle: 'bold', textColor: textDark } },
-                    { content: formatCurrencyPDF(pdfProfit), styles: { fontSize: 16, fontStyle: 'bold', textColor: brandOrange } },
-                    { content: pdfOrders.toString(), styles: { fontSize: 16, fontStyle: 'bold', textColor: textDark } },
-                    { content: formatCurrencyPDF(pdfAov), styles: { fontSize: 16, fontStyle: 'bold', textColor: textDark } },
+                    { content: formatCurrencyPDF(pdfRevenue), styles: { fontSize: 13, fontStyle: 'bold', textColor: textDark } },
+                    { content: formatCurrencyPDF(totalEx), styles: { fontSize: 13, fontStyle: 'bold', textColor: [150, 0, 0] } },
+                    { content: formatCurrencyPDF(pdfProfit), styles: { fontSize: 13, fontStyle: 'bold', textColor: brandOrange } },
+                    { content: pdfOrders.toString(), styles: { fontSize: 13, fontStyle: 'bold', textColor: textDark } },
+                    { content: formatCurrencyPDF(pdfAov), styles: { fontSize: 13, fontStyle: 'bold', textColor: textDark } },
                 ]
             ];
 
@@ -1036,10 +1031,11 @@ const AdminSales = () => {
                     font: "helvetica"
                 },
                 columnStyles: {
-                    0: { cellWidth: (pageWidth - margin * 2) / 4 },
-                    1: { cellWidth: (pageWidth - margin * 2) / 4 },
-                    2: { cellWidth: (pageWidth - margin * 2) / 4 },
-                    3: { cellWidth: (pageWidth - margin * 2) / 4 }
+                    0: { cellWidth: (pageWidth - margin * 2) / 5 },
+                    1: { cellWidth: (pageWidth - margin * 2) / 5 },
+                    2: { cellWidth: (pageWidth - margin * 2) / 5 },
+                    3: { cellWidth: (pageWidth - margin * 2) / 5 },
+                    4: { cellWidth: (pageWidth - margin * 2) / 5 }
                 },
                 margin: { left: margin, right: margin },
                 didParseCell: function (data) {
@@ -1178,19 +1174,16 @@ const AdminSales = () => {
                 };
             }, { revenue: 0, orders: 0 }) : { revenue: 0, orders: 0 };
 
-            const safeDailyExpense = typeof dailyExpense !== 'undefined' ? dailyExpense : 0;
-            const safeMonthlyExpense = typeof monthlyExpense !== 'undefined' ? monthlyExpense : 0;
-
-            let totalExpenses = 0;
+            let totalExpensesExcel = 0;
             if (dateRange.start && dateRange.end) {
                 const start = new Date(dateRange.start);
                 const end = new Date(dateRange.end);
                 const diffDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
-                totalExpenses = safeDailyExpense * diffDays;
+                totalExpensesExcel = dailyExpense * diffDays;
             } else {
-                totalExpenses = safeMonthlyExpense;
+                totalExpensesExcel = monthlyExpense;
             }
-            const pdfProfit = pdfStats.revenue - totalExpenses;
+            const pdfProfit = pdfStats.revenue - totalExpensesExcel;
             const pdfAov = pdfStats.orders > 0 ? (pdfStats.revenue / pdfStats.orders) : 0;
 
             // 3. Setup Columns & Styling Constants
@@ -1201,40 +1194,37 @@ const AdminSales = () => {
 
             // Define columns with a balanced buffer A column to push content to the middle
             worksheet.columns = [
-                { key: 'buffer', width: 22 },
-                { key: 'date', width: 20 },
-                { key: 'time', width: 20 },
-                { key: 'orderId', width: 20 },
-                { key: 'customer', width: 30 },
-                { key: 'payMode', width: 20 },
-                { key: 'items', width: 15 },
-                { key: 'total', width: 25 }
+                { key: 'spacer', width: 15 },    // A
+                { key: 'date', width: 22 },      // B
+                { key: 'time', width: 22 },      // C
+                { key: 'orderId', width: 22 },   // D
+                { key: 'customer', width: 28 },  // E
+                { key: 'payMode', width: 22 },   // F
+                { key: 'items', width: 22 },     // G
+                { key: 'total', width: 25 },     // H
+                { key: 'extra', width: 5 }       // I
             ];
 
-            // 3. Header Section (Premium Branding matching PDF)
-            // Row 1: Brand Top Bar
-            const topBarRow = worksheet.addRow(['', '']);
-            worksheet.mergeCells('B1:H1');
-            topBarRow.height = 8;
-            worksheet.getCell('B1').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: brandOrange } };
-
-            // Row 2: Logo and Name
-            const restaurantTitleRow = worksheet.addRow(['', restaurant?.name || 'EatGreet Restaurant']);
-            worksheet.mergeCells('B2:H2');
-            const titleCell = worksheet.getCell('B2');
-            titleCell.font = { size: 32, bold: true, color: { argb: textDark } };
-            titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
-            restaurantTitleRow.height = 90;
+            // Row 2: Logo + Name Header (Aligned beside each other in Middle POV)
+            const headerRow = worksheet.addRow(['', '', '']);
+            headerRow.height = 70;
+            worksheet.mergeCells('B2:H2'); // Merge to center the whole block
 
             if (restaurantLogoBase64) {
                 const logoId = workbook.addImage({ base64: restaurantLogoBase64, extension: 'png' });
-                // Position logo closer to the centered title for a unified look
+                // Calculate positioning to be slightly left of center
                 worksheet.addImage(logoId, {
-                    tl: { col: 3.8, row: 1.1 }, // Moved to 3.8 to sit tightly next to the title
-                    ext: { width: 80, height: 80 },
+                    tl: { col: 3.2, row: 1.1 }, 
+                    ext: { width: 65, height: 65 },
                     editAs: 'oneCell'
                 });
             }
+
+            const headerCell = worksheet.getCell('B2');
+            // Using spaces as a manual buffer to push name beside logo range
+            headerCell.value = "          " + (restaurant?.name || 'EatGreet Restaurant');
+            headerCell.font = { size: 30, bold: true, color: { argb: textDark } };
+            headerCell.alignment = { vertical: 'middle', horizontal: 'center' };
 
             // Row 3: Address
             const address = restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address';
@@ -1255,16 +1245,19 @@ const AdminSales = () => {
             if (email) contactParts.push(`Email: ${email}`);
             if (gst) contactParts.push(`GST: ${gst}`);
 
-            const contactRow = worksheet.addRow(['', contactParts.join('   |   ') || 'Contact details not available']);
+            const contactRow = worksheet.addRow(['', contactParts.join('   |   ')]);
             worksheet.mergeCells('B4:H4');
             const contactCell = worksheet.getCell('B4');
-            contactCell.font = { size: 10, color: { argb: textGray } };
+            contactCell.font = { size: 11, color: { argb: textGray } };
             contactCell.alignment = { vertical: 'middle', horizontal: 'center' };
-            contactRow.height = 20;
+            contactRow.height = 25;
 
             worksheet.addRow([]); // Spacer Row 5
 
-            // Row 6: Report Title 
+
+            worksheet.addRow([]); // Spacer Row 5
+
+            // Row 6: Report Title (Centered across B:H)
             const reportSubtitle = worksheet.addRow(['', 'Sales Performance Report']);
             worksheet.mergeCells('B6:H6');
             const subtitleCell = worksheet.getCell('B6');
@@ -1272,7 +1265,7 @@ const AdminSales = () => {
             subtitleCell.alignment = { vertical: 'middle', horizontal: 'center' };
             reportSubtitle.height = 40;
 
-            // Row 7: Report Date & Period
+            // Row 7: Report Date & Period (Centered across B:H)
             const periodText = (dateRange.start || dateRange.end) ?
                 `${new Date(dateRange.start).toLocaleDateString()} - ${new Date(dateRange.end || new Date()).toLocaleDateString()}` : "All Time History";
             const metaInfo = worksheet.addRow(['', `Generated: ${new Date().toLocaleString()}   |   Period: ${periodText}`]);
@@ -1284,51 +1277,52 @@ const AdminSales = () => {
 
             worksheet.addRow([]); // Spacer Row 8
 
-            // 4. Financial Overview Section
+            // 4. Financial Overview Section (Truly Centered across B:H)
             const overviewHeader = worksheet.addRow(['', 'FINANCIAL OVERVIEW']);
             worksheet.mergeCells(`B${overviewHeader.number}:H${overviewHeader.number}`);
             const oHeaderCell = worksheet.getCell(`B${overviewHeader.number}`);
             oHeaderCell.font = { size: 14, bold: true, color: { argb: textDark } };
             oHeaderCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgLight } };
             oHeaderCell.alignment = { horizontal: 'center', vertical: 'middle' };
-            overviewHeader.height = 35;
+            oHeaderCell.border = { 
+                top: { style: 'medium', color: { argb: 'E5E7EB' } },
+                bottom: { style: 'thin', color: { argb: 'E5E7EB' } } 
+            };
+            overviewHeader.height = 40;
 
-            // Distribute stats across B:H
-            const statsLabels = worksheet.addRow(['', 'TOTAL REVENUE', '', 'NET PROFIT', '', 'TOTAL ORDERS', 'AVG ORDER VALUE', '']);
-            worksheet.mergeCells(`B${statsLabels.number}:C${statsLabels.number}`);
-            worksheet.mergeCells(`D${statsLabels.number}:E${statsLabels.number}`);
-            worksheet.mergeCells(`G${statsLabels.number}:H${statsLabels.number}`);
+            // Centered stats across C:G (5 wide boxes)
+            const statsLabels = worksheet.addRow(['', '', 'TOTAL REVENUE', 'TOTAL EXPENSES', 'NET PROFIT', 'TOTAL ORDERS', 'AVG ORDER VALUE']);
             statsLabels.font = { size: 11, bold: true, color: { argb: textGray } };
-            statsLabels.alignment = { horizontal: 'center' };
-            statsLabels.height = 25;
+            statsLabels.alignment = { horizontal: 'center', vertical: 'middle' };
+            statsLabels.height = 30;
 
-            const statsValues = worksheet.addRow([
-                '',
-                pdfStats.revenue,
-                '',
-                pdfProfit,
-                '',
-                pdfStats.orders,
-                pdfAov,
-                ''
-            ]);
-            worksheet.mergeCells(`B${statsValues.number}:C${statsValues.number}`);
-            worksheet.mergeCells(`D${statsValues.number}:E${statsValues.number}`);
-            worksheet.mergeCells(`G${statsValues.number}:H${statsValues.number}`);
-            statsValues.height = 45;
+            const statsValues = worksheet.addRow(['', '', pdfStats.revenue, totalExpensesExcel, pdfProfit, pdfStats.orders, pdfAov]);
+            statsValues.height = 60;
 
-            statsValues.eachCell((cell, colNumber) => {
-                if (colNumber > 1) {
-                    cell.font = { size: 18, bold: true };
-                    cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                }
+            // Apply distinct box styling and force center alignment
+            [3, 4, 5, 6, 7].forEach(colIndex => {
+                const headCell = statsLabels.getCell(colIndex);
+                const valCell = statsValues.getCell(colIndex);
+                
+                [headCell, valCell].forEach(cell => {
+                    cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+                    cell.border = {
+                        top: { style: 'thin', color: { argb: 'E5E7EB' } },
+                        left: { style: 'thin', color: { argb: 'E5E7EB' } },
+                        right: { style: 'thin', color: { argb: 'E5E7EB' } },
+                        bottom: { style: 'thin', color: { argb: 'E5E7EB' } }
+                    };
+                });
             });
 
-            statsValues.getCell(2).font = { color: { argb: textDark }, size: 18, bold: true };
-            statsValues.getCell(4).font = { color: { argb: brandOrange }, size: 18, bold: true };
+            statsValues.getCell(3).font = { color: { argb: textDark }, size: 18, bold: true };
+            statsValues.getCell(4).font = { color: { argb: '960000' }, size: 18, bold: true }; 
+            statsValues.getCell(5).font = { color: { argb: brandOrange }, size: 18, bold: true };
+            statsValues.getCell(6).font = { size: 18, bold: true };
+            statsValues.getCell(7).font = { size: 18, bold: true };
 
-            // Format Currency for B (2), D (4), and G (7)
-            [2, 4, 7].forEach(col => {
+            // Format Currency
+            [3, 4, 5, 7].forEach(col => {
                 statsValues.getCell(col).numFmt = `${currencySymbol === '₹' ? '₹' : '"' + currencySymbol + '"'}#,##0.00`;
             });
 
@@ -1489,22 +1483,22 @@ const AdminSales = () => {
 
                     <button
                         onClick={handleDownloadPDF}
-                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-normal flex items-center justify-center gap-0 shrink-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden hover:sm:w-auto hover:sm:px-6 hover:sm:gap-2"
+                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-normal flex items-center justify-center gap-0 shrink-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden hover:sm:w-[160px] hover:sm:px-4 hover:sm:gap-2"
                         title="Download PDF Report"
                     >
                         <Download className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                        <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                        <span className="max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
                             Download PDF
                         </span>
                     </button>
 
                     <button
                         onClick={handleDownloadExcel}
-                        className="bg-green-600 hover:bg-green-700 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-normal flex items-center justify-center gap-0 shrink-0 group transition-all duration-300 shadow-sm shadow-green-100 text-sm overflow-hidden hover:sm:w-auto hover:sm:px-6 hover:sm:gap-2"
+                        className="bg-green-600 hover:bg-green-700 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-normal flex items-center justify-center gap-0 shrink-0 group transition-all duration-300 shadow-sm shadow-green-100 text-sm overflow-hidden hover:sm:w-[175px] hover:sm:px-4 hover:sm:gap-2"
                         title="Download Excel Report"
                     >
                         <FileSpreadsheet className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                        <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                        <span className="max-w-0 opacity-0 group-hover:max-w-[130px] group-hover:opacity-100 transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
                             Download Excel
                         </span>
                     </button>

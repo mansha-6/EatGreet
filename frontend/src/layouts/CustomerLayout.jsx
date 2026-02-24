@@ -9,10 +9,7 @@ const CustomerLayout = () => {
 
     // -- Shared State --
     const [cart, setCart] = useState({});
-    const [favorites, setFavorites] = useState(() => {
-        const saved = localStorage.getItem('eatgreet_favorites');
-        return saved ? JSON.parse(saved) : {};
-    });
+
     const [tableNo, setTableNo] = useState(() => {
         // High priority: Params -> LocalStorage -> Default
         return paramTableNo || localStorage.getItem('eatgreet_table') || '4';
@@ -86,10 +83,7 @@ const CustomerLayout = () => {
         fetchRestaurant();
     }, [restaurantName, restaurantId]);
 
-    // Persist Favorites
-    useEffect(() => {
-        localStorage.setItem('eatgreet_favorites', JSON.stringify(favorites));
-    }, [favorites]);
+
 
     // Persist Table No
     useEffect(() => {
@@ -128,18 +122,7 @@ const CustomerLayout = () => {
 
     const clearCart = () => setCart({});
 
-    const toggleFavorite = (item) => {
-        const itemId = item._id || item.id;
-        setFavorites(prev => {
-            const newFavs = { ...prev };
-            if (newFavs[itemId]) {
-                delete newFavs[itemId];
-            } else {
-                newFavs[itemId] = item;
-            }
-            return newFavs;
-        });
-    };
+
 
     const totalItems = Object.values(cart).reduce((acc, item) => acc + item.qty, 0);
 
@@ -172,7 +155,6 @@ const CustomerLayout = () => {
                     {/* Global Dynamic Navbar */}
                     <DynamicNavbar customerProps={{
                         cart,
-                        favorites,
                         tableNo,
                         setShowBill,
                         totalItems,
@@ -184,7 +166,6 @@ const CustomerLayout = () => {
                     <main key={tenantName} className="max-w-7xl mx-auto md:px-4 md:py-6">
                         <Outlet context={{
                             cart, addToCart, removeFromCart, clearCart,
-                            favorites, toggleFavorite,
                             showBill, setShowBill,
                             tableNo, setTableNo,
                             restaurantId: resolvedRestaurantId,

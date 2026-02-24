@@ -39,7 +39,7 @@ import CustomerLayout from './layouts/CustomerLayout';
 import Menu from './pages/customer/Menu';
 import CustomerProfile from './pages/customer/CustomerProfile';
 import CustomerSettings from './pages/customer/CustomerSettings';
-import CustomerFavorites from './pages/customer/Favorites';
+
 
 // Protected Route for Store Admins
 const ProtectedRoute = ({ children }) => {
@@ -192,7 +192,7 @@ function App() {
             <Route index element={<Menu />} />
             <Route path="menu" element={<Menu />} />
             <Route path="profile" element={<CustomerProfile />} />
-            <Route path="favorites" element={<CustomerFavorites />} />
+
           </Route>
 
           {/* New Table Specific Route */}
@@ -200,7 +200,7 @@ function App() {
             <Route index element={<Menu />} />
             <Route path="menu" element={<Menu />} />
             <Route path="profile" element={<CustomerProfile />} />
-            <Route path="favorites" element={<CustomerFavorites />} />
+
           </Route>
 
 

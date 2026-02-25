@@ -1708,13 +1708,25 @@ const AdminOrders = () => {
                                                 <span>Total Qty: {selectedOrder.items?.reduce((acc, it) => acc + (it.quantity || 1), 0)}</span>
                                                 <span>Sub Total: {currencySymbol}{orderStats?.subtotal.toFixed(2)}</span>
                                             </div>
-                                            <div className="flex justify-between text-[13px]">
-                                                <span>Tax (5%)</span>
-                                                <span>{currencySymbol}{(orderStats?.cgst + orderStats?.sgst).toFixed(2)}</span>
+                                            <div className="flex justify-between text-[13px] mb-1">
+                                                <span>CGST@2.5%</span>
+                                                <span>{currencySymbol}{orderStats?.cgst.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between text-[13px] mb-1">
+                                                <span>SGST@2.5%</span>
+                                                <span>{currencySymbol}{orderStats?.sgst.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between font-normal text-[13px] mb-1">
+                                                <span>Total</span>
+                                                <span>{currencySymbol}{orderStats?.totalRaw.toFixed(2)}</span>
+                                            </div>
+                                            <div className="flex justify-between text-[13px] mb-1">
+                                                <span>Round Off</span>
+                                                <span>{currencySymbol}{orderStats?.roundOff.toFixed(2)}</span>
                                             </div>
                                             <div className="border-t border-dashed border-gray-300 my-4"></div>
                                             <div className="flex justify-between text-lg font-bold">
-                                                <span>Total</span>
+                                                <span>Grand Total</span>
                                                 <span>{currencySymbol}{orderStats?.grandTotal.toFixed(2)}</span>
                                             </div>
                                             <div className="text-center font-normal text-[13px] uppercase tracking-[0.12em] mt-6">Thank You Visit Again</div>

@@ -375,6 +375,15 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                     <span>${currencySymbol}${orderStats.sgst.toFixed(2)}</span>
                 </div>
                 <div class="divider"></div>
+                <div class="info-row" style="font-weight: bold;">
+                    <span>Total</span>
+                    <span>${currencySymbol}${orderStats.totalRaw.toFixed(2)}</span>
+                </div>
+                <div class="info-row">
+                    <span>Round Off</span>
+                    <span>${currencySymbol}${orderStats.roundOff.toFixed(2)}</span>
+                </div>
+                <div class="divider"></div>
                 <div class="info-row" style="font-size: 16px; font-weight: bold;">
                     <span>Grand Total</span>
                     <span>${currencySymbol}${orderStats.grandTotal.toFixed(2)}</span>
@@ -464,8 +473,20 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                             <span>{currencySymbol}{orderStats?.subtotal.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-[13px] mb-1">
-                            <span>Tax (5%):</span>
-                            <span>{currencySymbol}{(orderStats?.cgst + orderStats?.sgst).toFixed(2)}</span>
+                            <span>CGST@2.5%</span>
+                            <span>{currencySymbol}{orderStats?.cgst.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-[13px] mb-1">
+                            <span>SGST@2.5%</span>
+                            <span>{currencySymbol}{orderStats?.sgst.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between font-normal text-[13px] mb-1">
+                            <span>Total</span>
+                            <span>{currencySymbol}{orderStats?.totalRaw.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-[13px] mb-1">
+                            <span>Round Off</span>
+                            <span>{currencySymbol}{orderStats?.roundOff.toFixed(2)}</span>
                         </div>
                         <div className="border-t border-dashed border-black my-4"></div>
                         <div className="flex justify-between font-normal text-lg mb-4">

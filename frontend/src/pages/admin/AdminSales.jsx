@@ -316,7 +316,7 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                         padding: 20px;
                     }
                     .header { text-align: center; margin-bottom: 20px; }
-                    .restaurant-name { font-size: 18px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
+                    .restaurant-name { font-size: 18px; font-weight: 700; text-transform: uppercase; margin-bottom: 5px; }
                     .restaurant-info { font-size: 12px; margin-bottom: 2px; }
                     .divider { border-top: 1px dashed #000; margin: 10px 0; }
                     .info-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 3px; }
@@ -330,26 +330,23 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                 <div class="header">
                     ${restaurant?.logo ? `<img src="${restaurant.logo}" style="height: 50px; width: auto; margin-bottom: 10px;" />` : ''}
                     <div class="restaurant-name">${restaurant?.name || 'EatGreet Restaurant'}</div>
-                    <div class="restaurant-info font-normal" style="margin-top: 5px;">${restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</div>
+                    <div class="restaurant-info" style="margin-top: 5px; font-weight: 700;">${restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</div>
                     ${(restaurant?.businessEmail || restaurant?.restaurantDetails?.businessEmail) ? `<div class="restaurant-info">Email: ${restaurant.businessEmail || restaurant.restaurantDetails.businessEmail}</div>` : ''}
                     ${(restaurant?.gstNumber || restaurant?.restaurantDetails?.gstNumber) ? `<div class="restaurant-info">GST: ${restaurant.gstNumber || restaurant.restaurantDetails.gstNumber}</div>` : ''}
                     ${(restaurant?.contactNumber || restaurant?.restaurantDetails?.contactNumber) ? `<div class="restaurant-info" style="margin-top: 2px;">Tel: ${restaurant.contactNumber || restaurant.restaurantDetails.contactNumber}</div>` : ''}
                 </div>
 
                 <div class="divider"></div>
-                <div class="info-row"><span>Name:</span> <span>${order.customerInfo?.name || 'Guest'}</span></div>
-                ${order.customerInfo?.phone ? `<div class="info-row"><span>Tel:</span> <span>${order.customerInfo.phone}</span></div>` : ''}
+                <div class="info-row"><span>Name:</span> <span style="font-weight: 700;">${order.customerInfo?.name || 'Guest'}</span></div>
+                ${order.customerInfo?.phone ? `<div class="info-row"><span>Tel:</span> <span style="font-weight: 700;">${order.customerInfo.phone}</span></div>` : ''}
                 <div class="divider"></div>
 
                 <div class="info-row">
                     <span>Date: ${new Date(order.createdAt).toLocaleDateString()}</span>
-                    <span>Dine In: ${order.tableNumber || 'N/A'}</span>
+                    <span>Table: ${order.tableNumber || 'N/A'}</span>
                 </div>
                 <div class="info-row">
                     <span>Time: ${new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                </div>
-                <div class="info-row">
-                    <span>Cashier: Admin</span>
                     <span>Bill No: ${formatOrderDisplayId(order)}</span>
                 </div>
 
@@ -365,7 +362,7 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                 ${itemsRows}
 
                 <div class="divider"></div>
-                <div class="info-row" style="font-weight: bold;">
+                <div class="info-row" style="font-weight: 700;">
                     <span>Total Qty: ${order.items?.reduce((acc, it) => acc + (it.quantity || 1), 0)}</span>
                     <span>Sub Total: ${currencySymbol}${orderStats.subtotal.toFixed(2)}</span>
                 </div>
@@ -377,17 +374,16 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                     <span>SGST@2.5%</span>
                     <span>${currencySymbol}${orderStats.sgst.toFixed(2)}</span>
                 </div>
-                <div class="divider"></div>
-                <div class="info-row" style="font-weight: bold;">
+                <div class="info-row" style="font-weight: 700;">
                     <span>Total</span>
                     <span>${currencySymbol}${orderStats.totalRaw.toFixed(2)}</span>
                 </div>
+                <div class="divider"></div>
                 <div class="info-row">
                     <span>Round Off</span>
                     <span>${currencySymbol}${orderStats.roundOff.toFixed(2)}</span>
                 </div>
-                <div class="divider"></div>
-                <div class="info-row" style="font-size: 16px; font-weight: bold;">
+                <div class="info-row" style="font-size: 16px; font-weight: 700;">
                     <span>Grand Total</span>
                     <span>${currencySymbol}${orderStats.grandTotal.toFixed(2)}</span>
                 </div>
@@ -429,15 +425,15 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
 
                         <div className="text-center mb-6">
                             {restaurant?.logo && (
-                                <img src={restaurant.logo} alt="Restaurant Logo" className="h-12 mx-auto mb-3 object-contain" />
+                                <img src={restaurant.logo} alt="Restaurant Logo" className="h-14 mx-auto mb-2 object-contain" />
                             )}
-                            <h2 className="text-xl font-normal uppercase mb-2 tracking-tight">{restaurant?.name || 'EatGreet Restaurant'}</h2>
-                            <p className="text-[12px] leading-tight mb-1 font-normal italic">{restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</p>
+                            <h2 className="text-xl font-bold uppercase mb-2 tracking-tight">{restaurant?.name || 'EatGreet Restaurant'}</h2>
+                            <p className="text-[12px] leading-tight mb-1 font-bold italic">{restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</p>
                             {(restaurant?.businessEmail || restaurant?.restaurantDetails?.businessEmail) && (
                                 <p className="text-[11px] mb-0.5 opacity-80">Email: {restaurant.businessEmail || restaurant.restaurantDetails.businessEmail}</p>
                             )}
                             {(restaurant?.gstNumber || restaurant?.restaurantDetails?.gstNumber) && (
-                                <p className="text-[11px] font-normal">GST: {restaurant.gstNumber || restaurant.restaurantDetails.gstNumber}</p>
+                                <p className="text-[11px] font-bold">GST: {restaurant.gstNumber || restaurant.restaurantDetails.gstNumber}</p>
                             )}
                             {(restaurant?.contactNumber || restaurant?.restaurantDetails?.contactNumber) && (
                                 <p className="text-[11px] text-gray-500 mt-1">Tel: {restaurant.contactNumber || restaurant.restaurantDetails.contactNumber}</p>
@@ -447,25 +443,33 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                         <div className="border-t border-dashed border-black my-4"></div>
                         <div className="flex justify-between text-[13px] mb-1">
                             <span>Name:</span>
-                            <span className="font-normal">{order.customerInfo?.name || 'Guest'}</span>
+                            <span className="font-bold">{order.customerInfo?.name || 'Guest'}</span>
                         </div>
+                        {order.customerInfo?.phone && (
+                            <div className="flex justify-between text-[13px] mb-1">
+                                <span>Tel:</span>
+                                <span className="font-bold">{order.customerInfo.phone}</span>
+                            </div>
+                        )}
                         <div className="border-t border-dashed border-black my-4"></div>
 
                         <div className="flex justify-between text-[13px] mb-1">
                             <span>Date: {new Date(order.createdAt).toLocaleDateString()}</span>
-                            <span>Dine In: {order.tableNumber || 'N/A'}</span>
+                            <span>Table: {order.tableNumber || 'N/A'}</span>
                         </div>
                         <div className="flex justify-between text-[13px] mb-1">
                             <span>Time: {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                         <div className="flex justify-between text-[13px] mb-1">
+                            <span>Cashier: Admin</span>
                             <span>Bill No: {formatOrderDisplayId(order)}</span>
                         </div>
 
                         <div className="border-t border-dashed border-black my-4"></div>
-                        <div className="flex justify-between font-normal text-[13px] mb-2 uppercase">
+                        <div className="flex justify-between font-bold text-[13px] mb-2 uppercase">
                             <span style={{ flex: 1 }}>No.Item</span>
                             <span style={{ width: '30px', textAlign: 'center' }}>Qty</span>
+                            <span style={{ width: '60px', textAlign: 'right' }}>Price</span>
                             <span style={{ width: '70px', textAlign: 'right' }}>Amt</span>
                         </div>
                         <div className="border-t border-dashed border-black my-4"></div>
@@ -475,15 +479,16 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                                 <div key={i} className="flex justify-between text-[13px]">
                                     <span style={{ flex: 1 }}>{i + 1}.{it.name}</span>
                                     <span style={{ width: '30px', textAlign: 'center' }}>{it.quantity || 1}</span>
+                                    <span style={{ width: '60px', textAlign: 'right' }}>{(it.price || 0).toFixed(2)}</span>
                                     <span style={{ width: '70px', textAlign: 'right' }}>{(it.price * (it.quantity || 1)).toFixed(2)}</span>
                                 </div>
                             ))}
                         </div>
 
                         <div className="border-t border-dashed border-black my-4"></div>
-                        <div className="flex justify-between font-normal text-[13px] mb-1">
-                            <span>Sub Total:</span>
-                            <span>{currencySymbol}{orderStats?.subtotal.toFixed(2)}</span>
+                        <div className="flex justify-between font-bold text-[13px] mb-1">
+                            <span>Total Qty: {order.items?.reduce((acc, it) => acc + (it.quantity || 1), 0)}</span>
+                            <span>Sub Total: {currencySymbol}{orderStats?.subtotal.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-[13px] mb-1">
                             <span>CGST@2.5%</span>
@@ -493,7 +498,7 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                             <span>SGST@2.5%</span>
                             <span>{currencySymbol}{orderStats?.sgst.toFixed(2)}</span>
                         </div>
-                        <div className="flex justify-between font-normal text-[13px] mb-1">
+                        <div className="flex justify-between font-bold text-[13px] mb-1">
                             <span>Total</span>
                             <span>{currencySymbol}{orderStats?.totalRaw.toFixed(2)}</span>
                         </div>
@@ -502,14 +507,16 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                             <span>{currencySymbol}{orderStats?.roundOff.toFixed(2)}</span>
                         </div>
                         <div className="border-t border-dashed border-black my-4"></div>
-                        <div className="flex justify-between font-normal text-lg mb-4">
+                        <div className="flex justify-between font-bold text-lg mb-4">
                             <span>Grand Total</span>
                             <span>{currencySymbol}{orderStats?.grandTotal.toFixed(2)}</span>
                         </div>
                         <div className="border-t border-dashed border-black my-4"></div>
-                        <div className="text-center font-normal text-[13px] uppercase tracking-[0.12em] mt-6">Thank You Visit Again</div>
-                        <div className="text-center text-[10px] text-gray-500 uppercase tracking-[0.14em] mt-1">Powered by</div>
-                        <img src={EatGreetLogo} alt="EatGreet" className="h-6 mx-auto mt-1 object-contain opacity-70" />
+                        <div className="text-center font-bold text-[13px] uppercase tracking-widest mt-4 mb-1">THANK YOU VISIT AGAIN</div>
+                        <div className="flex flex-col items-center mt-4">
+                            <img src={EatGreetLogo} alt="Powered by EatGreet" className="h-8 opacity-40 mb-1" style={{ filter: 'grayscale(1)' }} />
+                            <span className="text-[10px] text-gray-400">Powered by EatGreet</span>
+                        </div>
                     </div>
                 </div>
             </div>

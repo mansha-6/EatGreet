@@ -1233,7 +1233,7 @@ const AdminOrders = () => {
                         .table-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 5px; }
                         .footer { text-align: center; margin-top: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
                         .powered-by { text-align: center; font-size: 10px; color: #6b7280; margin-top: 6px; letter-spacing: 0.08em; text-transform: uppercase; }
-                        .footer-logo { display: block; height: 22px; width: auto; margin: 4px auto 0; opacity: 0.45; filter: grayscale(100%); }
+                        .footer-logo { display: block; height: 22px; width: auto; margin: 4px auto 0; opacity: 0.45; }
                     </style>
                 </head>
                 <body>
@@ -1731,7 +1731,7 @@ const AdminOrders = () => {
                                             </div>
                                             <div className="text-center font-normal text-[13px] uppercase tracking-[0.12em] mt-6">Thank You Visit Again</div>
                                             <div className="text-center text-[10px] text-gray-500 uppercase tracking-[0.14em] mt-1">Powered by</div>
-                                            <img src={EatGreetLogo} alt="EatGreet" className="h-6 mx-auto mt-1 object-contain grayscale opacity-50" />
+                                            <img src={EatGreetLogo} alt="EatGreet" className="h-6 mx-auto mt-1 object-contain opacity-70" />
                                         </div>
                                     </div>
                                     <div className="p-6 bg-white border-t border-gray-100 flex gap-4">

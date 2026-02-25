@@ -321,16 +321,19 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                     .divider { border-top: 1px dashed #000; margin: 10px 0; }
                     .info-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 3px; }
                     .table-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 5px; }
-                    .footer { text-align: center; margin-top: 20px; font-size: 14px; font-weight: bold; }
+                    .footer { text-align: center; margin-top: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+                    .powered-by { text-align: center; font-size: 10px; color: #6b7280; margin-top: 6px; letter-spacing: 0.08em; text-transform: uppercase; }
+                    .footer-logo { display: block; height: 22px; width: auto; margin: 4px auto 0; opacity: 0.45; }
                 </style>
             </head>
             <body>
                 <div class="header">
-                    <img src="${EatGreetLogo}" style="height: 25px; width: auto; margin: 0 auto 15px; display: block; opacity: 0.8;" />
                     ${restaurant?.logo ? `<img src="${restaurant.logo}" style="height: 50px; width: auto; margin-bottom: 10px;" />` : ''}
                     <div class="restaurant-name">${restaurant?.name || 'EatGreet Restaurant'}</div>
-                    <div class="restaurant-info">${restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</div>
-                    ${(restaurant?.contactNumber || restaurant?.restaurantDetails?.contactNumber) ? `<div class="restaurant-info">Tel: ${restaurant.contactNumber || restaurant.restaurantDetails.contactNumber}</div>` : ''}
+                    <div class="restaurant-info font-normal" style="margin-top: 5px;">${restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</div>
+                    ${(restaurant?.businessEmail || restaurant?.restaurantDetails?.businessEmail) ? `<div class="restaurant-info">Email: ${restaurant.businessEmail || restaurant.restaurantDetails.businessEmail}</div>` : ''}
+                    ${(restaurant?.gstNumber || restaurant?.restaurantDetails?.gstNumber) ? `<div class="restaurant-info">GST: ${restaurant.gstNumber || restaurant.restaurantDetails.gstNumber}</div>` : ''}
+                    ${(restaurant?.contactNumber || restaurant?.restaurantDetails?.contactNumber) ? `<div class="restaurant-info" style="margin-top: 2px;">Tel: ${restaurant.contactNumber || restaurant.restaurantDetails.contactNumber}</div>` : ''}
                 </div>
 
                 <div class="divider"></div>
@@ -391,6 +394,8 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                 <div class="divider"></div>
 
                 <div class="footer">Thank You Visit Again</div>
+                <div class="powered-by">Powered by</div>
+                <img src="${EatGreetLogo}" class="footer-logo" alt="EatGreet" />
             </body>
             <script>
                 window.onload = () => { window.print(); window.close(); }
@@ -423,12 +428,20 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                         </button>
 
                         <div className="text-center mb-6">
-                            <img src={EatGreetLogo} alt="EatGreet" className="h-6 mx-auto mb-4 object-contain opacity-70" />
                             {restaurant?.logo && (
                                 <img src={restaurant.logo} alt="Restaurant Logo" className="h-12 mx-auto mb-3 object-contain" />
                             )}
                             <h2 className="text-xl font-normal uppercase mb-2 tracking-tight">{restaurant?.name || 'EatGreet Restaurant'}</h2>
                             <p className="text-[12px] leading-tight mb-1 font-normal italic">{restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</p>
+                            {(restaurant?.businessEmail || restaurant?.restaurantDetails?.businessEmail) && (
+                                <p className="text-[11px] mb-0.5 opacity-80">Email: {restaurant.businessEmail || restaurant.restaurantDetails.businessEmail}</p>
+                            )}
+                            {(restaurant?.gstNumber || restaurant?.restaurantDetails?.gstNumber) && (
+                                <p className="text-[11px] font-normal">GST: {restaurant.gstNumber || restaurant.restaurantDetails.gstNumber}</p>
+                            )}
+                            {(restaurant?.contactNumber || restaurant?.restaurantDetails?.contactNumber) && (
+                                <p className="text-[11px] text-gray-500 mt-1">Tel: {restaurant.contactNumber || restaurant.restaurantDetails.contactNumber}</p>
+                            )}
                         </div>
 
                         <div className="border-t border-dashed border-black my-4"></div>
@@ -494,7 +507,9 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                             <span>{currencySymbol}{orderStats?.grandTotal.toFixed(2)}</span>
                         </div>
                         <div className="border-t border-dashed border-black my-4"></div>
-                        <div className="text-center font-normal text-[16px] uppercase tracking-widest mt-6">Thank You Visit Again</div>
+                        <div className="text-center font-normal text-[13px] uppercase tracking-[0.12em] mt-6">Thank You Visit Again</div>
+                        <div className="text-center text-[10px] text-gray-500 uppercase tracking-[0.14em] mt-1">Powered by</div>
+                        <img src={EatGreetLogo} alt="EatGreet" className="h-6 mx-auto mt-1 object-contain opacity-70" />
                     </div>
                 </div>
             </div>

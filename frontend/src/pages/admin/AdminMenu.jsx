@@ -709,7 +709,7 @@ const AdminMenu = () => {
         <div className="space-y-4 sm:space-y-6 relative pb-10">
             {/* Header */}
             <div className="flex justify-between items-center gap-4">
-                <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-normal text-black tracking-tight leading-none">Menu Management</h1>
+                <h1 className="text-[20px] sm:text-[24px] lg:text-[28px] font-normal text-black tracking-tight leading-none">Menu Management</h1>
                 <div className="flex gap-2 items-center">
                     <button
                         onClick={() => {

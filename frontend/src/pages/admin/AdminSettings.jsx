@@ -321,7 +321,7 @@ const AdminSettings = () => {
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
                     <div>
-                        <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-normal text-black tracking-tight leading-none">
+                        <h1 className="text-[20px] sm:text-[24px] lg:text-[28px] font-normal text-black tracking-tight leading-none">
                             {activeTab === 'profile' && 'Admin Profile'}
                             {activeTab === 'restaurant' && 'Restaurant Details'}
                             {activeTab === 'orders' && 'Order Preferences'}

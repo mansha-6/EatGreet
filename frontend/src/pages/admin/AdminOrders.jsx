@@ -1042,6 +1042,16 @@ const AdminOrders = () => {
         );
     });
 
+    const formatOrderId = (order) => {
+        if (!order) return 'N/A';
+        const date = new Date(order.createdAt);
+        const dd = String(date.getDate()).padStart(2, '0');
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const yy = String(date.getFullYear()).slice(-2);
+        const sequence = order.dailySequence ? String(order.dailySequence).padStart(2, '0') : (order._id ? order._id.slice(-2).toUpperCase() : '00');
+        return `${dd}${mm}${yy}${sequence}`;
+    };
+
     // Calculate completion percentage
     const completionPercentage = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
 
@@ -1221,12 +1231,13 @@ const AdminOrders = () => {
                         .divider { border-top: 1px dashed #000; margin: 10px 0; }
                         .info-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 3px; }
                         .table-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 5px; }
-                        .footer { text-align: center; margin-top: 20px; font-size: 14px; font-weight: bold; }
+                        .footer { text-align: center; margin-top: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+                        .powered-by { text-align: center; font-size: 10px; color: #6b7280; margin-top: 6px; letter-spacing: 0.08em; text-transform: uppercase; }
+                        .footer-logo { display: block; height: 22px; width: auto; margin: 4px auto 0; opacity: 0.45; filter: grayscale(100%); }
                     </style>
                 </head>
                 <body>
                     <div class="header">
-                    <img src="${EatGreetLogo}" style="height: 25px; width: auto; margin: 0 auto 15px; display: block; opacity: 0.8;" />
                     ${restaurant?.logo ? `<img src="${restaurant.logo}" style="height: 50px; width: auto; margin-bottom: 10px;" />` : ''}
                     <div class="restaurant-name">${restaurant?.name || 'EatGreet Restaurant'}</div>
                         <div class="restaurant-info font-normal" style="margin-top: 5px;">${restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</div>
@@ -1249,7 +1260,7 @@ const AdminOrders = () => {
                     </div>
                     <div class="info-row">
                         <span>Cashier: Admin</span>
-                        <span>Bill No: ${order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id.slice(-4)}</span>
+                        <span>Bill No: ${formatOrderId(order)}</span>
                     </div>
 
                     <div class="divider"></div>
@@ -1293,6 +1304,8 @@ const AdminOrders = () => {
                     <div class="divider"></div>
                     
                     <div class="footer">Thank You Visit Again</div>
+                    <div class="powered-by">Powered by</div>
+                    <img src="${EatGreetLogo}" class="footer-logo" alt="EatGreet" />
                 </body>
                 <script>
                     window.onload = () => { window.print(); window.close(); }
@@ -1331,39 +1344,39 @@ const AdminOrders = () => {
     return (
         <div className="space-y-4 sm:space-y-8 px-1 sm:px-0 pb-20">
             <div className="mb-4 sm:mb-8">
-                <h1 className="text-[20px] sm:text-[24px] lg:text-[36px] font-normal text-black tracking-tight leading-none">Orders</h1>
+                <h1 className="text-[20px] sm:text-[24px] lg:text-[28px] font-normal text-black tracking-tight leading-none">Orders</h1>
                 <p className="text-gray-500 text-sm sm:text-base">Manage your restaurant active orders</p>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6">
                 <div className="bg-white p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col justify-center h-32 sm:h-40 relative group hover:shadow-md transition-all">
                     <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-3">
-                        <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#F3F3F3] rounded-full flex items-center justify-center shrink-0">
-                            <TimeIcon className="w-4.5 h-4.5 sm:w-6 sm:h-6 text-gray-400" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-50 sm:bg-[#F3F3F3] rounded-full flex items-center justify-center shrink-0">
+                            <TimeIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-500 sm:text-gray-400" />
                         </div>
                         <span className="text-2xl sm:text-4xl text-gray-900">{stats.pending}</span>
                     </div>
-                    <p className="text-gray-400 text-[10px] sm:text-sm pl-1">Pending Orders</p>
+                    <p className="text-gray-400 text-[11px] sm:text-sm pl-1">Pending Orders</p>
                 </div>
 
                 <div className="bg-white p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col justify-center h-32 sm:h-40 relative group hover:shadow-md transition-all">
                     <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-3">
-                        <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#F3F3F3] rounded-full flex items-center justify-center shrink-0">
-                            <ChefHat className="w-4.5 h-4.5 sm:w-6 sm:h-6 text-gray-400" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-50 sm:bg-[#F3F3F3] rounded-full flex items-center justify-center shrink-0">
+                            <ChefHat className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500 sm:text-gray-400" />
                         </div>
                         <span className="text-2xl sm:text-4xl text-gray-900">{stats.preparing}</span>
                     </div>
-                    <p className="text-gray-400 text-[10px] sm:text-sm pl-1">Preparing</p>
+                    <p className="text-gray-400 text-[11px] sm:text-sm pl-1">Preparing</p>
                 </div>
 
                 <div className="bg-white p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 flex flex-col justify-center h-32 sm:h-40 relative group hover:shadow-md transition-all">
                     <div className="flex items-center gap-2 sm:gap-4 mb-2 sm:mb-3">
-                        <div className="w-9 h-9 sm:w-12 sm:h-12 bg-[#F3F3F3] rounded-full flex items-center justify-center shrink-0">
-                            <Bell className="w-4.5 h-4.5 sm:w-6 sm:h-6 text-gray-400" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-50 sm:bg-[#F3F3F3] rounded-full flex items-center justify-center shrink-0">
+                            <Bell className="w-5 h-5 sm:w-6 sm:h-6 text-green-500 sm:text-gray-400" />
                         </div>
                         <span className="text-2xl sm:text-4xl text-gray-900">{stats.ready}</span>
                     </div>
-                    <p className="text-gray-400 text-[10px] sm:text-sm pl-1">Ready to serve</p>
+                    <p className="text-gray-400 text-[11px] sm:text-sm pl-1">Ready to serve</p>
                 </div>
 
                 <div className={`p-4 sm:p-6 rounded-[1.5rem] sm:rounded-[2rem] shadow-sm border border-gray-100 relative overflow-hidden bg-gradient-to-b from-white to-[#F9FAFB] flex flex-col justify-between h-32 sm:h-40 col-span-2 lg:col-span-2`}>
@@ -1441,7 +1454,7 @@ const AdminOrders = () => {
                                             <UtensilsCrossed className={`w-3.5 h-3.5 sm:w-6 sm:h-6 ${statusTextColor}`} />
                                         </div>
                                         <div className="flex flex-col gap-0.5 sm:gap-1 shrink-0 justify-center">
-                                            <h4 className="text-gray-900 text-[13px] sm:text-lg font-normal whitespace-nowrap">#{order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id.slice(-4)}</h4>
+                                            <h4 className="text-gray-900 text-[13px] sm:text-lg font-normal whitespace-nowrap">#{formatOrderId(order)}</h4>
                                         </div>
                                     </div>
 
@@ -1554,7 +1567,7 @@ const AdminOrders = () => {
                                         <UtensilsCrossed className="w-3.5 h-3.5 sm:w-6 sm:h-6 text-green-600" />
                                     </div>
                                     <div className="flex flex-col gap-0.5 sm:gap-1 shrink-0 justify-center">
-                                        <h4 className="text-gray-900 text-[13px] sm:text-lg font-normal whitespace-nowrap">#{order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id.slice(-4)}</h4>
+                                        <h4 className="text-gray-900 text-[13px] sm:text-lg font-normal whitespace-nowrap">#{formatOrderId(order)}</h4>
                                     </div>
                                 </div>
                                 {/* Item List Display - Scrollable on mobile/tab, wrapped on desktop - FLUID */}
@@ -1629,7 +1642,6 @@ const AdminOrders = () => {
                                     <div className="flex-1 overflow-y-auto no-scrollbar p-6 sm:p-10 bg-gray-100/30">
                                         <div className="bg-white mx-auto shadow-sm border border-gray-200 p-8 font-mono text-black relative my-8" style={{ width: '100%', maxWidth: '380px' }}>
                                             <div className="text-center mb-6">
-                                                <img src={EatGreetLogo} alt="EatGreet" className="h-6 mx-auto mb-4 object-contain opacity-70" />
                                                 {restaurant?.logo && (
                                                     <img src={restaurant.logo} alt="Restaurant Logo" className="h-12 mx-auto mb-3 object-contain" />
                                                 )}
@@ -1668,7 +1680,7 @@ const AdminOrders = () => {
                                             </div>
                                             <div className="flex justify-between text-[13px] mb-1">
                                                 <span>Cashier: Admin</span>
-                                                <span>Bill No: {selectedOrder.dailySequence ? String(selectedOrder.dailySequence).padStart(3, '0') : selectedOrder._id.slice(-4)}</span>
+                                                <span>Bill No: {formatOrderId(selectedOrder)}</span>
                                             </div>
 
                                             <div className="border-t border-dashed border-black my-4"></div>
@@ -1705,7 +1717,9 @@ const AdminOrders = () => {
                                                 <span>Total</span>
                                                 <span>{currencySymbol}{orderStats?.grandTotal.toFixed(2)}</span>
                                             </div>
-                                            <div className="text-center font-normal text-[16px] uppercase tracking-widest mt-6">Thank You Visit Again</div>
+                                            <div className="text-center font-normal text-[13px] uppercase tracking-[0.12em] mt-6">Thank You Visit Again</div>
+                                            <div className="text-center text-[10px] text-gray-500 uppercase tracking-[0.14em] mt-1">Powered by</div>
+                                            <img src={EatGreetLogo} alt="EatGreet" className="h-6 mx-auto mt-1 object-contain grayscale opacity-50" />
                                         </div>
                                     </div>
                                     <div className="p-6 bg-white border-t border-gray-100 flex gap-4">
@@ -1728,7 +1742,7 @@ const AdminOrders = () => {
                                 <div className="flex flex-col h-full overflow-hidden">
                                     <div className="flex-1 overflow-y-auto no-scrollbar px-6 sm:px-10 mb-4">
                                         <div className="mb-6 sm:mb-8 mt-8 sm:mt-10">
-                                            <h2 className="text-2xl sm:text-4xl text-gray-900 mb-1 font-normal tracking-tighter ">Order #{selectedOrder?.dailySequence ? String(selectedOrder.dailySequence).padStart(3, '0') : selectedOrder?._id?.slice(-4)}</h2>
+                                            <h2 className="text-2xl sm:text-4xl text-gray-900 mb-1 font-normal tracking-tighter ">Order #{formatOrderId(selectedOrder)}</h2>
                                             <p className="text-gray-400 text-[8px] sm:text-xs font-semibold uppercase tracking-[0.3em]">Live Order View</p>
                                         </div>
 

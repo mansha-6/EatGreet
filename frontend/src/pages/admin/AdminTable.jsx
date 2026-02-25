@@ -214,12 +214,13 @@ const AdminTable = () => {
                         .divider { border-top: 1px dashed #000; margin: 10px 0; }
                         .info-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 3px; }
                         .table-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 5px; }
-                        .footer { text-align: center; margin-top: 20px; font-size: 14px; font-weight: bold; }
+                        .footer { text-align: center; margin-top: 20px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+                        .powered-by { text-align: center; font-size: 10px; color: #6b7280; margin-top: 6px; letter-spacing: 0.08em; text-transform: uppercase; }
+                        .footer-logo { display: block; height: 22px; width: auto; margin: 4px auto 0; opacity: 0.45; filter: grayscale(100%); }
                     </style>
                 </head>
                 <body>
                     <div class="header">
-                    <img src="${EatGreetLogo}" style="height: 25px; width: auto; margin: 0 auto 15px; display: block; opacity: 0.8;" />
                     ${restaurant?.logo ? `<img src="${restaurant.logo}" style="height: 55px; width: auto; margin-bottom: 10px; object-contain" />` : ''}
                     <div class="restaurant-name">${restaurant?.name || 'EatGreet Restaurant'}</div>
                     <div class="restaurant-info font-normal" style="margin-top: 5px; font-style: italic;">${restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</div>
@@ -284,7 +285,9 @@ const AdminTable = () => {
                     </div>
                     <div class="divider"></div>
                     
-                    <div class="footer">THANK YOU VISIT AGAIN</div>
+                    <div class="footer">Thank You Visit Again</div>
+                    <div class="powered-by">Powered by</div>
+                    <img src="${EatGreetLogo}" class="footer-logo" alt="EatGreet" />
                 </body>
                 <script>
                     window.onload = () => { window.print(); window.close(); }
@@ -314,7 +317,7 @@ const AdminTable = () => {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center gap-4">
-                <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-normal text-black tracking-tight leading-none">Table Management</h1>
+                <h1 className="text-[20px] sm:text-[24px] lg:text-[28px] font-normal text-black tracking-tight leading-none">Table Management</h1>
                 <div className="flex gap-2 items-center">
                     <button
                         onClick={addTable}
@@ -591,7 +594,6 @@ const AdminTable = () => {
                                 </button>
 
                                 <div className="text-center mb-6">
-                                    <img src={EatGreetLogo} alt="EatGreet" className="h-6 mx-auto mb-4 object-contain opacity-70" />
                                     {restaurant?.logo && (
                                         <img src={restaurant.logo} alt="Restaurant Logo" className="h-12 mx-auto mb-3 object-contain" />
                                     )}
@@ -693,7 +695,9 @@ const AdminTable = () => {
                                     )
                                 })()}
                                 <div className="border-t border-dashed border-black my-4"></div>
-                                <div className="text-center font-normal text-[16px] uppercase tracking-widest mt-6">THANK YOU VISIT AGAIN</div>
+                                <div className="text-center font-normal text-[13px] uppercase tracking-[0.12em] mt-6">Thank You Visit Again</div>
+                                <div className="text-center text-[10px] text-gray-500 uppercase tracking-[0.14em] mt-1">Powered by</div>
+                                <img src={EatGreetLogo} alt="EatGreet" className="h-6 mx-auto mt-1 object-contain grayscale opacity-50" />
                             </div>
                         </div>
                     </div>

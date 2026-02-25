@@ -247,7 +247,7 @@ const AdminOffers = () => {
         <div className="space-y-6 relative pb-10">
             <div className="flex justify-between items-center gap-4">
                 <div>
-                    <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-normal text-black tracking-tight leading-none">Offers & Promos</h1>
+                    <h1 className="text-[20px] sm:text-[24px] lg:text-[28px] font-normal text-black tracking-tight leading-none">Offers & Promos</h1>
                     <p className="text-xs sm:text-sm text-gray-500 mt-1 sm:mt-2">Manage discounts and promotional campaigns</p>
                 </div>
                 <div className="flex gap-2 items-center">

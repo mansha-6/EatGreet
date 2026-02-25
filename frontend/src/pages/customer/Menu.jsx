@@ -531,6 +531,7 @@ const Menu = () => {
                                     media={[...(item.models || []), ...(item.media || []), { url: item.image, type: 'image' }]}
                                     className="w-full h-full object-cover"
                                     modelCheckId={`model-${item._id}`}
+                                    compact={true}
                                 />
 
                                 {/* Veg/Non-Veg Badge on Image */}

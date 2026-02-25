@@ -18,9 +18,19 @@ import toast from 'react-hot-toast';
 import EatGreetLogo from '../../assets/logo-full.png';
 
 // Helper to format currency
-const formatCurrency = (amount, symbol = '$') => {
+const formatCurrency = (amount, symbol = '₹') => {
     if (amount === undefined || amount === null) return `${symbol}0.00`;
     return `${symbol}${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+};
+
+const formatOrderDisplayId = (order) => {
+    if (!order) return 'N/A';
+    const date = new Date(order.createdAt);
+    const dd = String(date.getDate()).padStart(2, '0');
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const yy = String(date.getFullYear()).slice(-2);
+    const sequence = order.dailySequence ? String(order.dailySequence).padStart(2, '0') : (order._id ? order._id.slice(-2).toUpperCase() : '00');
+    return `${dd}${mm}${yy}${sequence}`;
 };
 
 const SalesCard = ({ title, value, subValue, icon: Icon, isCurrency, mobileTitle }) => {
@@ -45,65 +55,6 @@ const SalesCard = ({ title, value, subValue, icon: Icon, isCurrency, mobileTitle
     );
 };
 
-const DynamicEbitdaCard = ({ stats, currencySymbol }) => {
-    const [period, setPeriod] = useState('Monthly'); // Default
-    const [isOpen, setIsOpen] = useState(false);
-
-    const getData = () => {
-        switch (period) {
-            case 'Weekly': return stats.weekly.ebitda;
-            case 'Quarterly': return stats.quarterly.ebitda;
-            case 'Annual': return stats.annual.ebitda;
-            case 'Monthly':
-            default: return stats.monthly.ebitda;
-        }
-    };
-
-    return (
-        <div className="bg-white rounded-[1.5rem] p-6 shadow-sm border border-transparent hover:border-gray-100 transition-all relative">
-            <div className="flex justify-between items-start mb-4">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center text-[#FD6941] bg-[#FD6941]">
-                    <Wallet className="w-6 h-6" />
-                </div>
-
-                {/* Dropdown */}
-                <div className="relative">
-                    <button
-                        onClick={() => setIsOpen(!isOpen)}
-                        className="flex items-center gap-1 text-xs font-normal bg-gray-50 hover:bg-gray-100 px-2 py-1 rounded-lg text-gray-500 transition-colors"
-                    >
-                        {period} <ChevronDown className="w-3 h-3" />
-                    </button>
-
-                    {isOpen && (
-                        <>
-                            <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)}></div>
-                            <div className="absolute right-0 top-full mt-1 w-24 bg-white rounded-lg shadow-xl border border-gray-100 py-1 z-20 overflow-hidden">
-                                {['Weekly', 'Monthly', 'Quarterly', 'Annual'].map(p => (
-                                    <button
-                                        key={p}
-                                        onClick={() => { setPeriod(p); setIsOpen(false); }}
-                                        className={`w-full text-left px-3 py-1.5 text-xs font-normal hover:bg-gray-50 ${period === p ? 'text-black bg-gray-50' : 'text-gray-500'}`}
-                                    >
-                                        {p}
-                                    </button>
-                                ))}
-                            </div>
-                        </>
-                    )}
-                </div>
-            </div>
-            <div>
-                <p className="text-gray-400 text-sm font-normal mb-1">EBITDA ({period})</p>
-                <h3 className="text-2xl font-normal text-black">{formatCurrency(getData(), currencySymbol)}</h3>
-                <p className="text-xs text-gray-400 mt-1">Net Earnings (~35%)</p>
-            </div>
-        </div>
-    );
-};
-
-// Invoice Modal Component
-// Custom Date Range Picker Component
 // Custom Date Range Picker Component
 const DateRangePicker = ({ range, onChange, onClose }) => {
     // Helper: Parse "YYYY-MM-DD" string to Local Date Object (Midnight)
@@ -380,7 +331,6 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                     <div class="restaurant-name">${restaurant?.name || 'EatGreet Restaurant'}</div>
                     <div class="restaurant-info">${restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</div>
                     ${(restaurant?.contactNumber || restaurant?.restaurantDetails?.contactNumber) ? `<div class="restaurant-info">Tel: ${restaurant.contactNumber || restaurant.restaurantDetails.contactNumber}</div>` : ''}
-                    <div class="restaurant-info">GST - 24AAYFT4562G1ZO</div>
                 </div>
 
                 <div class="divider"></div>
@@ -397,11 +347,7 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                 </div>
                 <div class="info-row">
                     <span>Cashier: Admin</span>
-                    <span>Bill No: ${order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id.slice(-4)}</span>
-                </div>
-                <div class="info-row">
-                    <span>Payment:</span>
-                    <span>${order.paymentMethod || 'Cash'}</span>
+                    <span>Bill No: ${formatOrderDisplayId(order)}</span>
                 </div>
 
                 <div class="divider"></div>
@@ -427,14 +373,6 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                 <div class="info-row">
                     <span>SGST@2.5%</span>
                     <span>${currencySymbol}${orderStats.sgst.toFixed(2)}</span>
-                </div>
-                <div class="info-row">
-                     <span>Total</span>
-                     <span>${currencySymbol}${orderStats.totalRaw.toFixed(2)}</span>
-                </div>
-                 <div class="info-row">
-                     <span>Round Off</span>
-                     <span>${currencySymbol}${orderStats.roundOff.toFixed(2)}</span>
                 </div>
                 <div class="divider"></div>
                 <div class="info-row" style="font-size: 16px; font-weight: bold;">
@@ -482,15 +420,6 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                             )}
                             <h2 className="text-xl font-normal uppercase mb-2 tracking-tight">{restaurant?.name || 'EatGreet Restaurant'}</h2>
                             <p className="text-[12px] leading-tight mb-1 font-normal italic">{restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address'}</p>
-                            {(restaurant?.businessEmail || restaurant?.restaurantDetails?.businessEmail) && (
-                                <p className="text-[11px] mb-0.5 opacity-80">Email: {restaurant.businessEmail || restaurant.restaurantDetails.businessEmail}</p>
-                            )}
-                            {(restaurant?.gstNumber || restaurant?.restaurantDetails?.gstNumber) && (
-                                <p className="text-[11px] font-normal">GST: {restaurant.gstNumber || restaurant.restaurantDetails.gstNumber}</p>
-                            )}
-                            {(restaurant?.contactNumber || restaurant?.restaurantDetails?.contactNumber) && (
-                                <p className="text-[11px] text-gray-500 mt-1">Tel: {restaurant.contactNumber || restaurant.restaurantDetails.contactNumber}</p>
-                            )}
                         </div>
 
                         <div className="border-t border-dashed border-black my-4"></div>
@@ -498,12 +427,6 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                             <span>Name:</span>
                             <span className="font-normal">{order.customerInfo?.name || 'Guest'}</span>
                         </div>
-                        {order.customerInfo?.phone && (
-                            <div className="flex justify-between text-[13px] mb-1">
-                                <span>Tel:</span>
-                                <span className="font-normal">{order.customerInfo.phone}</span>
-                            </div>
-                        )}
                         <div className="border-t border-dashed border-black my-4"></div>
 
                         <div className="flex justify-between text-[13px] mb-1">
@@ -514,19 +437,13 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                             <span>Time: {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
                         <div className="flex justify-between text-[13px] mb-1">
-                            <span>Cashier: Admin</span>
-                            <span>Bill No: {order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id.slice(-4)}</span>
-                        </div>
-                        <div className="flex justify-between text-[13px] mb-1">
-                            <span>Payment:</span>
-                            <span>{order.paymentMethod || 'Cash'}</span>
+                            <span>Bill No: {formatOrderDisplayId(order)}</span>
                         </div>
 
                         <div className="border-t border-dashed border-black my-4"></div>
                         <div className="flex justify-between font-normal text-[13px] mb-2 uppercase">
                             <span style={{ flex: 1 }}>No.Item</span>
                             <span style={{ width: '30px', textAlign: 'center' }}>Qty</span>
-                            <span style={{ width: '60px', textAlign: 'right' }}>Price</span>
                             <span style={{ width: '70px', textAlign: 'right' }}>Amt</span>
                         </div>
                         <div className="border-t border-dashed border-black my-4"></div>
@@ -536,7 +453,6 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                                 <div key={i} className="flex justify-between text-[13px]">
                                     <span style={{ flex: 1 }}>{i + 1}.{it.name}</span>
                                     <span style={{ width: '30px', textAlign: 'center' }}>{it.quantity || 1}</span>
-                                    <span style={{ width: '60px', textAlign: 'right' }}>{(it.price || 0).toFixed(2)}</span>
                                     <span style={{ width: '70px', textAlign: 'right' }}>{(it.price * (it.quantity || 1)).toFixed(2)}</span>
                                 </div>
                             ))}
@@ -544,24 +460,12 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
 
                         <div className="border-t border-dashed border-black my-4"></div>
                         <div className="flex justify-between font-normal text-[13px] mb-1">
-                            <span>Total Qty: {order.items?.reduce((acc, it) => acc + (it.quantity || 1), 0)}</span>
-                            <span>Sub Total: {currencySymbol}{orderStats?.subtotal.toFixed(2)}</span>
+                            <span>Sub Total:</span>
+                            <span>{currencySymbol}{orderStats?.subtotal.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between text-[13px] mb-1">
-                            <span>CGST@2.5%</span>
-                            <span>{currencySymbol}{orderStats?.cgst.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between text-[13px] mb-1">
-                            <span>SGST@2.5%</span>
-                            <span>{currencySymbol}{orderStats?.sgst.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between font-normal text-[13px] mb-1">
-                            <span>Total</span>
-                            <span>{currencySymbol}{orderStats?.totalRaw.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between text-[13px] mb-1">
-                            <span>Round Off</span>
-                            <span>{currencySymbol}{orderStats?.roundOff.toFixed(2)}</span>
+                            <span>Tax (5%):</span>
+                            <span>{currencySymbol}{(orderStats?.cgst + orderStats?.sgst).toFixed(2)}</span>
                         </div>
                         <div className="border-t border-dashed border-black my-4"></div>
                         <div className="flex justify-between font-normal text-lg mb-4">
@@ -585,12 +489,7 @@ const AdminSales = () => {
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [restaurant, setRestaurant] = useState(null);
 
-    // Expense Logic (moved here for global scope within component)
-    const monthlyExpense = restaurant?.monthlyExpense || restaurant?.restaurantDetails?.monthlyExpense || 0;
-    const dailyExpense = monthlyExpense / 30;
-
     // State for Date Filter
-    // defaulting to empty so it shows "All Time" data initially (per user request "not impact to data")
     const [dateRange, setDateRange] = useState({ start: '', end: '' });
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
@@ -598,10 +497,10 @@ const AdminSales = () => {
     const [paymentFilter, setPaymentFilter] = useState('All');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-    // State for Analytics Data (from statsAPI)
+    // State for Analytics Data
     const [analytics, setAnalytics] = useState({
-        summary: { totalRevenue: 0, totalOrders: 0, avgOrderValue: 0, rangeRevenue: 0, yearlyEBITDA: 0 },
-        charts: { hourlyAnalysis: [], revenueTrend: [] }
+        summary: { totalRevenue: 0, totalOrders: 0, avgOrderValue: 0, rangeRevenue: 0 },
+        charts: { revenueTrend: [] }
     });
 
     // Fetch Restaurant Details on Mount
@@ -617,97 +516,52 @@ const AdminSales = () => {
         fetchRestaurantDetails();
     }, []);
 
-    // Fetch Analytics Stats (for Cards and Charts)
-    const fetchAnalytics = async () => {
+    const fetchData = async () => {
         try {
             const params = {
                 startDate: dateRange.start || undefined,
                 endDate: dateRange.end || undefined
             };
-            const res = await statsAPI.getAdminStats(params);
-            setAnalytics(res.data);
+            const [resStats, resOrders] = await Promise.all([
+                statsAPI.getAdminStats(params),
+                orderAPI.getOrders({ ...params, limit: 1000, status: 'completed,ready,delivered' })
+            ]);
+            setAnalytics(resStats.data);
+            setOrders(resOrders.data || []);
         } catch (error) {
-            console.error("Error fetching analytics:", error);
-        }
-    };
-
-    // Fetch Orders List (for Table)
-    const fetchOrdersList = async () => {
-        setLoading(true);
-        try {
-            const params = {
-                limit: 1000,
-                status: 'completed,ready,delivered',
-                startDate: dateRange.start || undefined,
-                endDate: dateRange.end || undefined
-            };
-            const res = await orderAPI.getOrders(params);
-            setOrders(res.data || []);
-        } catch (error) {
-            console.error("Error fetching orders list:", error);
+            console.error("Error fetching data:", error);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchAnalytics();
-        fetchOrdersList();
+        fetchData();
     }, [dateRange.start, dateRange.end]);
 
-    // Socket.io Integration for Real-time Updates
+    // Socket.io Integration
     const socket = useSocket();
-
     useEffect(() => {
         if (!socket || !restaurant?.name) return;
-
-        // Join the restaurant room
         socket.emit('joinRestaurant', restaurant.name);
-
-        const handleOrderUpdate = (payload) => {
-            // Re-fetch all data on socket event to keep stats in sync
-            fetchAnalytics();
-            fetchOrdersList();
-        };
-
-        socket.on('orderUpdated', handleOrderUpdate);
-
+        socket.on('orderUpdated', fetchData);
         return () => {
-            socket.off('orderUpdated', handleOrderUpdate);
+            socket.off('orderUpdated', fetchData);
         };
-    }, [socket, restaurant, currencySymbol]);
+    }, [socket, restaurant]);
 
 
-    // 1. Filter Orders based on Date Range & Search
+    // Filter Orders based on Date Range & Search
     const filteredOrders = useMemo(() => {
         let filtered = orders;
 
-        // Date Filter
-        if (dateRange.start) {
-            const startDate = new Date(dateRange.start);
-            startDate.setHours(0, 0, 0, 0);
-            filtered = filtered.filter(o => {
-                const d = new Date(o.createdAt);
-                return d >= startDate;
-            });
-        }
-        if (dateRange.end) {
-            const endDate = new Date(dateRange.end);
-            endDate.setHours(23, 59, 59, 999);
-            filtered = filtered.filter(o => {
-                const d = new Date(o.createdAt);
-                return d <= endDate;
-            });
-        }
-
-        // Search Filter (Consolidated - Includes Table Number)
+        // Search Filter (No # in ID search)
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
             filtered = filtered.filter(o =>
                 (o.customerInfo?.name || '').toLowerCase().includes(query) ||
                 (o._id || '').toLowerCase().includes(query) ||
-                (o.dailySequence || '').toString().includes(query) ||
-                (o.tableNumber || '').toString().includes(query)
+                (o.dailySequence || '').toString().includes(query)
             );
         }
 
@@ -719,724 +573,428 @@ const AdminSales = () => {
         }
 
         return filtered;
-    }, [orders, dateRange, searchQuery, paymentFilter]);
+    }, [orders, searchQuery, paymentFilter]);
 
-    // 2. Stats Calculation based on Filtered Data
-    // 2. Stats for Cards (From Analytics)
+    // Stats Calculation
     const stats = useMemo(() => {
         const s = analytics.summary || {};
         const isFiltered = !!(dateRange.start || dateRange.end);
 
-        // Determine which revenue and order count to use
         const revenue = isFiltered ? (s.rangeRevenue || 0) : (s.totalRevenue || 0);
-        // Fallback to totalOrders if allTimeOrders isn't present
         const orders = isFiltered ? (s.totalOrders || 0) : (s.allTimeOrders || s.totalOrders || 0);
 
-        // Net Profit Logic: Revenue - Expenses
         const monthlyExpense = restaurant?.monthlyExpense || restaurant?.restaurantDetails?.monthlyExpense || 0;
         let totalExpense = 0;
 
         if (isFiltered && dateRange.start && dateRange.end) {
-            // Pro-rate for specific date range
             const start = new Date(dateRange.start);
             const end = new Date(dateRange.end);
             const diffDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1;
             totalExpense = (monthlyExpense / 30) * diffDays;
         } else {
-            // For All Time, count how many unique months have data
             const uniqueMonths = new Set(analytics.charts?.revenueTrend?.filter(t => t._id.length === 7).map(t => t._id));
-            const activeMonthCount = Math.max(uniqueMonths.size, 1);
-            totalExpense = monthlyExpense * activeMonthCount;
+            totalExpense = monthlyExpense * Math.max(uniqueMonths.size, 1);
         }
 
-        const netProfit = revenue - totalExpense;
-        const profitMargin = revenue > 0 ? ((netProfit / revenue) * 100).toFixed(1) : 0;
+        const tax = revenue * 0.05;
+        const netProfit = revenue - totalExpense - tax;
 
         return {
             revenue,
             orders,
             aov: s.avgOrderValue || 0,
-            netProfit: netProfit,
-            profitMargin: profitMargin
+            netProfit,
+            tax
         };
     }, [analytics, dateRange, restaurant]);
 
-    // 3. Graph Data Preparation (From Analytics)
+    // Graph Data
     const graphData = useMemo(() => {
         const trend = analytics.charts?.revenueTrend || [];
         const isFiltered = !!(dateRange.start || dateRange.end);
+        const monthlyEx = restaurant?.monthlyExpense || restaurant?.restaurantDetails?.monthlyExpense || 0;
+        const dailyEx = monthlyEx / 30;
 
-        // 1. All Time View (Fixed 12-Month Jan-Dec Axis)
         if (!isFiltered) {
             const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
             return months.map((monthName, index) => {
-                // Find all trend items where month matches current loop index (0-11)
-                // Backend returns "YYYY-MM", so we split and check the month part
                 const matches = trend.filter(item => {
-                    const parts = item._id.split('-'); // ["2026", "02"]
-                    if (parts.length < 2) return false;
-                    return parseInt(parts[1], 10) - 1 === index;
+                    const parts = item._id.split('-');
+                    return parts.length >= 2 && parseInt(parts[1], 10) - 1 === index;
                 });
-
-                const totalRev = matches.reduce((acc, curr) => acc + (curr.total || curr.sales || 0), 0);
-                const totalVol = matches.reduce((acc, curr) => acc + (curr.count || 0), 0);
-
-                // Expense Logic:
-                // If we found specific month data points (e.g. Feb 2025 and Feb 2026), subtract expense for each.
-                // If no data found (e.g. future month), subtract 1 unit of monthly expense to show fixed cost.
-                const expenseMultiplier = Math.max(matches.length, 1);
-                const totalPeriodExpense = monthlyExpense * expenseMultiplier;
-
+                const totalRev = matches.reduce((acc, curr) => acc + (curr.total || 0), 0);
+                const tax = totalRev * 0.05;
+                const expense = monthlyEx * Math.max(matches.length, 1);
                 return {
                     name: monthName,
                     totalRevenue: totalRev,
-                    netProfit: totalRev - totalPeriodExpense,
-                    volume: totalVol
+                    netProfit: totalRev - expense - tax,
+                    volume: matches.reduce((acc, curr) => acc + (curr.count || 0), 0)
                 };
             });
         }
 
-        // 2. Filtered View (Dynamic Daily/Hourly Axis)
-        if (trend.length === 0) return [];
-
         return trend.map(item => {
-            let label = item._id;
-            try {
-                // For YYYY-MM dates or YYYY-MM-DD, handle parsing safely
-                // If length is 7 (YYYY-MM), treat as month start
-                const dateStr = item._id.length === 7 ? `${item._id}-01` : item._id;
-                const d = new Date(dateStr);
-
-                // Format based on granularity
-                // If filtered by range, usually daily data
-                label = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
-            } catch (e) {
-                label = item._id;
-            }
-
-            const revenuePoint = item.sales || item.total || 0;
-
+            const revenuePoint = item.total || 0;
+            const tax = revenuePoint * 0.05;
             return {
-                name: label,
+                name: item._id,
                 totalRevenue: revenuePoint,
-                netProfit: revenuePoint - (isFiltered ? dailyExpense : monthlyExpense),
+                netProfit: revenuePoint - dailyEx - tax,
                 volume: item.count || 0
             };
         });
     }, [analytics, restaurant, dateRange]);
 
-    // 4. Table Display Data (Directly uses filteredOrders)
-    const tableData = filteredOrders;
-
     // Download PDF Handler
     const handleDownloadPDF = async () => {
         if (!dateRange.start || !dateRange.end) {
-            toast.error("Please select and apply a date range first to export the report.");
+            toast.error("Please select a date range first.");
             return;
         }
 
         const toastId = toast.loading('Generating PDF report...');
         try {
-            // Helper: Safe Currency Formatter for PDF
-            const formatCurrencyPDF = (amount) => {
-                const val = Number(amount) || 0;
-                return `${currencySymbol === '₹' ? 'Rs.' : currencySymbol} ${val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            };
+            const formatCurrencyPDF = (amount) => `Rs. ${(Number(amount) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+            const innerLoadImage = (url) => new Promise((resolve) => {
+                const img = new Image(); img.crossOrigin = 'Anonymous'; img.src = url;
+                img.onload = () => { try { const canvas = document.createElement('canvas'); canvas.width = img.width; canvas.height = img.height; canvas.getContext('2d').drawImage(img, 0, 0); resolve(canvas.toDataURL('image/png')); } catch (e) { resolve(null); } };
+                img.onerror = () => resolve(null);
+            });
 
-            // Moved loadImage helper to component scope for reuse
-            const innerLoadImage = (url) => {
-                return new Promise((resolve) => {
-                    const img = new Image();
-                    img.crossOrigin = 'Anonymous';
-                    img.src = url;
-                    img.onload = () => {
-                        try {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = img.width;
-                            canvas.height = img.height;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0);
-                            const dataUrl = canvas.toDataURL('image/png');
-                            resolve(dataUrl);
-                        } catch (e) {
-                            resolve(null);
-                        }
-                    };
-                    img.onerror = () => resolve(null);
-                });
-            };
+            const doc = new jsPDF();
+            const brandOrange = [253, 105, 65]; const textDark = [30, 30, 30]; const textGray = [100, 100, 100]; const bgLight = [249, 250, 251];
+            doc.setFillColor(...brandOrange); doc.rect(0, 0, 210, 4, 'F');
 
-            // Instantiate jsPDF
-            const jsPDFConstructor = jsPDF.default || jsPDF;
-            const doc = new jsPDFConstructor();
-
-            // Load Custom Font (Urbanist) - We'll use Helvetica as fallback, but set style to match "Urbanist" look
-            // Note: jsPDF default fonts are limited. To use actual Urbanist, we'd need to add the font file as base64.
-            // For now, we'll stick to standard sans-serif but style it closer to Urbanist with weights.
-            doc.setFont("helvetica");
-
-            // Layout Constants
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
-            const margin = 15;
-            let yPos = 15; // Reduced top margin
-
-            // Brand Colors
-            const brandOrange = [253, 105, 65];   // #FD6941
-            const textDark = [30, 30, 30];        // Nearly black
-            const textGray = [100, 100, 100];     // Gray
-            const bgLight = [249, 250, 251];      // Very light gray
-
-            // 1. Header Bar
-            doc.setFillColor(...brandOrange);
-            doc.rect(0, 0, pageWidth, 4, 'F'); // Thinner bar
-
-            yPos = 12; // Start content higher
-
-            // Restaurant Logo & Info
-            let logoImg = null;
-            const footerLogoImg = await innerLoadImage(EatGreetLogo);
-            const logoUrl = user?.restaurantDetails?.logo || restaurant?.logo || restaurant?.restaurantDetails?.logo || restaurant?.image;
-
-            if (logoUrl) {
-                logoImg = await innerLoadImage(logoUrl);
-            }
+            let yPos = 15;
+            const logoUrl = user?.restaurantDetails?.logo || restaurant?.logo || restaurant?.image;
+            const logoImg = logoUrl ? await innerLoadImage(logoUrl) : null;
+            const footerLogo = await innerLoadImage(EatGreetLogo);
 
             if (logoImg) {
                 const imgProps = doc.getImageProperties(logoImg);
-                const ratio = imgProps.width / imgProps.height;
-                const w = 24;
-                const h = w / ratio;
-                
-                // Calculate total width of brand block (Logo + Space + Name)
-                doc.setFontSize(22);
-                doc.setFont("helvetica", "bold");
-                const nameWidth = doc.getTextWidth(restaurant?.name || 'EatGreet Restaurant');
-                const totalWidth = w + 10 + nameWidth; // 10 is the medium space
-                const startX = (pageWidth - totalWidth) / 2;
-
-                doc.addImage(logoImg, 'PNG', startX, yPos, w, h);
-
-                doc.setTextColor(...textDark);
-                doc.text(restaurant?.name || 'EatGreet Restaurant', startX + w + 10, yPos + (h / 2) + 2);
-
-                doc.setFontSize(10);
-                doc.setFont("helvetica", "normal");
-                doc.setTextColor(...textGray);
-                yPos += h + 8;
-
-                if (restaurant?.address) {
-                    doc.text(restaurant.address, pageWidth / 2, yPos, { align: 'center' });
-                    yPos += 5;
-                }
-                const contactParts = [];
-                if (restaurant?.contactNumber) contactParts.push(`Tel: ${restaurant.contactNumber}`);
-                if (restaurant?.businessEmail) contactParts.push(`Email: ${restaurant.businessEmail}`);
-                if (contactParts.length > 0) {
-                    doc.text(contactParts.join(' | '), pageWidth / 2, yPos, { align: 'center' });
-                    yPos += 12;
-                }
+                const w = 24; const h = w / (imgProps.width / imgProps.height);
+                doc.addImage(logoImg, 'PNG', 15, yPos, w, h);
+                doc.setFont("helvetica", "bold").setFontSize(18).setTextColor(...textDark).text(restaurant?.name || 'Restaurant', 15 + w + 8, yPos + 6);
+                doc.setFontSize(9).setFont("helvetica", "normal").setTextColor(...textGray).text(restaurant?.address || user?.restaurantDetails?.address || '', 15 + w + 8, yPos + 11);
+                const contactInfo = `Tel: ${restaurant?.contactNumber || user?.restaurantDetails?.contactNumber || user?.phone || 'N/A'}  |  Email: ${restaurant?.businessEmail || restaurant?.email || user?.restaurantDetails?.businessEmail || user?.email || 'N/A'}`;
+                doc.text(contactInfo, 15 + w + 8, yPos + 16);
+                doc.text(`GST No: ${restaurant?.gstNumber || restaurant?.gstNo || user?.restaurantDetails?.gstNumber || 'N/A'}`, 15 + w + 8, yPos + 21);
+                yPos += Math.max(h + 10, 30);
             } else {
-                doc.setFontSize(22);
-                doc.setFont("helvetica", "bold");
-                doc.setTextColor(...textDark);
-                doc.text(restaurant?.name || 'EatGreet Restaurant', pageWidth / 2, yPos + 8, { align: 'center' });
+                doc.setFont("helvetica", "bold").setFontSize(22).setTextColor(...textDark).text(restaurant?.name || 'Restaurant', 15, yPos + 8);
                 yPos += 20;
             }
 
-            // Divider
-            doc.setDrawColor(230);
-            doc.setLineWidth(0.5);
-            doc.line(margin, yPos, pageWidth - margin, yPos);
-            yPos += 12; // Adjusted spacing
+            doc.setDrawColor(230).setLineWidth(0.5).line(15, yPos, 195, yPos); yPos += 12;
+            doc.setFontSize(18).setFont("helvetica", "bold").setTextColor(...textDark).text("Sales Performance Report", 15, yPos);
+            doc.setFontSize(9).setFont("helvetica", "normal").setTextColor(...textGray).text(`Report Date: ${new Date().toLocaleString()}`, 195, yPos, { align: 'right' });
+            const periodStr = `Period: ${dateRange.start} - ${dateRange.end || 'Today'}`;
+            doc.setFontSize(9).text(periodStr, 15, yPos + 6);
+            yPos += 18;
 
-            // 2. Report Title
-            doc.setFontSize(18);
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(...textDark);
-            doc.text("Sales Performance Report", margin, yPos);
-
-            // Meta Info
-            doc.setFontSize(9);
-            doc.setFont("helvetica", "normal");
-            doc.setTextColor(...textGray);
-            const generatedDate = new Date().toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
-            doc.text(`Report Date: ${generatedDate}`, pageWidth - margin, yPos, { align: 'right' });
-
-            yPos += 8;
-            doc.setFontSize(10);
-            const periodText = (dateRange.start || dateRange.end)
-                ? `${new Date(dateRange.start).toLocaleDateString()}  to  ${new Date(dateRange.end || new Date()).toLocaleDateString()}`
-                : "All Time History";
-            doc.text(`Period: ${periodText}`, margin, yPos);
-
-            yPos += 15; // Increased to fix overlap
-
-            // 3. Financial Summary (Calculated from Filtered Data)
-            // We calculate this on the fly to ensure it matches the selected date range perfectly
-            const pdfStats = Array.isArray(filteredOrders) ? filteredOrders.reduce((acc, order) => {
-                // Ensure we parse as float to avoid string concatenation if API returns strings
-                const orderTotal = Number(order.totalAmount) || 0;
-                return {
-                    revenue: acc.revenue + orderTotal,
-                    orders: acc.orders + 1
-                };
-            }, { revenue: 0, orders: 0 }) : { revenue: 0, orders: 0 };
-
-            let totalEx = 0;
-            if (dateRange.start && dateRange.end) {
-                const start = new Date(dateRange.start);
-                const end = new Date(dateRange.end);
-                const daysDiff = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
-                totalEx = dailyExpense * daysDiff;
-            } else {
-                totalEx = monthlyExpense; 
-            }
-
-            const pdfRevenue = pdfStats.revenue;
-            const pdfOrders = pdfStats.orders;
-            const pdfAov = pdfOrders > 0 ? (pdfRevenue / pdfOrders) : 0;
-            const pdfProfit = pdfRevenue - totalEx;
-
-            doc.setFontSize(12);
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(...textDark);
-            doc.text("Financial Overview", margin, yPos - 5);
+            // Financial Summary
+            const pdfStats = filteredOrders.reduce((acc, o) => ({ rev: acc.rev + (Number(o.totalAmount) || 0), count: acc.count + 1 }), { rev: 0, count: 0 });
+            const monthlyEx = restaurant?.monthlyExpense || restaurant?.restaurantDetails?.monthlyExpense || 0;
+            const days = Math.max(1, Math.ceil((new Date(dateRange.end) - new Date(dateRange.start)) / (1000 * 60 * 60 * 24)));
+            const totalExp = (monthlyEx / 30) * days;
+            const taxAmt = pdfStats.rev * 0.05;
+            const profit = pdfStats.rev - totalExp - taxAmt;
 
             const summaryData = [
-                [
-                    { content: 'TOTAL REVENUE', styles: { fontStyle: 'bold', textColor: textGray, fontSize: 8 } },
-                    { content: 'TOTAL EXPENSES', styles: { fontStyle: 'bold', textColor: textGray, fontSize: 8 } },
-                    { content: 'NET PROFIT', styles: { fontStyle: 'bold', textColor: textGray, fontSize: 8 } },
-                    { content: 'TOTAL ORDERS', styles: { fontStyle: 'bold', textColor: textGray, fontSize: 8 } },
-                    { content: 'AVG ORDER VALUE', styles: { fontStyle: 'bold', textColor: textGray, fontSize: 8 } },
-                ],
-                [
-                    { content: formatCurrencyPDF(pdfRevenue), styles: { fontSize: 13, fontStyle: 'bold', textColor: textDark } },
-                    { content: formatCurrencyPDF(totalEx), styles: { fontSize: 13, fontStyle: 'bold', textColor: [150, 0, 0] } },
-                    { content: formatCurrencyPDF(pdfProfit), styles: { fontSize: 13, fontStyle: 'bold', textColor: brandOrange } },
-                    { content: pdfOrders.toString(), styles: { fontSize: 13, fontStyle: 'bold', textColor: textDark } },
-                    { content: formatCurrencyPDF(pdfAov), styles: { fontSize: 13, fontStyle: 'bold', textColor: textDark } },
-                ]
+                ['TOTAL REVENUE', 'TOTAL EXPENSES', 'TOTAL TAX (5%)', 'NET PROFIT', 'TOTAL ORDERS', 'AVG VALUE'],
+                [formatCurrencyPDF(pdfStats.rev), formatCurrencyPDF(totalExp), formatCurrencyPDF(taxAmt), formatCurrencyPDF(profit), pdfStats.count.toString(), formatCurrencyPDF(pdfStats.count > 0 ? pdfStats.rev / pdfStats.count : 0)]
             ];
 
             autoTable(doc, {
-                startY: yPos,
-                body: summaryData,
-                theme: 'plain',
-                styles: {
-                    cellPadding: 4,
-                    halign: 'center',
-                    font: "helvetica"
-                },
-                columnStyles: {
-                    0: { cellWidth: (pageWidth - margin * 2) / 5 },
-                    1: { cellWidth: (pageWidth - margin * 2) / 5 },
-                    2: { cellWidth: (pageWidth - margin * 2) / 5 },
-                    3: { cellWidth: (pageWidth - margin * 2) / 5 },
-                    4: { cellWidth: (pageWidth - margin * 2) / 5 }
-                },
-                margin: { left: margin, right: margin },
-                didParseCell: function (data) {
-                    // Background for the whole "card" area
-                    data.cell.styles.fillColor = bgLight;
-                }
+                startY: yPos, body: summaryData, theme: 'plain', styles: { halign: 'center', cellPadding: 4, font: "helvetica", fontSize: 8 },
+                didParseCell: (d) => { d.cell.styles.fillColor = bgLight; if (d.row.index === 1) d.cell.styles.fontSize = 12; if (d.row.index === 1 && d.column.index === 3) d.cell.styles.textColor = brandOrange; }
             });
 
             yPos = doc.lastAutoTable.finalY + 10;
+            doc.setFontSize(12).setFont("helvetica", "bold").setTextColor(...textDark).text("Transaction History", 15, yPos); yPos += 8;
 
-            // 4. Detailed Transactions
-            doc.setFontSize(12);
-            doc.setFont("helvetica", "bold");
-            doc.setTextColor(...textDark);
-            doc.text("Transaction History", margin, yPos);
-            yPos += 8;
-
-            const tableColumn = ["Date", "Time", "Order ID", "Customer", "Pay Mode", "Items", "Total"];
-
-            const tableRows = tableData.map(order => [
-                new Date(order.createdAt).toLocaleDateString(),
-                new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                order.dailySequence ? String(order.dailySequence).padStart(3, '0') : order._id.slice(-6),
-                order.customerInfo?.name || 'Guest',
-                order.paymentMethod || 'Cash',
-                order.items?.length || 0,
-                formatCurrencyPDF(order.totalAmount || 0)
+            const tableColumn = ["Date", "Time", "Order ID", "Customer", "Pay Mode", "Items", "Tax (5%)", "Total"];
+            const tableRows = filteredOrders.map(o => [
+                new Date(o.createdAt).toLocaleDateString(),
+                new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                formatOrderDisplayId(o),
+                o.customerInfo?.name || 'Guest',
+                o.paymentMethod || 'Cash',
+                o.items?.length || 0,
+                formatCurrencyPDF((o.totalAmount || 0) * 0.05),
+                formatCurrencyPDF(o.totalAmount || 0)
             ]);
 
             autoTable(doc, {
-                startY: yPos,
-                head: [tableColumn],
-                body: tableRows,
-                theme: 'grid',
-                headStyles: {
-                    fillColor: bgLight,
-                    textColor: textGray,
-                    fontStyle: 'bold',
-                    lineWidth: 0,
-                    fontSize: 9,
-                    halign: 'center',
-                    cellPadding: 3
-                },
-                styles: {
-                    fontSize: 9,
-                    cellPadding: 3,
-                    textColor: textDark,
-                    lineColor: [230, 230, 230],
-                    lineWidth: 0.1,
-                    font: "helvetica",
-                    valign: 'middle',
-                    halign: 'center'
-                },
-                alternateRowStyles: {
-                    fillColor: [255, 255, 255]
-                },
-                columnStyles: {
-                    0: { cellWidth: 25 },
-                    1: { cellWidth: 20 },
-                    2: { cellWidth: 25, fontStyle: 'bold' },
-                    6: { fontStyle: 'bold' }
-                },
-                margin: { left: margin, right: margin, bottom: 25 }
+                startY: yPos, head: [tableColumn], body: tableRows, theme: 'grid', styles: { fontSize: 8, halign: 'center', font: "helvetica" },
+                headStyles: { fillColor: bgLight, textColor: textGray, fontStyle: 'bold' },
+                margin: { bottom: 25 }
             });
 
-            // Footer
-            const totalPages = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= totalPages; i++) {
+            const pages = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pages; i++) {
                 doc.setPage(i);
-                doc.setFontSize(8);
-                doc.setTextColor(150);
-                doc.text(`Page ${i} of ${totalPages}`, pageWidth - margin, pageHeight - 10, { align: 'right' });
-                if (footerLogoImg) {
-                    const props = doc.getImageProperties(footerLogoImg);
-                    const fw = 20;
-                    const fh = (props.height / props.width) * fw;
-                    doc.addImage(footerLogoImg, 'PNG', margin, pageHeight - 15, fw, fh);
-                } else {
-                    doc.text("EatGreet", margin, pageHeight - 10);
+                doc.setFontSize(8).setTextColor(150).text(`Page ${i} of ${pages}`, 195, 287, { align: 'right' });
+
+                if (footerLogo) {
+                    doc.setFontSize(7).setFont("helvetica", "bold").setTextColor(200).text("POWERED BY", 15, 285);
+                    doc.addImage(footerLogo, 'PNG', 34, 281.5, 18, 4.5);
                 }
             }
 
-            const fileName = `Sales_${periodText.replace(/\s+/g, '_').replace(/[:\/,]/g, '')}.pdf`;
-            doc.save(fileName);
-            toast.success('Report downloaded successfully', { id: toastId });
-
+            doc.save(`Sales_Report.pdf`);
+            toast.success('Report downloaded', { id: toastId });
         } catch (error) {
-            console.error("PDF Generation Error:", error);
-            toast.error(`Failed to generate PDF: ${error.message}`, { id: toastId });
+            console.error(error); toast.error('Failed to generate PDF', { id: toastId });
         }
     };
 
     // Download Excel Handler
     const handleDownloadExcel = async () => {
         if (!dateRange.start || !dateRange.end) {
-            toast.error("Please select and apply a date range first to export the report.");
+            toast.error("Please select a date range first.");
             return;
         }
 
-        const toastId = toast.loading('Generating branded Excel report...');
+        const toastId = toast.loading('Generating Excel report...');
         try {
-            // Helper to load image for ExcelJS
-            const excelLoadImage = (url) => {
-                return new Promise((resolve) => {
-                    const img = new Image();
-                    img.crossOrigin = 'Anonymous';
-                    img.src = url;
-                    img.onload = () => {
-                        try {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = img.width;
-                            canvas.height = img.height;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0);
-                            resolve(canvas.toDataURL('image/png').split(',')[1]); // Base64 without header
-                        } catch (e) { resolve(null); }
-                    };
-                    img.onerror = () => resolve(null);
-                });
-            };
+            const excelLoadImage = (url) => new Promise((resolve) => {
+                const img = new Image(); img.crossOrigin = 'Anonymous'; img.src = url;
+                img.onload = () => { try { const canvas = document.createElement('canvas'); canvas.width = img.width; canvas.height = img.height; canvas.getContext('2d').drawImage(img, 0, 0); resolve(canvas.toDataURL('image/png').split(',')[1]); } catch (e) { resolve(null); } };
+                img.onerror = () => resolve(null);
+            });
 
             const ExcelJS = await import('exceljs');
             const workbook = new ExcelJS.Workbook();
             const worksheet = workbook.addWorksheet('Sales Report');
 
-            // 1. Load Images
-            const restaurantLogoBase64 = await excelLoadImage(user?.restaurantDetails?.logo || restaurant?.logo || restaurant?.restaurantDetails?.logo || restaurant?.image);
-            const eatGreetLogoBase64 = await excelLoadImage(EatGreetLogo);
+            const resLogo = await excelLoadImage(user?.restaurantDetails?.logo || restaurant?.logo || restaurant?.image);
+            const egLogo = await excelLoadImage(EatGreetLogo);
 
-            // 2. Calculate Stats (Same logic as PDF)
-            const pdfStats = Array.isArray(filteredOrders) ? filteredOrders.reduce((acc, order) => {
-                const orderTotal = Number(order.totalAmount) || 0;
-                return {
-                    revenue: acc.revenue + orderTotal,
-                    orders: acc.orders + 1
-                };
-            }, { revenue: 0, orders: 0 }) : { revenue: 0, orders: 0 };
+            const brandOrange = 'FD6941'; const textDark = '1E1E1E'; const textGray = '646464'; const bgLight = 'FFFFFF';
 
-            let totalExpensesExcel = 0;
-            if (dateRange.start && dateRange.end) {
-                const start = new Date(dateRange.start);
-                const end = new Date(dateRange.end);
-                const diffDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
-                totalExpensesExcel = dailyExpense * diffDays;
-            } else {
-                totalExpensesExcel = monthlyExpense;
-            }
-            const pdfProfit = pdfStats.revenue - totalExpensesExcel;
-            const pdfAov = pdfStats.orders > 0 ? (pdfStats.revenue / pdfStats.orders) : 0;
+            worksheet.views = [{ showGridLines: false }];
 
-            // 3. Setup Columns & Styling Constants
-            const brandOrange = 'FD6941';
-            const textDark = '1E1E1E';
-            const textGray = '646464';
-            const bgLight = 'F9FAFB';
-
-            // Define columns with a balanced buffer A column to push content to the middle
             worksheet.columns = [
-                { key: 'spacer', width: 15 },    // A
-                { key: 'date', width: 22 },      // B
-                { key: 'time', width: 22 },      // C
-                { key: 'orderId', width: 22 },   // D
-                { key: 'customer', width: 28 },  // E
-                { key: 'payMode', width: 22 },   // F
-                { key: 'items', width: 22 },     // G
-                { key: 'total', width: 25 },     // H
-                { key: 'extra', width: 5 }       // I
+                { key: 'spacer', width: 4 },    // A (Margin)
+                { key: 'date', width: 18 },      // B
+                { key: 'time', width: 18 },      // C
+                { key: 'orderId', width: 18 },   // D
+                { key: 'customer', width: 32 },  // E
+                { key: 'payMode', width: 18 },   // F
+                { key: 'items', width: 15 },     // G
+                { key: 'tax', width: 22 },       // H
+                { key: 'total', width: 22 }      // I
             ];
 
-            // Row 2: Logo + Name Header (Aligned beside each other in Middle POV)
-            const headerRow = worksheet.addRow(['', '', '']);
-            headerRow.height = 70;
-            worksheet.mergeCells('B2:H2'); // Merge to center the whole block
+            // Row 1: Brand Top Border
+            worksheet.addRow([]);
+            worksheet.mergeCells('B1:I1');
+            worksheet.getCell('B1').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: brandOrange } };
 
-            if (restaurantLogoBase64) {
-                const logoId = workbook.addImage({ base64: restaurantLogoBase64, extension: 'png' });
-                // Calculate positioning to be slightly left of center
+            // Row 2: Premium Header (Logo + Name)
+            const headerRow = worksheet.addRow(['', '']);
+            headerRow.height = 95;
+            worksheet.mergeCells('B2:I2');
+            const headerCell = worksheet.getCell('B2');
+            headerCell.value = (restaurant?.name || 'Restaurant').toUpperCase();
+            headerCell.font = { size: 36, bold: true, color: { argb: textDark } };
+            headerCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+            // Premium Logo Positioning
+            if (resLogo) {
+                const logoId = workbook.addImage({ base64: resLogo, extension: 'png' });
+                // Position to the left of the centered name
                 worksheet.addImage(logoId, {
-                    tl: { col: 3.2, row: 1.1 }, 
-                    ext: { width: 65, height: 65 },
-                    editAs: 'oneCell'
+                    tl: { col: 3.5, row: 1.15 },
+                    ext: { width: 90, height: 90 }
                 });
             }
-
-            const headerCell = worksheet.getCell('B2');
-            // Using spaces as a manual buffer to push name beside logo range
-            headerCell.value = "          " + (restaurant?.name || 'EatGreet Restaurant');
-            headerCell.font = { size: 30, bold: true, color: { argb: textDark } };
-            headerCell.alignment = { vertical: 'middle', horizontal: 'center' };
 
             // Row 3: Address
-            const address = restaurant?.address || restaurant?.restaurantDetails?.address || 'Restaurant Address';
-            const addressRow = worksheet.addRow(['', address]);
-            worksheet.mergeCells('B3:H3');
-            const addressCell = worksheet.getCell('B3');
-            addressCell.font = { size: 12, color: { argb: textGray } };
-            addressCell.alignment = { vertical: 'middle', horizontal: 'center' };
-            addressRow.height = 25;
+            const addrRow = worksheet.addRow(['', restaurant?.address || user?.restaurantDetails?.address || 'Restaurant Address']);
+            worksheet.mergeCells('B3:I3');
+            const ac = worksheet.getCell('B3');
+            ac.font = { size: 11, color: { argb: textGray }, italic: true };
+            ac.alignment = { horizontal: 'center', vertical: 'top' };
+            addrRow.height = 20;
 
-            // Row 4: Contact Details
-            const contactParts = [];
-            const tel = restaurant?.contactNumber || restaurant?.restaurantDetails?.contactNumber;
-            const email = restaurant?.businessEmail || restaurant?.restaurantDetails?.businessEmail;
-            const gst = restaurant?.gstNumber || restaurant?.restaurantDetails?.gstNumber;
+            // Row 4: Contact info (Tel, Email, GST)
+            const contactText = `Tel: ${restaurant?.contactNumber || user?.restaurantDetails?.contactNumber || user?.phone || 'N/A'}   |   Email: ${restaurant?.businessEmail || restaurant?.email || user?.restaurantDetails?.businessEmail || user?.email || 'N/A'}   |   GST No: ${restaurant?.gstNumber || restaurant?.gstNo || user?.restaurantDetails?.gstNumber || 'N/A'}`;
+            const contactRow = worksheet.addRow(['', contactText]);
+            worksheet.mergeCells('B4:I4');
+            const cc = worksheet.getCell('B4');
+            cc.font = { size: 10, color: { argb: textGray } };
+            cc.alignment = { horizontal: 'center', vertical: 'middle' };
+            contactRow.height = 20;
 
-            if (tel) contactParts.push(`Tel: ${tel}`);
-            if (email) contactParts.push(`Email: ${email}`);
-            if (gst) contactParts.push(`GST: ${gst}`);
+            const s5 = worksheet.addRow([]); // Row 5 Spacer
+            for (let i = 2; i <= 9; i++) s5.getCell(i).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgLight } };
 
-            const contactRow = worksheet.addRow(['', contactParts.join('   |   ')]);
-            worksheet.mergeCells('B4:H4');
-            const contactCell = worksheet.getCell('B4');
-            contactCell.font = { size: 11, color: { argb: textGray } };
-            contactCell.alignment = { vertical: 'middle', horizontal: 'center' };
-            contactRow.height = 25;
+            // Row 6: Report Title
+            const reportTitleRow = worksheet.addRow(['', 'SALES PERFORMANCE REPORT']);
+            worksheet.mergeCells('B6:I6');
+            const rtCell = worksheet.getCell('B6');
+            rtCell.font = { size: 24, bold: true, color: { argb: textDark } };
+            rtCell.alignment = { horizontal: 'center' };
+            reportTitleRow.height = 35;
 
-            worksheet.addRow([]); // Spacer Row 5
+            // Row 7: Report Metadata (Generated Time & Period)
+            const periodText = `Period: ${dateRange.start} - ${dateRange.end || 'Today'}`;
+            const generatedText = `Generated: ${new Date().toLocaleString()}`;
+            const metaRow = worksheet.addRow(['', `${generatedText}   |   ${periodText}`]);
+            worksheet.mergeCells('B7:I7');
+            const mc = worksheet.getCell('B7');
+            mc.font = { size: 10, color: { argb: textGray } };
+            mc.alignment = { horizontal: 'center' };
+            metaRow.height = 20;
 
+            const s8 = worksheet.addRow([]); // Row 8 Spacer
+            for (let i = 2; i <= 9; i++) s8.getCell(i).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgLight } };
 
-            worksheet.addRow([]); // Spacer Row 5
+            // Row 9: Financial Overview Header Block
+            const overviewTitleRow = worksheet.addRow(['', 'FINANCIAL OVERVIEW']);
+            worksheet.mergeCells('B9:I9');
+            const otCell = worksheet.getCell('B9');
+            otCell.font = { size: 14, bold: true, color: { argb: textDark } };
+            otCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'F2F2F2' } };
+            otCell.alignment = { horizontal: 'center', vertical: 'middle' };
+            overviewTitleRow.height = 30;
 
-            // Row 6: Report Title (Centered across B:H)
-            const reportSubtitle = worksheet.addRow(['', 'Sales Performance Report']);
-            worksheet.mergeCells('B6:H6');
-            const subtitleCell = worksheet.getCell('B6');
-            subtitleCell.font = { size: 22, bold: true, color: { argb: textDark } };
-            subtitleCell.alignment = { vertical: 'middle', horizontal: 'center' };
-            reportSubtitle.height = 40;
+            const pdfStatsValue = filteredOrders.reduce((acc, o) => ({ rev: acc.rev + (Number(o.totalAmount) || 0), count: acc.count + 1 }), { rev: 0, count: 0 });
+            const monthlyExVal = restaurant?.monthlyExpense || restaurant?.restaurantDetails?.monthlyExpense || 0;
+            const daysCountVal = Math.max(1, Math.ceil((new Date(dateRange.end) - new Date(dateRange.start)) / (1000 * 60 * 60 * 24)));
+            const totalExpValue = (monthlyExVal / 30) * daysCountVal;
+            const taxAmtVal = pdfStatsValue.rev * 0.05;
+            const netProfitVal = pdfStatsValue.rev - totalExpValue - taxAmtVal;
 
-            // Row 7: Report Date & Period (Centered across B:H)
-            const periodText = (dateRange.start || dateRange.end) ?
-                `${new Date(dateRange.start).toLocaleDateString()} - ${new Date(dateRange.end || new Date()).toLocaleDateString()}` : "All Time History";
-            const metaInfo = worksheet.addRow(['', `Generated: ${new Date().toLocaleString()}   |   Period: ${periodText}`]);
-            worksheet.mergeCells('B7:H7');
-            const metaCell = worksheet.getCell('B7');
-            metaCell.font = { size: 11, italic: true, color: { argb: textGray } };
-            metaCell.alignment = { vertical: 'middle', horizontal: 'center' };
-            metaInfo.height = 30;
+            // Metric Rows - Layout: [Rev (B:C)] [Exp (D)] [Tax (E)] [Profit (F)] [Orders (G:H)] [AOV (I)]
+            const statsLRow = worksheet.addRow(['', 'TOTAL REVENUE', '', 'EXPENSES', 'TAX (5%)', 'NET PROFIT', 'TOTAL ORDERS', '', 'AVG VALUE']);
+            statsLRow.height = 25;
+            worksheet.mergeCells('B10:C10');
+            worksheet.mergeCells('G10:H10');
 
-            worksheet.addRow([]); // Spacer Row 8
+            const statsVRow = worksheet.addRow(['', pdfStatsValue.rev, '', totalExpValue, taxAmtVal, netProfitVal, pdfStatsValue.count, '', pdfStatsValue.count > 0 ? pdfStatsValue.rev / pdfStatsValue.count : 0]);
+            statsVRow.height = 50;
+            worksheet.mergeCells('B11:C11');
+            worksheet.mergeCells('G11:H11');
 
-            // 4. Financial Overview Section (Truly Centered across B:H)
-            const overviewHeader = worksheet.addRow(['', 'FINANCIAL OVERVIEW']);
-            worksheet.mergeCells(`B${overviewHeader.number}:H${overviewHeader.number}`);
-            const oHeaderCell = worksheet.getCell(`B${overviewHeader.number}`);
-            oHeaderCell.font = { size: 14, bold: true, color: { argb: textDark } };
-            oHeaderCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgLight } };
-            oHeaderCell.alignment = { horizontal: 'center', vertical: 'middle' };
-            oHeaderCell.border = { 
-                top: { style: 'medium', color: { argb: 'E5E7EB' } },
-                bottom: { style: 'thin', color: { argb: 'E5E7EB' } } 
-            };
-            overviewHeader.height = 40;
-
-            // Centered stats across C:G (5 wide boxes)
-            const statsLabels = worksheet.addRow(['', '', 'TOTAL REVENUE', 'TOTAL EXPENSES', 'NET PROFIT', 'TOTAL ORDERS', 'AVG ORDER VALUE']);
-            statsLabels.font = { size: 11, bold: true, color: { argb: textGray } };
-            statsLabels.alignment = { horizontal: 'center', vertical: 'middle' };
-            statsLabels.height = 30;
-
-            const statsValues = worksheet.addRow(['', '', pdfStats.revenue, totalExpensesExcel, pdfProfit, pdfStats.orders, pdfAov]);
-            statsValues.height = 60;
-
-            // Apply distinct box styling and force center alignment
-            [3, 4, 5, 6, 7].forEach(colIndex => {
-                const headCell = statsLabels.getCell(colIndex);
-                const valCell = statsValues.getCell(colIndex);
-                
-                [headCell, valCell].forEach(cell => {
-                    cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
-                    cell.border = {
-                        top: { style: 'thin', color: { argb: 'E5E7EB' } },
-                        left: { style: 'thin', color: { argb: 'E5E7EB' } },
-                        right: { style: 'thin', color: { argb: 'E5E7EB' } },
-                        bottom: { style: 'thin', color: { argb: 'E5E7EB' } }
-                    };
+            // Apply Styles to Stats Block
+            [statsLRow, statsVRow].forEach(row => {
+                row.eachCell((cell, i) => {
+                    if (i > 1) {
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgLight } };
+                        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                        cell.border = { top: { style: 'none' }, left: { style: 'none' }, bottom: { style: 'none' }, right: { style: 'none' } };
+                    }
                 });
             });
 
-            statsValues.getCell(3).font = { color: { argb: textDark }, size: 18, bold: true };
-            statsValues.getCell(4).font = { color: { argb: '960000' }, size: 18, bold: true }; 
-            statsValues.getCell(5).font = { color: { argb: brandOrange }, size: 18, bold: true };
-            statsValues.getCell(6).font = { size: 18, bold: true };
-            statsValues.getCell(7).font = { size: 18, bold: true };
-
-            // Format Currency
-            [3, 4, 5, 7].forEach(col => {
-                statsValues.getCell(col).numFmt = `${currencySymbol === '₹' ? '₹' : '"' + currencySymbol + '"'}#,##0.00`;
+            // Specific Formatting for Values
+            // B(2), D(4), E(5), F(6), G(7), I(9)
+            [2, 4, 5, 6, 7, 9].forEach(colIndex => {
+                const cell = statsVRow.getCell(colIndex);
+                cell.font = { size: 16, bold: true, color: { argb: textDark } };
+                if (colIndex !== 7) {
+                    cell.numFmt = `"₹"#,##0.00`;
+                }
+                if (colIndex === 6) cell.font.color = { argb: brandOrange };
             });
 
-            worksheet.addRow([]); // Spacer
+            const spacer1 = worksheet.addRow([]);
+            const spacer2 = worksheet.addRow([]);
+            [spacer1, spacer2].forEach(row => {
+                for (let i = 2; i <= 9; i++) {
+                    row.getCell(i).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgLight } };
+                    row.getCell(i).border = { top: { style: 'none' }, left: { style: 'none' }, bottom: { style: 'none' }, right: { style: 'none' } };
+                }
+            });
 
-            // 5. Transaction History Section
-            const transHeader = worksheet.addRow(['', 'TRANSACTION HISTORY']);
-            worksheet.mergeCells(`B${transHeader.number}:H${transHeader.number}`);
-            const tHeaderCell = worksheet.getCell(`B${transHeader.number}`);
-            tHeaderCell.font = { size: 14, bold: true, color: { argb: textDark } };
-            tHeaderCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: bgLight } };
-            tHeaderCell.alignment = { horizontal: 'center', vertical: 'middle' };
-            transHeader.height = 35;
+            // Transaction History Title Row
+            const historyTitleRow = worksheet.addRow(['', 'TRANSACTION HISTORY']);
+            worksheet.mergeCells(`B${historyTitleRow.number}:I${historyTitleRow.number}`);
+            const htCell = worksheet.getCell(`B${historyTitleRow.number}`);
+            htCell.font = { size: 14, bold: true, color: { argb: textDark } };
+            htCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'F2F2F2' } };
+            htCell.alignment = { horizontal: 'center', vertical: 'middle' };
+            historyTitleRow.height = 30;
 
-            const tableHeaderRow = worksheet.addRow(['', 'Date', 'Time', 'Order ID', 'Customer', 'Pay Mode', 'Items', 'Total']);
-            tableHeaderRow.eachCell((cell, colNumber) => {
-                if (colNumber > 1) {
-                    cell.font = { bold: true, color: { argb: 'FFFFFF' }, size: 12 };
+            // Table Header
+            const tableH = worksheet.addRow(['', 'DATE', 'TIME', 'ORDER ID', 'CUSTOMER', 'PAY MODE', 'ITEMS', 'TAX (5%)', 'TOTAL']);
+            tableH.height = 35;
+            tableH.eachCell((cell, i) => {
+                if (i > 1) {
+                    cell.font = { bold: true, color: { argb: 'FFFFFF' }, size: 11 };
                     cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: brandOrange } };
                     cell.alignment = { horizontal: 'center', vertical: 'middle' };
-                    cell.border = {
-                        top: { style: 'thin', color: { argb: 'FFFFFF' } },
-                        bottom: { style: 'thin', color: { argb: 'E5E7EB' } }
-                    };
+                    cell.border = { top: { style: 'none' }, left: { style: 'none' }, bottom: { style: 'none' }, right: { style: 'none' } };
                 }
             });
-            tableHeaderRow.height = 40;
 
-            // 6. Add Data Rows
-            filteredOrders.forEach(order => {
+            // Data Rows
+            filteredOrders.forEach((o, index) => {
                 const row = worksheet.addRow([
                     '',
-                    new Date(order.createdAt).toLocaleDateString(),
-                    new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                    order.dailySequence ? String(order.dailySequence).padStart(3, '0') : (order._id || '').slice(-6).toUpperCase(),
-                    order.customerInfo?.name || 'Guest',
-                    order.paymentMethod || 'Cash',
-                    order.items?.length || 0,
-                    Number(order.totalAmount) || 0
+                    new Date(o.createdAt).toLocaleDateString(),
+                    new Date(o.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                    formatOrderDisplayId(o),
+                    o.customerInfo?.name || 'Guest',
+                    o.paymentMethod || 'Cash',
+                    o.items?.length || 0,
+                    (o.totalAmount || 0) * 0.05,
+                    o.totalAmount || 0
                 ]);
-                row.height = 30;
-
-                // Explicitly center all cells in the row starting from col 2
-                row.eachCell((cell, colNumber) => {
-                    if (colNumber > 1) {
-                        cell.alignment = { vertical: 'middle', horizontal: 'center' };
-                        if (colNumber === 8) {
-                            cell.numFmt = `${currencySymbol === '₹' ? '₹' : '"' + currencySymbol + '"'}#,##0.00`;
-                        }
-                        if (colNumber === 4) {
-                            cell.font = { bold: true };
-                        }
+                row.height = 25;
+                const rowFill = index % 2 === 0 ? 'FFFFFF' : 'F2F2F2';
+                row.eachCell((cell, i) => {
+                    if (i > 1) {
+                        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                        cell.font = { size: 10, color: { argb: textDark } };
+                        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: rowFill } };
+                        cell.border = { top: { style: 'none' }, left: { style: 'none' }, bottom: { style: 'none' }, right: { style: 'none' } };
+                        if (i === 8 || i === 9) cell.numFmt = `"₹"#,##0.00`;
                     }
                 });
             });
 
-            // Alternate Row Styling
-            worksheet.eachRow((row, rowNumber) => {
-                if (rowNumber > tableHeaderRow.number) {
-                    if (rowNumber % 2 === 0) {
-                        row.eachCell((cell, colNumber) => {
-                            if (colNumber > 1) {
-                                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'F9FAFB' } };
-                            }
-                        });
-                    }
-                }
-            });
+            // Footer Section: Powered By
+            worksheet.addRow([]); worksheet.addRow([]); // Spacer rows
+            const footerRow = worksheet.addRow(['', 'POWERED BY   ']);
+            worksheet.mergeCells(`B${footerRow.number}:I${footerRow.number}`);
+            const footCell = worksheet.getCell(`B${footerRow.number}`);
+            footCell.font = { size: 10, bold: true, color: { argb: textGray } };
+            footCell.alignment = { horizontal: 'center', vertical: 'middle' };
+            footerRow.height = 40;
 
-            // 7. Footer Branding (Powered by EatGreet)
-            worksheet.addRow([]); // Minimal spacer
-
-            const footerRow = worksheet.addRow(['', '', '', 'Powered by', '']);
-            footerRow.height = 60;
-
-            // Apply background and borders to the whole footer area (B:H)
-            ['B', 'C', 'D', 'E', 'F', 'G', 'H'].forEach(col => {
-                const cell = footerRow.getCell(col);
-                cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF5F3' } };
-                cell.border = {
-                    top: { style: 'thin', color: { argb: 'FEDFD7' } },
-                    bottom: { style: 'thin', color: { argb: 'FEDFD7' } }
-                };
-            });
-
-            // Style the "Powered by" text to sit left of center
-            const pByCell = footerRow.getCell(4); // Column D
-            pByCell.font = { size: 12, italic: true, color: { argb: textGray } };
-            pByCell.alignment = { horizontal: 'right', vertical: 'middle' };
-
-            if (eatGreetLogoBase64) {
-                const eatGreetLogoId = workbook.addImage({ base64: eatGreetLogoBase64, extension: 'png' });
-                // Place logo starting from Column E (index 4.1 in 0-indexed terms but col 5 in 1-indexed)
-                // tl.col: 4 means Column E
-                worksheet.addImage(eatGreetLogoId, {
-                    tl: { col: 4.1, row: footerRow.number - 0.9 },
-                    ext: { width: 140, height: 45 },
-                    editAs: 'oneCell'
+            if (egLogo) {
+                const egLogoId = workbook.addImage({ base64: egLogo, extension: 'png' });
+                worksheet.addImage(egLogoId, {
+                    tl: { col: 5.1, row: footerRow.number - 1 + 0.15 },
+                    ext: { width: 100, height: 30 }
                 });
             }
-            const buffer = await workbook.xlsx.writeBuffer();
-            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            const url = window.URL.createObjectURL(blob);
-            const anchor = document.createElement('a');
-            anchor.href = url;
-            const safeFileName = `Sales_${periodText.replace(/\s+/g, '_').replace(/[:\/,]/g, '')}.xlsx`;
-            anchor.download = safeFileName;
-            anchor.click();
-            window.URL.revokeObjectURL(url);
 
-            toast.success('Branded Excel report downloaded', { id: toastId });
+            // Ensure white background for footer area
+            for (let r = footerRow.number - 2; r <= footerRow.number + 3; r++) {
+                const row = worksheet.getRow(r);
+                for (let c = 2; c <= 9; c++) {
+                    const cell = row.getCell(c);
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFF' } };
+                    cell.border = { top: { style: 'none' }, left: { style: 'none' }, bottom: { style: 'none' }, right: { style: 'none' } };
+                }
+            }
+
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/octet-stream' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Sales_Report_${dateRange.start}.xlsx`;
+            a.click();
+            toast.success('Excel report downloaded', { id: toastId });
         } catch (error) {
-            console.error(error);
-            toast.error('Failed to generate branded Excel', { id: toastId });
+            console.error(error); toast.error('Failed to generate Excel', { id: toastId });
         }
     };
 
@@ -1445,386 +1003,141 @@ const AdminSales = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-[20px] sm:text-[24px] lg:text-[30px] font-normal text-black tracking-tight leading-none">Sales Dashboard</h1>
+                    <h1 className="text-[20px] sm:text-[24px] lg:text-[28px] font-normal text-black tracking-tight leading-none">Sales Dashboard</h1>
                     <p className="text-[12px] sm:text-[18px] text-gray-400 font-normal">Financial Overview & Analytics</p>
                 </div>
-                <div className="flex flex-row items-center justify-end gap-1.5 sm:gap-2 w-full md:w-auto overflow-x-auto no-scrollbar pb-1">
-                    <div className="flex items-center flex-1 sm:flex-none shrink-0">
-                        <button
-                            onClick={() => setIsDatePickerOpen(true)}
-                            className="w-full sm:w-auto h-9 sm:h-12 bg-white border border-gray-100 text-gray-700 text-[10px] sm:text-[13px] rounded-full px-4 sm:px-6 outline-none shadow-sm transition-all hover:border-gray-300 flex items-center gap-2 font-normal justify-between sm:justify-start"
-                        >
-                            <div className="flex items-center gap-2">
-                                <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 shrink-0" />
-                                {dateRange.start ? (
-                                    <span>
-                                        {new Date(dateRange.start).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                                        <span className="mx-1 text-gray-300">-</span>
-                                        {dateRange.end ? new Date(dateRange.end).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : 'Today'}
-                                    </span>
-                                ) : (
-                                    <span className="text-gray-400">Select Date Range</span>
-                                )}
-                            </div>
-                            <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 ml-1 shrink-0" />
-                        </button>
-                    </div>
-
-                    {/* Render DatePicker conditionally outside the button but relative to it if needed, or just as a modal */}
-                    {isDatePickerOpen && (
-                        <DateRangePicker
-                            range={dateRange}
-                            onChange={(newRange) => {
-                                setDateRange(newRange);
-                            }}
-                            onClose={() => setIsDatePickerOpen(false)}
-                        />
-                    )}
+                <div className="flex flex-row items-center justify-end gap-2 w-full md:w-auto py-2">
+                    <button
+                        onClick={() => setIsDatePickerOpen(true)}
+                        className="w-full sm:w-auto h-10 sm:h-12 bg-white border border-gray-100 text-gray-700 text-[10px] sm:text-[13px] rounded-full px-4 sm:px-6 outline-none shadow-sm transition-all hover:border-gray-300 flex items-center gap-2 font-normal justify-between sm:justify-start shrink-0"
+                    >
+                        <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
+                        <span>{dateRange.start ? `${dateRange.start} - ${dateRange.end || 'Today'}` : "Select Date Range"}</span>
+                        <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 ml-1" />
+                    </button>
+                    {isDatePickerOpen && <DateRangePicker range={dateRange} onChange={setDateRange} onClose={() => setIsDatePickerOpen(false)} />}
 
                     <button
                         onClick={handleDownloadPDF}
-                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-normal flex items-center justify-center gap-0 shrink-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden hover:sm:w-[160px] hover:sm:px-4 hover:sm:gap-2"
-                        title="Download PDF Report"
+                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2 shrink-0"
                     >
-                        <Download className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                        <span className="max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
-                            Download PDF
+                        <Download className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
+                        <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                            Export PDF
                         </span>
                     </button>
 
                     <button
                         onClick={handleDownloadExcel}
-                        className="bg-green-600 hover:bg-green-700 text-white h-9 sm:h-12 w-9 sm:w-12 rounded-full font-normal flex items-center justify-center gap-0 shrink-0 group transition-all duration-300 shadow-sm shadow-green-100 text-sm overflow-hidden hover:sm:w-[175px] hover:sm:px-4 hover:sm:gap-2"
-                        title="Download Excel Report"
+                        className="bg-green-600 hover:bg-green-700 text-white p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2 shrink-0"
                     >
-                        <FileSpreadsheet className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
-                        <span className="max-w-0 opacity-0 group-hover:max-w-[130px] group-hover:opacity-100 transition-all duration-300 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
-                            Download Excel
+                        <FileSpreadsheet className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
+                        <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                            Export Excel
                         </span>
                     </button>
                 </div>
             </div>
 
-            {/* 4 Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-                {/* 1. Total Revenue */}
-                <SalesCard
-                    title="Total Revenue"
-                    mobileTitle="Revenue"
-                    value={formatCurrency(stats.revenue, currencySymbol)}
-                    subValue={dateRange.start ? "Period Revenue" : "All Time Revenue"}
-                    icon={DollarSign}
-                />
-
-                {/* 2. Net Profit */}
-                <SalesCard
-                    title="Net Profit"
-                    mobileTitle="Profit"
-                    value={formatCurrency(stats.netProfit, currencySymbol)}
-                    subValue="Revenue - Expenses"
-                    icon={TrendingUp}
-                />
-
-                {/* 3. Avg Order Value (AOV) */}
-                <SalesCard
-                    title="Avg Order Value (AOV)"
-                    mobileTitle="AOV"
-                    value={formatCurrency(stats.aov, currencySymbol)}
-                    subValue="Average per order"
-                    icon={Activity}
-                />
-
-                {/* 4. Total Orders */}
-                <SalesCard
-                    title="Total Orders"
-                    mobileTitle="Orders"
-                    value={stats.orders}
-                    subValue={dateRange.start ? "Period Orders" : "All Time Orders"}
-                    icon={ShoppingBag}
-                />
+            {/* Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+                <SalesCard title="Total Revenue" value={formatCurrency(stats.revenue, currencySymbol)} icon={DollarSign} />
+                <SalesCard title="Net Profit" value={formatCurrency(stats.netProfit, currencySymbol)} subValue="After Expenses & Tax" icon={TrendingUp} />
+                <SalesCard title="Avg Order Value" value={formatCurrency(stats.aov, currencySymbol)} icon={Activity} />
+                <SalesCard title="Total Orders" value={stats.orders} icon={ShoppingBag} />
             </div>
 
-            {/* Charts Section */}
+            {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Main Graph: Sales & Net Profit */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-[1.5rem] shadow-sm overflow-hidden">
-                    <div className="mb-6 flex items-start justify-between gap-4">
-                        <div>
-                            <h3 className="text-[16px] sm:text-[24px] font-normal text-black">Revenue &amp; Net Profit</h3>
-                            <p className="text-[10px] text-gray-400 font-normal">Monthly breakdown of sales and actual earnings</p>
-                        </div>
-                        {/* Legend */}
-                        <div className="hidden sm:flex items-center gap-3 shrink-0 pt-1">
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-2.5 h-2.5 rounded-full bg-[#FD6941] shrink-0"></div>
-                                <span className="text-[11px] font-normal text-gray-500">Total Revenue</span>
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                                <div className="w-2.5 h-2.5 rounded-full bg-black shrink-0"></div>
-                                <span className="text-[11px] font-normal text-gray-500">Net Profit</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="h-[220px] sm:h-[300px] w-full outline-none" tabIndex={-1} style={{ WebkitTapHighlightColor: 'transparent' }}>
-                        <ResponsiveContainer width="100%" height="100%" debounce={50}>
-                            <AreaChart data={graphData} margin={{ top: 10, right: 5, left: 5, bottom: 0 }}>
-                                <defs>
-                                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#FD6941" stopOpacity={0.1} />
-                                        <stop offset="95%" stopColor="#FD6941" stopOpacity={0} />
-                                    </linearGradient>
-                                    <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#000000" stopOpacity={0.1} />
-                                        <stop offset="95%" stopColor="#000000" stopOpacity={0} />
-                                    </linearGradient>
-                                </defs>
+                <div className="lg:col-span-2 bg-white p-6 rounded-[1.5rem] shadow-sm">
+                    <div className="mb-6"><h3 className="text-[16px] sm:text-[24px] font-normal text-black">Revenue & Net Profit</h3><p className="text-xs text-gray-400">Monthly breakdown</p></div>
+                    <div className="h-[220px] sm:h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={graphData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f3f3" />
-                                <XAxis
-                                    dataKey="name"
-                                    axisLine={false}
-                                    tickLine={false}
-                                    tick={{ fill: '#64748B', fontSize: 12 }}
-                                    dy={10}
-                                    minTickGap={10}
-                                />
-                                <YAxis hide domain={['auto', 'auto']} />
-                                <Tooltip
-                                    contentStyle={{
-                                        borderRadius: '16px',
-                                        border: 'none',
-                                        boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-                                        background: '#fff',
-                                        padding: '12px'
-                                    }}
-                                    itemStyle={{ fontSize: '13px', fontWeight: 500 }}
-                                    itemSorter={(item) => item.name === 'Total Revenue' ? 0 : 1}
-                                />
-
-                                <Area
-                                    type="monotone"
-                                    dataKey="totalRevenue"
-                                    name="Total Revenue"
-                                    stroke="#FD6941"
-                                    fillOpacity={1}
-                                    fill="url(#colorRevenue)"
-                                    strokeWidth={3}
-                                    animationDuration={1500}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="netProfit"
-                                    name="Net Profit"
-                                    stroke="#000000"
-                                    fillOpacity={1}
-                                    fill="url(#colorProfit)"
-                                    strokeWidth={3}
-                                    animationDuration={1500}
-                                />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
+                                <YAxis hide />
+                                <Tooltip />
+                                <Area type="monotone" dataKey="totalRevenue" stroke="#FD6941" fill="#FD6941" fillOpacity={0.1} strokeWidth={3} />
+                                <Area type="monotone" dataKey="netProfit" stroke="#000000" fill="#000000" fillOpacity={0.05} strokeWidth={3} />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
-
-                {/* Secondary Graph: Total Volume */}
                 <div className="lg:col-span-1 bg-white p-6 rounded-[1.5rem] shadow-sm">
-                    <div className="mb-6">
-                        <h3 className="text-[16px] sm:text-[24px] font-normal text-black">Total Orders</h3>
-                        <p className="text-[12px] text-gray-400 font-normal">Number of orders per period</p>
-                    </div>
+                    <div className="mb-6"><h3 className="text-[16px] sm:text-[24px] font-normal text-black">Total Orders</h3><p className="text-xs text-gray-400">Order volume</p></div>
                     <div className="h-[250px] sm:h-[300px] w-full">
-                        <ResponsiveContainer width="100%" height="100%" debounce={50}>
+                        <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={graphData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f3f3" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9CA3AF', fontSize: 12 }} dy={10} minTickGap={10} />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12 }} />
                                 <YAxis hide />
-                                <Tooltip
-                                    cursor={{ fill: '#F3F4F6' }}
-                                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                                />
-                                <Bar dataKey="volume" name="Orders" fill="#FD6941" radius={[4, 4, 0, 0]} barSize={40} />
+                                <Tooltip cursor={{ fill: '#F3F4F6' }} />
+                                <Bar dataKey="volume" fill="#FD6941" radius={[4, 4, 0, 0]} barSize={40} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
             </div>
 
-            {/* Detailed Table */}
+            {/* Table */}
             <div className="bg-white rounded-[1.5rem] shadow-sm overflow-hidden">
                 <div className="p-4 sm:p-6 border-b border-gray-50 flex flex-col md:flex-row justify-between items-center gap-4">
                     <div className="w-full sm:w-auto">
                         <h3 className="text-[16px] sm:text-[24px] font-normal text-black">Transaction History</h3>
                         <p className="text-[12px] text-gray-400 font-normal">Detailed list of past orders</p>
                     </div>
-
-                    {/* Controls */}
-                    <div className="flex gap-2 sm:gap-3 w-full sm:w-auto justify-end">
-                        {/* Search Bar */}
-                        <div className="relative flex-1 sm:flex-none">
-                            <input
-                                type="text"
-                                placeholder="Search..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full sm:w-64 pl-9 sm:pl-10 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-full text-xs sm:text-sm focus:ring-1 focus:ring-black transition-all outline-none"
-                            />
-                            <Search className="absolute left-2.5 sm:left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                        </div>
-
-                        {/* Filter Dropdown */}
-                        <div className="relative">
-                            <button
-                                onClick={() => setIsFilterOpen(!isFilterOpen)}
-                                className={`flex items-center justify-center w-9 h-9 sm:w-auto sm:px-4 sm:py-2.5 rounded-full border text-xs sm:text-sm font-normal transition-all ${paymentFilter !== 'All' ? 'bg-[#FD6941] text-white border-[#FD6941]' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
-                                title="Filter Transactions"
-                            >
-                                <Filter className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                <span className="hidden sm:inline ml-2">{paymentFilter === 'All' ? 'Filter' : paymentFilter}</span>
-                                <ChevronDown className="hidden sm:inline ml-1 w-3.5 h-3.5" />
-                            </button>
-
-                            {isFilterOpen && (
-                                <>
-                                    <div className="fixed inset-0 z-10" onClick={() => setIsFilterOpen(false)}></div>
-                                    <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-20 animate-in fade-in slide-in-from-top-2">
-                                        <div className="px-3 py-1.5 font-normal text-gray-400 uppercase tracking-wider text-[10px]">Payment Mode</div>
-                                        {['All', 'Cash', 'Online'].map(mode => (
-                                            <button
-                                                key={mode}
-                                                onClick={() => {
-                                                    setPaymentFilter(mode);
-                                                    setIsFilterOpen(false);
-                                                }}
-                                                className={`w-full text-left px-4 py-2 text-xs sm:text-sm font-normal transition-colors rounded-lg mx-1 w-[calc(100%-8px)] ${paymentFilter === mode ? 'text-[#FD6941] bg-[#FD6941]/10' : 'text-gray-600 hover:bg-gray-50'}`}
-                                            >
-                                                {mode}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                    <div className="relative w-full sm:w-64">
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-full text-sm outline-none"
+                        />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     </div>
-                </div>
-
-                <div className="block sm:hidden divide-y divide-gray-50 p-2">
-                    {tableData.length > 0 ? (
-                        tableData.map((order) => (
-                            <div key={order._id} className="px-3.5 py-3 bg-white rounded-2xl border border-gray-100 shadow-sm mb-3 flex items-center justify-between gap-3 group">
-                                {/* Left: icon + Order ID · time · items */}
-                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                                    <div className="w-8 h-8 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100">
-                                        <UtensilsCrossed className="w-3.5 h-3.5 text-gray-400" />
-                                    </div>
-                                    <div className="flex items-center gap-1 min-w-0 overflow-hidden">
-                                        <span className="text-sm font-bold text-gray-900 shrink-0 truncate">
-                                            #{order.dailySequence || (order._id || '').slice(-6).toUpperCase()}
-                                        </span>
-                                        <span className="text-gray-200 text-xs shrink-0">·</span>
-                                        <span className="text-[10px] text-gray-400 italic shrink-0">
-                                            {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                        </span>
-                                        <span className="text-gray-200 text-xs shrink-0">·</span>
-                                        <span className="text-[10px] text-gray-400 shrink-0">
-                                            {order.items?.reduce((acc, i) => acc + (i.quantity || 1), 0) || 0} items
-                                        </span>
-                                    </div>
-                                </div>
-                                {/* Right: amount + invoice button */}
-                                <div className="flex items-center gap-2 shrink-0">
-                                    <span className="text-sm font-bold text-gray-900">
-                                        {formatCurrency(order.totalAmount || 0, currencySymbol)}
-                                    </span>
-                                    <button
-                                        onClick={() => setSelectedOrder(order)}
-                                        className="w-8 h-8 rounded-full bg-[#FD6941] text-white flex items-center justify-center hover:bg-[#FD6941]/90 transition-all active:scale-95 shadow-sm shrink-0"
-                                        title="View Invoice"
-                                    >
-                                        <FileText size={14} />
-                                    </button>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <div className="py-20 text-center">
-                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Search className="w-8 h-8 text-gray-300" />
-                            </div>
-                            <p className="text-gray-500 font-normal">No transactions found</p>
-                        </div>
-                    )}
                 </div>
 
                 <div className="hidden sm:block overflow-x-auto">
                     <table className="w-full text-left">
-                        <thead className="bg-gray-50 text-gray-500 text-[10px] sm:text-xs uppercase tracking-wider">
+                        <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
                             <tr>
                                 <th className="px-6 py-4 font-normal">Order ID</th>
                                 <th className="px-6 py-4 font-normal">Date & Time</th>
                                 <th className="px-6 py-4 font-normal text-center">Payment</th>
-                                <th className="px-6 py-4 font-normal text-center">Quantity</th>
-                                <th className="px-6 py-4 font-normal text-right">Tax (10%)</th>
-                                <th className="px-6 py-4 font-normal text-right">Total Amount</th>
+                                <th className="px-6 py-4 font-normal text-center">Items</th>
+                                <th className="px-6 py-4 font-normal text-right">Tax (5%)</th>
+                                <th className="px-6 py-4 font-normal text-right">Total</th>
                                 <th className="px-6 py-4 font-normal text-center">Invoice</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
-                            {tableData.length > 0 ? (
-                                tableData.map((order) => (
+                            {filteredOrders.length > 0 ? (
+                                filteredOrders.map((order) => (
                                     <tr key={order._id} className="hover:bg-gray-50/50 transition-colors">
-                                        <td className="px-6 py-4 text-sm font-normal text-black">
-                                            #{order.dailySequence || (order._id || '').slice(-6).toUpperCase()}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600">
-                                            {new Date(order.createdAt).toLocaleString()}
-                                        </td>
+                                        <td className="px-6 py-4 text-sm font-normal text-black">{formatOrderDisplayId(order)}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">{new Date(order.createdAt).toLocaleString()}</td>
                                         <td className="px-6 py-4 text-center">
-                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-normal ${(order.paymentMethod || 'Cash') === 'Online'
-                                                ? 'bg-blue-100 text-blue-700'
-                                                : 'bg-green-100 text-green-700'
-                                                }`}>
-                                                {order.paymentMethod || 'Cash'}
-                                            </span>
+                                            <span className={`px-2.5 py-1 rounded-full text-xs font-normal ${(order.paymentMethod || 'Cash') === 'Online' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>{order.paymentMethod || 'Cash'}</span>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600 text-center">
-                                            {order.items?.reduce((acc, i) => acc + (i.quantity || 1), 0) || 0}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600 text-right">
-                                            {formatCurrency((order.totalAmount || 0) * 0.10, currencySymbol)}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm font-normal text-black text-right">
-                                            {formatCurrency(order.totalAmount || 0, currencySymbol)}
-                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-600 text-center">{order.items?.length || 0}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-600 text-right">{formatCurrency((order.totalAmount || 0) * 0.05, currencySymbol)}</td>
+                                        <td className="px-6 py-4 text-sm font-normal text-black text-right">{formatCurrency(order.totalAmount || 0, currencySymbol)}</td>
                                         <td className="px-6 py-4 text-center">
-                                            <button
-                                                onClick={() => setSelectedOrder(order)}
-                                                className="w-8 h-8 rounded-full bg-[#FD6941] text-white flex items-center justify-center hover:bg-[#FD6941] transition-all active:scale-95 shadow-md hover:shadow-lg  mx-auto"
-                                                title="View Invoice"
-                                            >
-                                                <FileText size={16} />
-                                            </button>
+                                            <button onClick={() => setSelectedOrder(order)} className="w-8 h-8 rounded-full bg-[#FD6941] text-white flex items-center justify-center mx-auto shadow-md"><FileText size={16} /></button>
                                         </td>
                                     </tr>
                                 ))
                             ) : (
-                                <tr>
-                                    <td colSpan="7" className="px-6 py-12 text-center text-gray-400">
-                                        No sales data found for this period.
-                                    </td>
-                                </tr>
+                                <tr><td colSpan="7" className="px-6 py-12 text-center text-gray-400">No transactions found.</td></tr>
                             )}
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            {/* Invoice Modal */}
-            <InvoiceModal
-                order={selectedOrder}
-                isOpen={!!selectedOrder}
-                onClose={() => setSelectedOrder(null)}
-                currencySymbol={currencySymbol}
-                restaurant={user?.restaurantDetails || restaurant}
-            />
+            <InvoiceModal order={selectedOrder} isOpen={!!selectedOrder} onClose={() => setSelectedOrder(null)} currencySymbol={currencySymbol} restaurant={restaurant} />
         </div>
     );
 };

@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Box } from 'lucide-react';
 
 import arIcon from '../assets/ar-icon.svg';
 
-const MediaSlider = ({ media, interval = 30000, className = "", showArButton = true, modelCheckId = null }) => {
+const MediaSlider = ({ media, interval = 30000, className = "", showArButton = true, modelCheckId = null, compact = false }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showControls, setShowControls] = useState(false);
     const controlsTimerRef = React.useRef(null);
@@ -150,7 +150,6 @@ const MediaSlider = ({ media, interval = 30000, className = "", showArButton = t
                                 auto-rotate
                                 ar
                                 ar-modes="webxr scene-viewer quick-look"
-                                ar-scale="fixed"
                                 loading="eager"
                                 reveal="auto"
                                 shadow-intensity="1"
@@ -193,15 +192,15 @@ const MediaSlider = ({ media, interval = 30000, className = "", showArButton = t
 
                     <button
                         onClick={prevSlide}
-                        className={`absolute left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 flex items-center justify-center bg-white/80 text-gray-500 rounded-full transition-all backdrop-blur-sm border border-gray-100 shadow-sm ${showControls ? 'opacity-100' : 'opacity-0'} hover:bg-white hover:text-gray-700 active:scale-95`}
+                        className={`absolute top-1/2 -translate-y-1/2 z-20 flex items-center justify-center bg-white/80 text-gray-500 rounded-full transition-all backdrop-blur-sm border border-gray-100 shadow-sm ${showControls ? 'opacity-100' : 'opacity-0'} hover:bg-white hover:text-gray-700 active:scale-95 ${compact ? 'left-1 w-4 h-4 border-0 bg-white/75' : 'left-2 w-8 h-8'}`}
                     >
-                        <ChevronLeft className="w-4 h-4" />
+                        <ChevronLeft className={compact ? 'w-2.5 h-2.5' : 'w-4 h-4'} />
                     </button>
                     <button
                         onClick={nextSlide}
-                        className={`absolute right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 flex items-center justify-center bg-white/80 text-gray-500 rounded-full transition-all backdrop-blur-sm border border-gray-100 shadow-sm ${showControls ? 'opacity-100' : 'opacity-0'} hover:bg-white hover:text-gray-700 active:scale-95`}
+                        className={`absolute top-1/2 -translate-y-1/2 z-20 flex items-center justify-center bg-white/80 text-gray-500 rounded-full transition-all backdrop-blur-sm border border-gray-100 shadow-sm ${showControls ? 'opacity-100' : 'opacity-0'} hover:bg-white hover:text-gray-700 active:scale-95 ${compact ? 'right-1 w-4 h-4 border-0 bg-white/75' : 'right-2 w-8 h-8'}`}
                     >
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className={compact ? 'w-3 h-3' : 'w-4 h-4'} />
                     </button>
                 </>
             )}

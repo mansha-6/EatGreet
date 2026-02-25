@@ -288,7 +288,7 @@ const AdminDashboard = () => {
                 .slice(0, 3)
                 .map(o => ({
                     id: o._id,
-                    title: `Order #${o.dailySequence ? String(o.dailySequence).padStart(3, '0') : o._id.slice(-4)}`,
+                    title: `Order #${(() => { const d = new Date(o.createdAt); return `${String(d.getDate()).padStart(2, '0')}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getFullYear()).slice(-2)}${o.dailySequence ? String(o.dailySequence).padStart(2, '0') : o._id.slice(-2).toUpperCase()}`; })()}`,
                     sub: (o.items || []).map(i => i.name || 'Item').join(', '),
                     icon: UserIcon
                 }));

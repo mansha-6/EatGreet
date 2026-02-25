@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
+const { sendWelcomeEmail } = require('../utils/emailService');
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -30,6 +31,9 @@ const registerUser = async (req, res) => {
         });
 
         if (user) {
+            // Send welcome email (asynchronous, don't wait for it to finish)
+            sendWelcomeEmail(user.email, user.name);
+
             res.status(201).json({
                 _id: user._id,
                 name: user.name,
@@ -146,4 +150,14 @@ const updateUserProfile = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, authUser, getUserProfile, updateUserProfile };
+// @desc    Get all users (Super Admin)
+const getUsers = async (req, res) => {
+    try {
+        const users = await User.find({}).select('-password').sort({ createdAt: -1 });
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { registerUser, authUser, getUserProfile, updateUserProfile, getUsers };

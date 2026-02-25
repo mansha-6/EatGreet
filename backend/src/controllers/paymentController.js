@@ -5,19 +5,30 @@ const getPayments = async (req, res) => {
     try {
         const User = require('../models/User');
 
+        const { startDate, endDate } = req.query;
+        let start = startDate ? new Date(startDate) : null;
+        let end = endDate ? new Date(endDate) : null;
+
         // 1. Fetch all admins (restaurant owners)
         const users = await User.find({ role: 'admin' }).select('name restaurantName payments');
 
         let allPayments = [];
 
-        // 2. Flatten payments from all users
+        // 2. Flatten and Filter payments from all users
         users.forEach(user => {
             if (user.payments && user.payments.length > 0) {
-                const userPayments = user.payments.map(p => ({
-                    ...p.toObject(),
-                    _id: p._id, // Ensure ID is present
-                    restaurant: { name: user.restaurantName || user.name } // Format for frontend
-                }));
+                const userPayments = user.payments
+                    .filter(p => {
+                        const pDate = new Date(p.date);
+                        if (start && pDate < start) return false;
+                        if (end && pDate > end) return false;
+                        return true;
+                    })
+                    .map(p => ({
+                        ...p.toObject(),
+                        _id: p._id,
+                        restaurant: { name: user.restaurantName || user.name }
+                    }));
                 allPayments.push(...userPayments);
             }
         });

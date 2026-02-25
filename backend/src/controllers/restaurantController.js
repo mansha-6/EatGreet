@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const { sendEmail } = require('../utils/emailService');
 
 // @desc    Get restaurant details
 // @route   GET /api/restaurant
@@ -235,7 +236,9 @@ const getAllRestaurants = async (req, res) => {
             restaurantName: user.restaurantName, // Business Name
             createdAt: user.restaurantDetails?.joinedAt || user.createdAt,
             isActive: user.restaurantDetails?.isActive ?? true,
-            // Add other details if needed
+            subscription: user.subscription || { plan: 'None', status: 'None' },
+            phone: user.phone,
+            city: user.city
         }));
 
         res.json(restaurants);
@@ -244,4 +247,77 @@ const getAllRestaurants = async (req, res) => {
     }
 };
 
-module.exports = { getRestaurantDetails, updateRestaurantDetails, createRestaurant, getRestaurantPublic, getAllRestaurants, getRestaurantByName };
+// @desc    Update restaurant subscription (Super Admin)
+const updateSubscription = async (req, res) => {
+    try {
+        const { userId, plan, status, endDate, autoRenew } = req.body;
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        user.subscription = {
+            ...user.subscription,
+            plan: plan || user.subscription.plan,
+            status: status || user.subscription.status,
+            endDate: endDate ? new Date(endDate) : user.subscription.endDate,
+            autoRenew: autoRenew !== undefined ? autoRenew : user.subscription.autoRenew,
+            startDate: user.subscription.startDate || new Date()
+        };
+
+        await user.save();
+        res.json({ message: 'Subscription updated successfully', subscription: user.subscription });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Send subscription reminder (Super Admin)
+const sendSubscriptionReminder = async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Real email sending
+        await sendEmail({
+            email: user.email,
+            subject: 'Action Required: Your EatGreet Subscription is Expiring',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                    <h2 style="color: #FD6941;">Subscription Renewal Reminder</h2>
+                    <p>Hi ${user.name},</p>
+                    <p>This is a gentle reminder that your <b>${user.subscription.plan}</b> package for <b>${user.restaurantName || 'your business'}</b> is expiring soon on <b>${new Date(user.subscription.endDate).toLocaleDateString()}</b>.</p>
+                    <p>To avoid any interruption in service, please renew your subscription soon.</p>
+                    <div style="margin: 30px 0; text-align: center;">
+                        <a href="${process.env.FRONTEND_URL}/admin/billing" style="background-color: #FD6941; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Renew Now</a>
+                    </div>
+                    <p>If you need any help, feel free to contact our support team.</p>
+                    <p>Best regards,<br/><b>The EatGreet Team</b></p>
+                </div>
+            `
+        });
+        
+        user.subscription.lastReminderSent = new Date();
+        await user.save();
+
+        res.json({ message: 'Reminder email sent successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { 
+    getRestaurantDetails, 
+    updateRestaurantDetails, 
+    createRestaurant, 
+    getRestaurantPublic, 
+    getAllRestaurants, 
+    getRestaurantByName,
+    updateSubscription,
+    sendSubscriptionReminder
+};

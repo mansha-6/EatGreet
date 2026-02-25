@@ -185,67 +185,112 @@ const getSuperAdminStats = async (req, res) => {
     try {
         const User = require('../models/User');
 
-        // 1. Basic Counts (Fetching Users who are restaurant admins)
-        const totalRestaurants = await User.countDocuments({ role: 'admin' });
-
-        // Count active based on nested restaurantDetails
+        // 1. Basic Counts
+        const totalUsers = await User.countDocuments();
+        const totalAdmins = await User.countDocuments({ role: 'admin' });
+        const totalCustomers = await User.countDocuments({ role: 'customer' });
+        
         const activeRestaurants = await User.countDocuments({
             role: 'admin',
             'restaurantDetails.isActive': true
         });
 
-        const inactiveRestaurants = totalRestaurants - activeRestaurants;
-
-        // 2. Financials (Simulated based on subscription model)
-        const SUBSCRIPTION_FEE = 2999; // Example monthly fee
-        const monthlyRevenue = activeRestaurants * SUBSCRIPTION_FEE;
-
-        // 3. Payment Status Distribution
-        const paymentStatusData = [
-            { name: 'Paid', value: activeRestaurants, color: '#10B981' }, // Active assumed paid
-            { name: 'Pending', value: 0, color: '#F59E0B' },
-            { name: 'Overdue', value: inactiveRestaurants, color: '#EF4444' } // Inactive assumed overdue
-        ];
-
-        // 4. Monthly Growth (Revenue Trend)
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const currentYear = new Date().getFullYear();
-
-        const growthStats = await User.aggregate([
-            {
-                $match: {
-                    role: 'admin',
-                    createdAt: {
-                        $gte: new Date(new Date().setFullYear(currentYear - 1))
-                    }
-                }
-            },
-            {
-                $group: {
-                    _id: { $month: "$createdAt" },
-                    count: { $sum: 1 }
-                }
-            }
+        // 2. Financials (Aggregated from all user payments)
+        const totalRevenueResult = await User.aggregate([
+            { $unwind: "$payments" },
+            { $match: { "payments.status": "Completed" } },
+            { $group: { _id: null, total: { $sum: "$payments.amount" } } }
         ]);
+        const platformTotalRevenue = totalRevenueResult.length > 0 ? totalRevenueResult[0].total : 0;
 
-        let revenueData = Array(12).fill(0).map((_, i) => ({
-            name: months[i],
-            value: 0
-        }));
-
-        growthStats.forEach(stat => {
-            if (stat._id >= 1 && stat._id <= 12) {
-                revenueData[stat._id - 1].value = stat.count * SUBSCRIPTION_FEE;
-            }
+        // Current Monthly Subscription MRR (Estimated from Active Tiers)
+        const activeSubscribers = await User.find({ 
+            role: 'admin', 
+            'subscription.status': 'Active' 
         });
 
+        const estimatedMRR = activeSubscribers.reduce((acc, user) => {
+            const plan = user.subscription.plan;
+            let fee = 2999;
+            if (plan === 'Silver') fee = 999;
+            if (plan === 'Gold') fee = 1999;
+            if (plan === '3 Months') fee = 833;
+            if (plan === 'Yearly') fee = 2499;
+            return acc + fee;
+        }, 0);
+
+        // 3. Distributions
+        // Role Distribution
+        const roleDist = await User.aggregate([
+            { $group: { _id: "$role", value: { $sum: 1 } } }
+        ]);
+        const roleDistribution = roleDist.map(r => ({ 
+            name: r._id.charAt(0).toUpperCase() + r._id.slice(1), 
+            value: r.value 
+        }));
+
+        // Plan Distribution
+        const planDist = await User.aggregate([
+            { $match: { role: 'admin' } },
+            { $group: { _id: "$subscription.plan", value: { $sum: 1 } } }
+        ]);
+        const planDistribution = planDist.map(p => ({ 
+            name: p._id || 'None', 
+            value: p.value 
+        }));
+
+        // City Distribution
+        const cityDist = await User.aggregate([
+            { $match: { role: 'admin' } },
+            { $group: { _id: "$city", value: { $sum: 1 } } },
+            { $sort: { value: -1 } },
+            { $limit: 5 }
+        ]);
+        const cityDistribution = cityDist.map(c => ({ name: c._id || 'Unknown', value: c.value }));
+
+        // 4. Growth & Revenue Trends
+        const { startDate, endDate } = req.query;
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        // Growth (New Users)
+        const userGrowth = await User.aggregate([
+            { $group: { _id: { $month: "$createdAt" }, count: { $sum: 1 } } }
+        ]);
+
+        // Revenue Trend (Real Payments)
+        const paymentTrend = await User.aggregate([
+            { $unwind: "$payments" },
+            { $match: { "payments.status": "Completed" } },
+            { $group: { _id: { $month: "$payments.date" }, total: { $sum: "$payments.amount" } } }
+        ]);
+
+        let combinedTrend = Array(12).fill(0).map((_, i) => ({
+            name: months[i],
+            revenue: 0,
+            users: 0
+        }));
+
+        userGrowth.forEach(g => { if (g._id >= 1 && g._id <= 12) combinedTrend[g._id - 1].users = g.count; });
+        paymentTrend.forEach(p => { if (p._id >= 1 && p._id <= 12) combinedTrend[p._id - 1].revenue = p.total; });
+
+        // 5. Recent Activity
+        const recentRestaurants = await User.find({ role: 'admin' })
+            .select('name restaurantName email subscription createdAt')
+            .sort({ createdAt: -1 })
+            .limit(10);
+
         res.json({
-            totalRestaurants,
-            activeSubscriptions: activeRestaurants,
-            monthlyRevenue,
-            unpaidRestaurants: inactiveRestaurants,
-            revenueData,
-            paymentStatusData
+            totalUsers,
+            totalRestaurants: totalAdmins,
+            totalCustomers,
+            activeRestaurants,
+            platformTotalRevenue,
+            estimatedMRR,
+            roleDistribution,
+            planDistribution,
+            cityDistribution,
+            trendData: combinedTrend,
+            recentRestaurants
         });
 
     } catch (error) {

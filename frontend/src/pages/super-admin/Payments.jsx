@@ -1,8 +1,143 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CreditCard, DollarSign, Download, Calendar } from 'lucide-react';
+import { CreditCard, DollarSign, Download, Calendar, X, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { paymentAPI, statsAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import toast from 'react-hot-toast';
+import EatGreetLogo from '../../assets/logo-full.png';
+
+// Custom Date Range Picker Component (Same as AdminSales for consistency)
+const DateRangePicker = ({ range, onChange, onClose }) => {
+    const parseLocalDate = (dateStr) => {
+        if (!dateStr) return null;
+        const [y, m, d] = dateStr.split('-').map(Number);
+        return new Date(y, m - 1, d);
+    };
+
+    const toLocalDateString = (date) => {
+        if (!date) return '';
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const [viewDate, setViewDate] = useState(() => {
+        return range.start ? parseLocalDate(range.start) : new Date();
+    });
+
+    const [selection, setSelection] = useState({
+        start: range.start ? parseLocalDate(range.start) : null,
+        end: range.end ? parseLocalDate(range.end) : null
+    });
+
+    const daysInMonth = (date) => new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+    const firstDayOfMonth = (date) => new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+
+    const handleDateClick = (day) => {
+        const clickedDate = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
+        if (!selection.start || (selection.start && selection.end)) {
+            setSelection({ start: clickedDate, end: null });
+        } else {
+            if (clickedDate.getTime() >= selection.start.getTime()) {
+                setSelection({ ...selection, end: clickedDate });
+            } else {
+                setSelection({ start: clickedDate, end: null });
+            }
+        }
+    };
+
+    const applySelection = () => {
+        if (selection.start) {
+            onChange({
+                start: toLocalDateString(selection.start),
+                end: toLocalDateString(selection.end || selection.start)
+            });
+        }
+        onClose();
+    };
+
+    const clearSelection = () => {
+        setSelection({ start: null, end: null });
+        onChange({ start: '', end: '' });
+        onClose();
+    };
+
+    const setPreset = (type) => {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        let start, end = new Date(now);
+        switch (type) {
+            case 'today': start = new Date(now); break;
+            case 'yesterday': start = new Date(now); start.setDate(now.getDate() - 1); end = new Date(start); break;
+            case 'week': start = new Date(now); start.setDate(now.getDate() - 7); break;
+            case 'month': start = new Date(now.getFullYear(), now.getMonth(), 1); break;
+            default: start = null;
+        }
+        if (start) {
+            onChange({ start: toLocalDateString(start), end: toLocalDateString(end) });
+            onClose();
+        }
+    };
+
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    const isSelected = (day) => {
+        const d = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
+        if (!selection.start) return false;
+        const t = d.getTime();
+        if (t === selection.start.getTime()) return true;
+        if (selection.end && t === selection.end.getTime()) return true;
+        return false;
+    };
+
+    const isInRange = (day) => {
+        if (!selection.start || !selection.end) return false;
+        const d = new Date(viewDate.getFullYear(), viewDate.getMonth(), day);
+        return d > selection.start && d < selection.end;
+    };
+
+    return (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm" onClick={onClose}>
+            <div className="bg-white/95 backdrop-blur-xl w-full max-w-[400px] rounded-[2.5rem] shadow-2xl border border-white/50 p-8" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-normal text-black">Select Range</h3>
+                    <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full"><X className="w-5 h-5 text-gray-400" /></button>
+                </div>
+                <div className="flex flex-wrap gap-2 mb-6">
+                    {['today', 'yesterday', 'week', 'month'].map(p => (
+                        <button key={p} onClick={() => setPreset(p)} className="px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-full text-xs capitalize">{p}</button>
+                    ))}
+                </div>
+                <div className="flex justify-between items-center mb-4">
+                    <button onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1))} className="p-2"><ChevronLeft className="w-5 h-5" /></button>
+                    <span className="font-normal">{monthNames[viewDate.getMonth()]} {viewDate.getFullYear()}</span>
+                    <button onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1))} className="p-2"><ChevronRight className="w-5 h-5" /></button>
+                </div>
+                <div className="grid grid-cols-7 gap-1 mb-6">
+                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d} className="h-8 flex items-center justify-center text-[10px] text-gray-300 font-bold">{d}</div>)}
+                    {Array.from({ length: firstDayOfMonth(viewDate) }).map((_, i) => <div key={i} />)}
+                    {Array.from({ length: daysInMonth(viewDate) }).map((_, i) => {
+                        const day = i + 1;
+                        const active = isSelected(day);
+                        const range = isInRange(day);
+                        return (
+                            <button key={day} onClick={() => handleDateClick(day)} className={`h-10 w-10 flex items-center justify-center rounded-full text-sm transition-all ${active ? 'bg-[#FD6941] text-white' : range ? 'bg-[#FFF5F1] text-[#FD6941]' : 'hover:bg-gray-50'}`}>
+                                {day}
+                            </button>
+                        );
+                    })}
+                </div>
+                <div className="flex gap-3">
+                    <button onClick={clearSelection} className="flex-1 py-4 bg-gray-50 rounded-2xl text-sm flex items-center justify-center gap-2"><RotateCcw className="w-4 h-4" />Clear</button>
+                    <button onClick={applySelection} className="flex-[2] py-4 bg-[#FD6941] text-white rounded-2xl text-sm shadow-lg">Apply</button>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export default function Payments() {
     const { currencySymbol } = useSettings();
@@ -13,36 +148,108 @@ export default function Payments() {
         activeSubscriptions: 0
     });
     const [isLoading, setIsLoading] = useState(true);
+    const [dateRange, setDateRange] = useState({ start: '', end: '' });
+    const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+    const [revenueData, setRevenueData] = useState([]); // For growth graph in PDF
+
+    const fetchData = async () => {
+        setIsLoading(true);
+        try {
+            const params = {
+                startDate: dateRange.start || undefined,
+                endDate: dateRange.end || undefined
+            };
+            const [paymentsRes, statsRes] = await Promise.all([
+                paymentAPI.getAll(params),
+                statsAPI.getSuperAdminStats(params)
+            ]);
+
+            setTransactions(paymentsRes.data.transactions);
+            setStats({
+                totalRevenue: paymentsRes.data.stats.totalRevenue,
+                pendingAmount: paymentsRes.data.stats.pendingAmount,
+                activeSubscriptions: statsRes.data.activeSubscriptions
+            });
+            setRevenueData(statsRes.data.revenueData);
+        } catch (error) {
+            console.error("Failed to load payment data", error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [paymentsRes, statsRes] = await Promise.all([
-                    paymentAPI.getAll(),
-                    statsAPI.getSuperAdminStats()
-                ]);
-
-                setTransactions(paymentsRes.data.transactions);
-                setStats({
-                    totalRevenue: paymentsRes.data.stats.totalRevenue,
-                    pendingAmount: paymentsRes.data.stats.pendingAmount,
-                    activeSubscriptions: statsRes.data.activeSubscriptions
-                });
-            } catch (error) {
-                console.error("Failed to load payment data", error);
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
         fetchData();
-    }, []);
+    }, [dateRange]);
+
+    const handleDownloadPDF = async () => {
+        const toastId = toast.loading('Generating Super Admin Report...');
+        try {
+            const doc = new jsPDF();
+            const brandOrange = [253, 105, 65];
+            const textDark = [30, 30, 30];
+            const textGray = [100, 100, 100];
+
+            // Header line
+            doc.setFillColor(...brandOrange);
+            doc.rect(0, 0, 210, 4, 'F');
+
+            // Logo & Title
+            doc.setFont("helvetica", "bold").setFontSize(22).setTextColor(...textDark).text("EatGreet System Report", 15, 25);
+            doc.setFontSize(10).setFont("helvetica", "normal").setTextColor(...textGray).text(`Generated: ${new Date().toLocaleString()}`, 15, 32);
+            if (dateRange.start) doc.text(`Period: ${dateRange.start} to ${dateRange.end || 'Today'}`, 15, 37);
+
+            // Summary Section
+            doc.setFontSize(14).setFont("helvetica", "bold").setTextColor(...textDark).text("Subscription Growth & Packages", 15, 52);
+            const summaryTable = [
+                ['Active Users', 'Total Revenue Collected', 'Pending/Overdue'],
+                [stats.activeSubscriptions.toLocaleString(), `${currencySymbol}${stats.totalRevenue.toLocaleString()}`, `${currencySymbol}${stats.pendingAmount.toLocaleString()}`]
+            ];
+            autoTable(doc, {
+                startY: 57, body: summaryTable, theme: 'grid', styles: { halign: 'center', cellPadding: 5 }
+            });
+
+            // Growth Data (Interactive Graph data represented as a table)
+            let yGrowth = doc.lastAutoTable.finalY + 15;
+            doc.setFontSize(14).setFont("helvetica", "bold").text("Monthly Subscription Growth", 15, yGrowth);
+            const growthTable = [
+                ['Month', ...revenueData.map(d => d.name)],
+                ['Revenue', ...revenueData.map(d => `${currencySymbol}${d.value}`)]
+            ];
+            autoTable(doc, {
+                startY: yGrowth + 5, body: growthTable, theme: 'grid', styles: { fontSize: 8 }
+            });
+
+            // Payments Listing
+            let yTxn = doc.lastAutoTable.finalY + 15;
+            doc.setFontSize(14).setFont("helvetica", "bold").text("User Transaction Record", 15, yTxn);
+            const txnRows = transactions.map(t => [
+                t.transactionId,
+                t.restaurant?.name || 'Unknown',
+                new Date(t.date).toLocaleDateString(),
+                t.method,
+                `${currencySymbol}${t.amount}`,
+                t.status
+            ]);
+            autoTable(doc, {
+                startY: yTxn + 5,
+                head: [['TXN ID', 'User / Business', 'Date', 'Method', 'Amount', 'Status']],
+                body: txnRows,
+                theme: 'striped',
+                headStyles: { fillColor: [40, 40, 40] }
+            });
+
+            doc.save(`SuperAdmin_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+            toast.success('Report downloaded', { id: toastId });
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to generate PDF', { id: toastId });
+        }
+    };
 
     const formatDate = (dateString) => {
         return new Date(dateString).toLocaleDateString('en-US', {
             month: 'short',
-            day: 'numeric',
-            year: 'numeric'
         });
     };
 
@@ -55,11 +262,31 @@ export default function Payments() {
                         <h1 className="text-3xl font-normal text-gray-900">Payments</h1>
                         <p className="text-gray-500 font-normal text-sm mt-1">Track revenue and subscription payments.</p>
                     </div>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-full text-sm font-normal shadow-lg hover:bg-gray-800 transition-colors">
-                        <Download className="w-4 h-4" />
-                        Export Report
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setIsDatePickerOpen(true)}
+                            className="flex items-center gap-2 pr-6 pl-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-normal shadow-sm hover:border-gray-400 transition-all"
+                        >
+                            <Calendar className="w-4 h-4 text-[#FD6941]" />
+                            {dateRange.start ? `${dateRange.start} - ${dateRange.end || 'Now'}` : 'All Time'}
+                        </button>
+                        <button
+                            onClick={handleDownloadPDF}
+                            className="flex items-center gap-2 px-6 py-2 bg-black text-white rounded-full text-sm font-normal shadow-lg hover:bg-gray-800 transition-colors"
+                        >
+                            <Download className="w-4 h-4" />
+                            Export Report
+                        </button>
+                    </div>
                 </div>
+
+                {isDatePickerOpen && (
+                    <DateRangePicker
+                        range={dateRange}
+                        onChange={setDateRange}
+                        onClose={() => setIsDatePickerOpen(false)}
+                    />
+                )}
 
                 {/* Stats Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0">
@@ -99,7 +326,7 @@ export default function Payments() {
                             <thead className="bg-white sticky top-0 z-10">
                                 <tr>
                                     <th className="px-6 py-4 text-left text-xs font-normal text-gray-400 uppercase tracking-wider">Transaction ID</th>
-                                    <th className="px-6 py-4 text-left text-xs font-normal text-gray-400 uppercase tracking-wider">Restaurant</th>
+                                    <th className="px-6 py-4 text-left text-xs font-normal text-gray-400 uppercase tracking-wider">User / Business</th>
                                     <th className="px-6 py-4 text-left text-xs font-normal text-gray-400 uppercase tracking-wider">Date</th>
                                     <th className="px-6 py-4 text-left text-xs font-normal text-gray-400 uppercase tracking-wider">Method</th>
                                     <th className="px-6 py-4 text-right text-xs font-normal text-gray-400 uppercase tracking-wider">Amount</th>
@@ -128,7 +355,7 @@ export default function Payments() {
                                                 <span className="font-mono text-xs font-normal text-gray-500">{txn.transactionId}</span>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className="font-normal text-gray-900 text-sm">{txn.restaurant?.name || 'Unknown Restaurant'}</span>
+                                                <span className="font-normal text-gray-900 text-sm">{txn.restaurant?.name || 'Unknown User'}</span>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className="text-xs text-gray-500 font-normal">{formatDate(txn.date)}</span>

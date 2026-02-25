@@ -1,31 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-    PieChart,
-    Pie,
-    Cell
-} from 'recharts';
-import {
     BarChart3,
     TrendingUp,
-    AlertTriangle,
     Store,
-    Ticket
+    Ticket,
+    AlertTriangle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { statsAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
 
-
-// Static data removed. Data is now fetched dynamically.
-
-const StatCard = ({ title, value, change, icon: Icon, gradient, colorClass }) => (
+const DashboardStat = ({ title, value, change, icon: Icon, gradient, colorClass }) => (
     <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -45,175 +30,134 @@ const StatCard = ({ title, value, change, icon: Icon, gradient, colorClass }) =>
                 <TrendingUp className="w-3 h-3" />
                 {change}
             </div>
-            <span className="text-xs text-gray-500 font-normal text-nowrap">Current Status</span>
+            <span className="text-xs text-gray-500 font-normal">Real-time</span>
         </div>
     </motion.div>
 );
+
 export default function SuperAdminDashboard() {
     const { currencySymbol } = useSettings();
-    const [statsData, setStatsData] = useState({
+    const [stats, setStats] = useState({
         totalRestaurants: 0,
-        activeSubscriptions: 0,
-        monthlyRevenue: 0,
-        unpaidRestaurants: 0,
-        revenueData: [],
-        paymentStatusData: []
+        activeRestaurants: 0, // This is activeSubscriptions in backend response
+        estimatedMRR: 0,
+        recentRestaurants: []
     });
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
                 const response = await statsAPI.getSuperAdminStats();
-                setStatsData(prev => ({
-                    ...prev,
-                    ...response.data
-                }));
+                setStats(response.data);
             } catch (error) {
-                console.error('Error fetching super admin stats:', error);
+                console.error('Error fetching dashboard stats:', error);
             }
         };
         fetchStats();
     }, []);
 
     return (
-        <div className="h-screen bg-[#F0F2F4] p-4 md:p-6 flex flex-col overflow-hidden text-gray-800">
-            <div className="flex flex-col space-y-6">
-                {/* Welcome Section */}
+        <div className="h-screen bg-[#F0F2F4] p-4 md:p-6 flex flex-col overflow-y-auto scrollbar-hide">
+            <div className="flex flex-col space-y-6 max-w-[1600px] mx-auto w-full pb-12">
+                {/* Welcome */}
                 <div className="flex justify-between items-end">
-                    <div className="space-y-0.5">
-                        <h1 className="text-3xl font-normal bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-gray-700 to-gray-800">Dashboard</h1>
-                        <p className="text-gray-500 text-sm font-normal">Welcome back, <span className="text-gray-800 font-normal">Super Admin</span></p>
+                    <div>
+                        <h1 className="text-3xl font-normal text-gray-900">Dashboard</h1>
+                        <p className="text-gray-500 text-sm font-normal">System Overview & Management</p>
                     </div>
                 </div>
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <StatCard
+                    <DashboardStat
                         title="Total Restaurants"
-                        value={statsData.totalRestaurants || 0}
+                        value={stats.totalRestaurants || 0}
                         change="Live"
                         icon={Store}
                         gradient="bg-gradient-to-br from-[#E2F0E9] to-[#D4E9F2]"
                         colorClass="text-emerald-600"
                     />
-                    <StatCard
-                        title="Active Subscriptions"
-                        value={statsData.activeSubscriptions || 0}
-                        change="Live"
+                    <DashboardStat
+                        title="Active Packages"
+                        value={stats.activeRestaurants || 0}
+                        change="Active"
                         icon={Ticket}
                         gradient="bg-gradient-to-br from-[#E6F3E6] to-[#CDE7CD]"
                         colorClass="text-emerald-600"
                     />
-                    <StatCard
+                    <DashboardStat
                         title="Monthly Revenue"
-                        value={`${currencySymbol}${(statsData.monthlyRevenue || 0).toLocaleString()}`}
-                        change="Live"
+                        value={`${currencySymbol}${(stats.estimatedMRR || 0).toLocaleString()}`}
+                        change="Forecast"
                         icon={BarChart3}
-                        gradient="bg-gradient-to-br from-[#E9F5E9] to-[#DFF0DF]"
-                        colorClass="text-emerald-600"
+                        gradient="bg-gradient-to-br from-[#F5F3FF] to-[#EBE9FE]"
+                        colorClass="text-violet-600"
                     />
-                    <StatCard
-                        title="Unpaid Restaurants"
-                        value={statsData.unpaidRestaurants || 0}
-                        change="Alert"
-                        icon={AlertTriangle}
+                    <DashboardStat
+                        title="Subscription Status"
+                        value="Healthy"
+                        change="Stable"
+                        icon={TrendingUp}
                         gradient="bg-gradient-to-br from-[#FAF3E5] to-[#F1E4C9]"
-                        colorClass="text-rose-500"
+                        colorClass="text-orange-600"
                     />
                 </div>
 
-                {/* Charts Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-[400px]">
-                    {/* Subscription Revenue Line Chart */}
+                <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
+                    {/* Recent Subscriptions Section */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="lg:col-span-2 bg-white/60 backdrop-blur-sm p-6 rounded-[2rem] border border-white/60 shadow-sm flex flex-col"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white/60 backdrop-blur-sm p-8 rounded-[2.5rem] border border-white/60 shadow-sm overflow-hidden"
                     >
-                        <div className="mb-4">
-                            <h3 className="text-lg font-normal text-gray-900">Subscription Revenue</h3>
-                            <p className="text-xs text-gray-500">Monthly recurring revenue trends</p>
-                        </div>
-                        <div className="flex-1 w-full min-h-[300px]">
-                            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                                <LineChart data={statsData.revenueData || []}>
-                                    <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#eee" />
-                                    <XAxis
-                                        dataKey="name"
-                                        axisLine={false}
-                                        tickLine={false}
-                                        tick={{ fill: '#9ca3af', fontSize: 10 }}
-                                        dy={10}
-                                    />
-                                    <YAxis
-                                        axisLine={false}
-                                        tickLine={false}
-                                        tick={{ fill: '#9ca3af', fontSize: 10 }}
-                                        tickFormatter={(value) => `${currencySymbol}${value / 1000}k`}
-                                    />
-                                    <Tooltip
-                                        contentStyle={{ borderRadius: '1rem', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                    />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="value"
-                                        stroke="#10B981"
-                                        strokeWidth={4}
-                                        dot={false}
-                                        activeDot={{ r: 6, fill: '#10B981', stroke: '#fff', strokeWidth: 2 }}
-                                    />
-                                </LineChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </motion.div>
-
-                    {/* Payment Status Donut Chart */}
-                    <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="bg-white/60 backdrop-blur-sm p-6 rounded-[2rem] border border-white/60 shadow-sm flex flex-col items-center justify-between"
-                    >
-                        <div className="w-full text-left mb-4">
-                            <h3 className="text-lg font-normal text-gray-900">Payment Status</h3>
-                            <p className="text-xs text-gray-500">Restaurant payment breakdown</p>
-                        </div>
-
-                        <div className="relative flex-1 w-full min-h-[300px] flex items-center justify-center">
-                            <div className="aspect-square h-full max-h-[200px]">
-                                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                                    <PieChart>
-                                        <Pie
-                                            data={statsData.paymentStatusData || []}
-                                            innerRadius="70%"
-                                            outerRadius="100%"
-                                            paddingAngle={5}
-                                            dataKey="value"
-                                            stroke="none"
-                                        >
-                                            {(statsData.paymentStatusData || []).map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.color} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                    <span className="text-3xl font-normal text-gray-900">{statsData.totalRestaurants || 0}</span>
-                                    <span className="text-xs text-gray-400 font-normal tracking-widest">TOTAL</span>
-                                </div>
+                        <div className="flex justify-between items-center mb-8">
+                            <div>
+                                <h3 className="text-xl font-normal text-gray-900">Recently Onboarded Users</h3>
+                                <p className="text-xs text-gray-500">Track the latest business signups and their plans</p>
                             </div>
                         </div>
-
-                        <div className="w-full grid grid-cols-3 gap-2 mt-4">
-                            {(statsData.paymentStatusData || []).map((item) => (
-                                <div key={item.name} className="flex flex-col items-center">
-                                    <div className="flex items-center gap-1.5 mb-0.5">
-                                        <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }}></div>
-                                        <span className="text-xs font-normal text-gray-700">{item.value}</span>
-                                    </div>
-                                    <span className="text-[10px] uppercase tracking-wider text-gray-400 font-normal">{item.name}</span>
-                                </div>
-                            ))}
+                        <div className="overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="text-left border-b border-gray-100">
+                                        <th className="pb-4 text-xs font-normal text-gray-400 tracking-widest uppercase">Business Name</th>
+                                        <th className="pb-4 text-xs font-normal text-gray-400 tracking-widest uppercase">Admin Name</th>
+                                        <th className="pb-4 text-xs font-normal text-gray-400 tracking-widest uppercase">Plan Tier</th>
+                                        <th className="pb-4 text-xs font-normal text-gray-400 tracking-widest uppercase text-center">Status</th>
+                                        <th className="pb-4 text-xs font-normal text-gray-400 tracking-widest uppercase text-right">Join Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-50">
+                                    {(stats.recentRestaurants || []).map((res) => (
+                                        <tr key={res._id} className="group hover:bg-white/40 transition-colors">
+                                            <td className="py-5">
+                                                <p className="text-sm font-normal text-gray-900">{res.restaurantName}</p>
+                                            </td>
+                                            <td className="py-5">
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm text-gray-700 font-normal">{res.name}</span>
+                                                    <span className="text-[10px] text-gray-400 font-normal">{res.email}</span>
+                                                </div>
+                                            </td>
+                                            <td className="py-5">
+                                                <span className="text-xs font-normal text-gray-600 bg-gray-100 px-3 py-1 rounded-full">{res.subscription?.plan || 'None'}</span>
+                                            </td>
+                                            <td className="py-5 text-center">
+                                                <span className={`px-3 py-1 rounded-full text-[10px] font-normal uppercase tracking-widest ${
+                                                    res.subscription?.status === 'Active' ? 'bg-emerald-50 text-emerald-600' :
+                                                    res.subscription?.status === 'Expired' ? 'bg-rose-50 text-rose-600' :
+                                                    'bg-gray-50 text-gray-400'
+                                                }`}>
+                                                    {res.subscription?.status || 'None'}
+                                                </span>
+                                            </td>
+                                            <td className="py-5 text-right">
+                                                <p className="text-xs text-gray-400 font-normal">{new Date(res.createdAt).toLocaleDateString()}</p>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     </motion.div>
                 </div>

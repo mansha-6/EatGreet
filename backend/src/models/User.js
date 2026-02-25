@@ -65,6 +65,16 @@ const userSchema = new mongoose.Schema({
         isActive: { type: Boolean, default: true }
     }],
 
+    // Subscription Details
+    subscription: {
+        plan: { type: String, enum: ['Trial', 'Silver', 'Gold', '3 Months', 'Monthly', 'Yearly', 'None'], default: 'None' },
+        status: { type: String, enum: ['Active', 'Expired', 'Expiring', 'None'], default: 'None' },
+        startDate: { type: Date },
+        endDate: { type: Date },
+        lastReminderSent: { type: Date },
+        autoRenew: { type: Boolean, default: false }
+    },
+
     // Embed Payments (Merged 'payments' into Users)
     payments: [{
         transactionId: { type: String },

@@ -66,8 +66,11 @@ export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (userData) => api.put('/auth/profile', userData),
+  getUsers: () => api.get('/auth/users'),
   updatePassword: () => Promise.resolve({ data: { message: 'Password update not implemented yet' } }), // Pending backend
   getRestaurants: () => api.get('/restaurant/all'),
+  updateSubscription: (data) => api.put('/restaurant/subscription', data),
+  sendReminder: (data) => api.post('/restaurant/reminder', data),
 };
 
 export const statsAPI = {
@@ -80,7 +83,7 @@ export const statsAPI = {
 };
 
 export const paymentAPI = {
-  getAll: () => api.get('/payments'),
+  getAll: (params) => api.get('/payments', { params }),
 };
 
 export const menuAPI = {

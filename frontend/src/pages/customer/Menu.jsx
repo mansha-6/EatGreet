@@ -659,7 +659,7 @@ const Menu = () => {
                                                 className={`flex w-8 h-8 md:w-14 md:h-14 rounded-full items-center justify-center transition-all shadow-sm border bg-white border-gray-200 text-blue-600 hover:bg-gray-50 ${isPreviewMode ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
                                                 title="View in AR"
                                             >
-                                                <Box className="w-4 h-4 md:w-7 md:h-7" />
+                                                <img src={arIcon} alt="AR View" className="w-4 h-4 md:w-8 md:h-8" />
                                             </button>
                                         )}
 
@@ -1063,7 +1063,7 @@ const Menu = () => {
                                             }}
                                             className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors shadow-sm"
                                         >
-                                            <Box className="w-6 h-6 md:w-7 md:h-7 text-blue-600" />
+                                            <img src={arIcon} alt="AR View" className="w-6 h-6 md:w-8 md:h-8" />
                                         </button>
                                     )}
 

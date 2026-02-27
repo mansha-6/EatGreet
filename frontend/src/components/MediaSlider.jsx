@@ -150,6 +150,8 @@ const MediaSlider = ({ media, interval = 30000, className = "", showArButton = t
                                 auto-rotate
                                 ar
                                 ar-modes="webxr scene-viewer quick-look"
+                                ar-scale="fixed"
+                                disable-pan
                                 loading="eager"
                                 reveal="auto"
                                 shadow-intensity="1"

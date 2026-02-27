@@ -1050,6 +1050,9 @@ const AdminMenu = () => {
                                                             camera-controls
                                                             auto-rotate
                                                             ar
+                                                            ar-modes="webxr scene-viewer quick-look"
+                                                            ar-scale="fixed"
+                                                            disable-pan
                                                             shadow-intensity="1"
                                                             shadow-softness="1"
                                                             touch-action="none"

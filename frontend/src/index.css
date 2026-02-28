@@ -10,21 +10,14 @@ body {
     overflow-x: hidden;
     position: relative;
     width: 100%;
-    max-width: 100%;
-    min-height: 100vh;
-    overscroll-behavior: none;
-    /* Prevents pull-to-refresh and bouncy scrolling */
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
-    /* Allows vertical scrolling but prevents gestures like horizontal swipe back */
+    margin: 0;
+    padding: 0;
 }
 
 #root {
     overflow-x: hidden;
     width: 100%;
     position: relative;
-    min-height: 100vh;
-    overscroll-behavior: none;
 }
 
 * {

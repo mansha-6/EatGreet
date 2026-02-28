@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import '@google/model-viewer';
 import { ChevronLeft, ChevronRight, Box } from 'lucide-react';
 
-import arIcon from '../assets/ar-icon.svg';
+import arIcon from '../assets/3d-icon-black.svg';
 
 const MediaSlider = ({ media, interval = 30000, className = "", showArButton = true, modelCheckId = null, compact = false }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -150,7 +150,7 @@ const MediaSlider = ({ media, interval = 30000, className = "", showArButton = t
                                 auto-rotate
                                 ar
                                 ar-modes="webxr scene-viewer quick-look"
-                              
+
                                 disable-pan
                                 loading="eager"
                                 reveal="auto"
@@ -163,7 +163,7 @@ const MediaSlider = ({ media, interval = 30000, className = "", showArButton = t
                             >
                                 <button
                                     slot="ar-button"
-                                    className={`absolute top-2 right-2 md:top-4 md:right-4 z-20 w-7 h-7 md:w-9 md:h-9 backdrop-blur rounded-full items-center justify-center shadow-sm bg-white/90 text-gray-800 ${!showArButton ? 'hidden' : 'hidden md:flex'}`}
+                                    className={`absolute top-2 right-2 md:top-4 md:right-4 z-20 w-7 h-7 md:w-9 md:h-9 backdrop-blur rounded-full items-center justify-center shadow-sm border bg-blue-50/90 border-blue-100/90 text-black hover:bg-blue-100/90 transition-all ${!showArButton ? 'hidden' : 'hidden md:flex'}`}
                                 >
                                     <img src={arIcon} alt="View in AR" className="w-4 h-4 md:w-6 md:h-6" />
                                 </button>

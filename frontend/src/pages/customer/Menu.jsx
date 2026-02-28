@@ -19,7 +19,7 @@ import ketoIcon from '../../assets/Pear--Streamline-Atlas.svg';
 import vegIcon from '../../assets/veg.svg';
 import nonVegIcon from '../../assets/non-veg.svg';
 import arVideo from '../../assets/AR_Menu_Experience_Video_Generation.mp4';
-import arIcon from '../../assets/ar-icon.svg';
+import arIcon from '../../assets/3d-icon-black.svg';
 import { useSocket } from '../../context/SocketContext';
 
 const dietaryIcons = {
@@ -656,7 +656,7 @@ const Menu = () => {
                                                     }
                                                 }}
                                                 disabled={isPreviewMode}
-                                                className={`flex w-8 h-8 md:w-14 md:h-14 rounded-full items-center justify-center transition-all shadow-sm border bg-white border-gray-200 text-blue-600 hover:bg-gray-50 ${isPreviewMode ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
+                                                className={`flex w-8 h-8 md:w-14 md:h-14 rounded-full items-center justify-center transition-all shadow-sm bg-white text-black border border-gray-300 hover:scale-110 active:scale-95 duration-300 ${isPreviewMode ? 'opacity-100 cursor-not-allowed' : ''}`}
                                                 title="View in AR"
                                             >
                                                 <img src={arIcon} alt="AR View" className="w-4 h-4 md:w-8 md:h-8" />
@@ -1061,7 +1061,7 @@ const Menu = () => {
                                                 const viewer = document.querySelector('#preview-model-viewer');
                                                 if (viewer) viewer.activateAR();
                                             }}
-                                            className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors shadow-sm"
+                                            className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-blue-50 border border-blue-100 text-black flex items-center justify-center hover:bg-blue-100 transition-colors shadow-sm"
                                         >
                                             <img src={arIcon} alt="AR View" className="w-6 h-6 md:w-8 md:h-8" />
                                         </button>

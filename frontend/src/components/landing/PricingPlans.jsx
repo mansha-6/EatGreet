@@ -36,21 +36,21 @@ const plans = [
 
 export default function PricingPlans() {
     return (
-        <section className="py-24 relative overflow-hidden bg-white text-gray-900" id="pricing">
+        <section className="pt-24 pb-8 md:pb-24 relative overflow-hidden bg-white text-gray-900" id="pricing">
             {/* Soft decorative blur backgrounds */}
             <div className="absolute top-[10%] left-[-10%] w-[400px] h-[400px] bg-[#FD6941]/5 rounded-full blur-[120px]" />
             <div className="absolute bottom-[10%] right-[-10%] w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[150px]" />
 
             <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
-                <div className="text-center max-w-3xl mx-auto mb-20">
+                <div className="text-center max-w-3xl mx-auto mb-10 md:mb-20">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#FD6941]/10 rounded-full border border-[#FD6941]/20 mb-6"
+                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#FD6941]/10 rounded-full border border-[#FD6941]/20 mb-4 md:mb-6"
                     >
-                        <Sparkles className="w-4 h-4 text-[#FD6941]" />
-                        <span className="text-[10px] font-medium tracking-[0.2em] text-[#FD6941] uppercase">Flexible Ecosystem</span>
+                        <Sparkles className="w-3.5 h-3.5 text-[#FD6941]" />
+                        <span className="text-[9px] font-medium tracking-[0.2em] text-[#FD6941] uppercase">Flexible Ecosystem</span>
                     </motion.div>
 
                     <motion.h2
@@ -58,7 +58,7 @@ export default function PricingPlans() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.1 }}
-                        className="text-4xl md:text-6xl font-bold mb-6 tracking-tight"
+                        className="text-3xl md:text-6xl font-bold mb-4 md:mb-6 tracking-tight px-4"
                     >
                         Pricing built for <span className="bg-gradient-to-r from-[#FD6941] to-[#ff8c6d] bg-clip-text text-transparent">every scale.</span>
                     </motion.h2>
@@ -68,14 +68,17 @@ export default function PricingPlans() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.2 }}
-                        className="text-lg text-gray-500 font-medium"
+                        className="text-sm md:text-lg text-gray-500 font-medium px-4"
                     >
-                        Choose the plan that matches your ambition. No hidden fees, just pure growth.
+                        Choose the plan that matches your ambition. No hidden fees.
                     </motion.p>
                 </div>
 
-                {/* Pricing Cards */}
-                <div className="grid md:grid-cols-3 gap-8 items-stretch pt-4">
+                {/* Pricing Cards Container with Horizontal Scroll on Mobile */}
+                <div
+                    className="md:grid md:grid-cols-3 gap-6 md:gap-8 items-stretch pt-4 flex overflow-x-auto md:overflow-visible no-scrollbar snap-x snap-mandatory pb-2 px-4 -mx-4 md:px-0 md:mx-0"
+                    style={{ touchAction: 'pan-y' }}
+                >
                     {plans.map((plan, idx) => {
                         const Icon = plan.icon;
                         return (
@@ -85,55 +88,55 @@ export default function PricingPlans() {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true, margin: "-50px" }}
                                 transition={{ delay: idx * 0.15, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                                className={`relative group p-10 md:p-12 flex flex-col items-center text-center transition-all duration-500 ${plan.highlight
-                                    ? 'rounded-[3rem] bg-white border border-[#FD6941]/20 shadow-[0_30px_60px_-15px_rgba(253,105,65,0.12)] scale-105 z-20'
-                                    : 'rounded-[2.5rem] bg-white border border-gray-100/50 shadow-[0_20px_50px_-10px_rgba(0,0,0,0.03)] hover:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] hover:-translate-y-2'
+                                className={`relative group p-8 md:p-12 flex flex-col items-center text-center transition-all duration-500 shrink-0 w-[85%] sm:w-[80%] md:w-full snap-center mr-6 md:mr-0 ${plan.highlight
+                                    ? 'rounded-[2.5rem] md:rounded-[3rem] bg-white border border-[#FD6941]/20 shadow-[0_20px_50px_-15px_rgba(253,105,65,0.1)] md:scale-105 z-20'
+                                    : 'rounded-[2rem] md:rounded-[2.5rem] bg-white border border-gray-100/50 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.02)] md:hover:shadow-[0_40px_80px_-15px_rgba(0,0,0,0.08)] md:hover:-translate-y-2'
                                     }`}
                             >
                                 {plan.highlight && (
-                                    <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-[#FD6941] text-white px-6 py-1.5 rounded-full text-xs font-medium shadow-xl shadow-[#FD6941]/30 flex items-center gap-1.5 tracking-wider uppercase">
-                                        <Zap className="w-3.5 h-3.5 fill-white" /> {plan.highlightText}
+                                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#FD6941] text-white px-5 py-1 rounded-full text-[10px] font-medium shadow-lg shadow-[#FD6941]/20 flex items-center gap-1.5 tracking-wider uppercase">
+                                        <Zap className="w-3 h-3 fill-white" /> {plan.highlightText}
                                     </div>
                                 )}
 
-                                <div className={`w-16 h-16 rounded-3xl flex items-center justify-center mb-8 transition-transform duration-500 group-hover:scale-110 ${plan.highlight ? 'bg-[#FD6941] text-white shadow-lg' : 'bg-gray-50 text-[#FD6941] border border-gray-100'
+                                <div className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl md:rounded-3xl flex items-center justify-center mb-6 md:mb-8 transition-transform duration-500 group-hover:scale-110 ${plan.highlight ? 'bg-[#FD6941] text-white shadow-lg' : 'bg-gray-50 text-[#FD6941] border border-gray-100'
                                     }`}>
-                                    <Icon className="w-8 h-8" />
+                                    <Icon className="w-6 h-6 md:w-8 md:h-8" />
                                 </div>
 
-                                <h3 className="text-3xl font-bold mb-3 tracking-tight">{plan.name}</h3>
-                                <p className="text-gray-400 text-sm font-medium min-h-[48px] leading-relaxed mb-8">{plan.desc}</p>
+                                <h3 className="text-2xl md:text-3xl font-bold mb-2 md:mb-3 tracking-tight">{plan.name}</h3>
+                                <p className="text-gray-400 text-[11px] md:text-sm font-medium min-h-[40px] md:min-h-[48px] leading-relaxed mb-6 md:mb-8">{plan.desc}</p>
 
-                                <div className="mb-10">
+                                <div className="mb-8 md:mb-10">
                                     <div className="flex flex-col items-center">
                                         <div className="flex items-baseline gap-1">
-                                            {typeof plan.price === 'number' && <span className="text-sm font-medium text-gray-400">₹</span>}
-                                            <span className="text-6xl font-black font-['Urbanist'] tracking-tighter">
+                                            {typeof plan.price === 'number' && <span className="text-xs md:text-sm font-medium text-gray-400">₹</span>}
+                                            <span className="text-4xl md:text-6xl font-black font-['Urbanist'] tracking-tighter">
                                                 {plan.price}
                                             </span>
                                         </div>
-                                        <span className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mt-2">{plan.period}</span>
-                                        {plan.subtext && <span className="text-[10px] font-medium text-[#FD6941] mt-1">{plan.subtext}</span>}
+                                        <span className="text-[10px] font-medium text-gray-400 uppercase tracking-widest mt-1 md:mt-2">{plan.period}</span>
+                                        {plan.subtext && <span className="text-[9px] md:text-[10px] font-medium text-[#FD6941] mt-1">{plan.subtext}</span>}
                                     </div>
                                 </div>
 
-                                <ul className="space-y-5 mb-12 flex-grow w-full text-left bg-gray-50/50 p-6 rounded-3xl border border-gray-100/50">
+                                <ul className="space-y-4 md:space-y-5 mb-8 md:mb-12 flex-grow w-full text-left bg-gray-50/20 md:bg-gray-50/50 p-5 md:p-6 rounded-2xl md:rounded-3xl border border-gray-100/50">
                                     {plan.features.map((feature, fIdx) => (
                                         <li key={fIdx} className="flex items-start gap-3">
-                                            <div className="mt-1 flex-shrink-0">
+                                            <div className="mt-0.5 flex-shrink-0">
                                                 <div className={`p-0.5 rounded-full ${plan.highlight ? 'bg-[#FD6941] text-white' : 'bg-green-500/10 text-green-600'}`}>
-                                                    <Check className="w-2.5 h-2.5" strokeWidth={4} />
+                                                    <Check className="w-2 md:w-2.5 h-2 md:h-2.5" strokeWidth={4} />
                                                 </div>
                                             </div>
-                                            <span className="text-gray-600 text-[13px] font-medium leading-none">{feature}</span>
+                                            <span className="text-gray-600 text-[11px] md:text-[13px] font-medium leading-tight">{feature}</span>
                                         </li>
                                     ))}
                                 </ul>
 
                                 <a
                                     href="#contact"
-                                    className={`w-full py-5 rounded-[1.5rem] font-medium tracking-widest uppercase text-xs transition-all duration-300 shadow-xl ${plan.highlight
-                                        ? 'bg-[#FD6941] text-white shadow-[#FD6941]/30 hover:bg-[#e55a35] hover:shadow-[#FD6941]/40'
+                                    className={`w-full py-4 md:py-5 rounded-2xl md:rounded-[1.5rem] font-medium tracking-widest uppercase text-[10px] md:text-xs transition-all duration-300 shadow-xl ${plan.highlight
+                                        ? 'bg-[#FD6941] text-white shadow-[#FD6941]/30 hover:bg-[#e55a35]'
                                         : 'bg-black text-white hover:bg-gray-900 shadow-black/10'
                                         }`}
                                 >

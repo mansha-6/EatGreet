@@ -63,13 +63,13 @@ export default function InfiniteMenuScroll() {
     const duplicatedItemsRow2 = [...menuItems].reverse().concat([...menuItems].reverse(), [...menuItems].reverse());
 
     return (
-        <section ref={containerRef} className="py-20 md:py-32 bg-white overflow-hidden relative" id="menu-showcase">
+        <section ref={containerRef} className="pt-8 pb-16 md:pt-16 md:pb-32 bg-white overflow-hidden relative" id="menu-showcase">
             <EmojiCursor emoji={activeEmoji} isVisible={!!activeEmoji} />
 
-            <div className="max-w-7xl mx-auto px-4 md:px-6 text-center mb-16">
-                <span className="text-[#FD6941] font-medium tracking-widest text-xs uppercase mb-2 block">Visual Dining</span>
-                <h2 className="text-3xl md:text-5xl font-bold">Eat with your eyes first.</h2>
-                <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-lg">Present your culinary masterpieces in stunning, high-definition 3D and rich media. Stop describing it—show it.</p>
+            <div className="max-w-7xl mx-auto px-4 md:px-6 text-center mb-10 md:mb-16">
+                <span className="text-[#FD6941] font-medium tracking-widest text-[10px] md:text-xs uppercase mb-2 block">Visual Dining</span>
+                <h2 className="text-2xl md:text-5xl font-bold">Eat with your eyes first.</h2>
+                <p className="text-gray-500 mt-4 max-w-2xl mx-auto text-sm md:text-lg">Present your culinary masterpieces in stunning, high-definition 3D and rich media.</p>
             </div>
 
             <div className="relative flex flex-col gap-6 md:gap-8 w-[200vw] -mx-[50vw] px-[50vw]">
@@ -80,15 +80,15 @@ export default function InfiniteMenuScroll() {
                             key={`r1-${idx}`}
                             onMouseEnter={() => setActiveEmoji(item.emoji)}
                             onMouseLeave={() => setActiveEmoji(null)}
-                            className="relative group w-[280px] h-[350px] md:w-[350px] md:h-[450px] rounded-[2rem] overflow-hidden flex-shrink-0 cursor-none shadow-lg"
+                            className="relative group w-[220px] h-[300px] md:w-[350px] md:h-[450px] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex-shrink-0 cursor-none shadow-lg"
                         >
                             <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
 
                             <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                                 <div>
-                                    <p className="text-white/80 text-sm font-medium tracking-wider uppercase mb-1 drop-shadow-md">Signature</p>
-                                    <h4 className="text-white text-2xl font-bold font-['Urbanist'] drop-shadow-md">{item.name}</h4>
+                                    <p className="text-white/80 text-[10px] md:text-sm font-medium tracking-wider uppercase mb-1 drop-shadow-md">Signature</p>
+                                    <h4 className="text-white text-lg md:text-2xl font-bold font-['Urbanist'] drop-shadow-md">{item.name}</h4>
                                 </div>
                             </div>
 
@@ -110,15 +110,15 @@ export default function InfiniteMenuScroll() {
                             key={`r2-${idx}`}
                             onMouseEnter={() => setActiveEmoji(item.emoji)}
                             onMouseLeave={() => setActiveEmoji(null)}
-                            className="relative group w-[280px] h-[350px] md:w-[350px] md:h-[450px] rounded-[2rem] overflow-hidden flex-shrink-0 cursor-none shadow-lg"
+                            className="relative group w-[220px] h-[300px] md:w-[350px] md:h-[450px] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex-shrink-0 cursor-none shadow-lg"
                         >
                             <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
 
                             <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                                 <div>
-                                    <p className="text-white/80 text-sm font-medium tracking-wider uppercase mb-1 drop-shadow-md">Popular</p>
-                                    <h4 className="text-white text-2xl font-bold font-['Urbanist'] drop-shadow-md">{item.name}</h4>
+                                    <p className="text-white/80 text-[10px] md:text-sm font-medium tracking-wider uppercase mb-1 drop-shadow-md">Popular</p>
+                                    <h4 className="text-white text-lg md:text-2xl font-bold font-['Urbanist'] drop-shadow-md">{item.name}</h4>
                                 </div>
                             </div>
 
@@ -134,9 +134,9 @@ export default function InfiniteMenuScroll() {
                 </motion.div>
             </div>
 
-            <div className="mt-20 text-center relative z-20">
-                <a href="#contact" className="inline-flex items-center gap-3 px-10 py-4 bg-white border border-gray-200 text-gray-800 font-medium rounded-full hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all shadow-lg tracking-wider group">
-                    View Full Interactive Demo <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            <div className="mt-12 md:mt-20 text-center relative z-20">
+                <a href="#contact" className="inline-flex items-center gap-3 px-8 md:px-10 py-3 md:py-4 bg-white border border-gray-200 text-gray-800 font-medium rounded-full hover:bg-gray-50 hover:scale-105 active:scale-95 transition-all shadow-lg text-sm tracking-wider group">
+                    View Full Interactive Demo <ArrowRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
                 </a>
             </div>
         </section>

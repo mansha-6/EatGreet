@@ -18,7 +18,7 @@ export default function HeroVideo() {
     const opacityTransform = useTransform(scrollYProgress, [0.5, 1], [1, 0]);
 
     return (
-        <div ref={containerRef} className="relative w-full h-[60vh] sm:h-[70vh] lg:h-[85vh] rounded-[2rem] md:rounded-[3rem] overflow-hidden shadow-2xl group cursor-pointer isolate">
+        <div ref={containerRef} className="relative w-full h-[50vh] sm:h-[70vh] lg:h-[85vh] rounded-[1.5rem] md:rounded-[3rem] overflow-hidden shadow-2xl group cursor-pointer isolate">
             <motion.div
                 style={{ y: yTransform, scale: scaleTransform, opacity: opacityTransform }}
                 className="absolute inset-0 w-full h-full"
@@ -45,22 +45,22 @@ export default function HeroVideo() {
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.8, duration: 0.6 }}
                 >
-                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20 mb-4 pointer-events-auto">
-                        <span className="w-2 h-2 bg-[#FD6941] rounded-full animate-pulse shadow-[0_0_10px_#FD6941]" />
-                        <span className="text-xs font-medium text-white tracking-widest uppercase">Live Demo</span>
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 mb-3 pointer-events-auto">
+                        <span className="w-1.5 h-1.5 bg-[#FD6941] rounded-full animate-pulse shadow-[0_0_10px_#FD6941]" />
+                        <span className="text-[10px] md:text-xs font-medium text-white tracking-widest uppercase">Live Demo</span>
                     </div>
 
-                    <h3 className="text-white text-2xl md:text-4xl font-bold font-['Urbanist'] mb-2 max-w-lg leading-tight">
+                    <h3 className="text-white text-xl md:text-4xl font-bold font-['Urbanist'] mb-2 max-w-lg leading-tight">
                         Experience the menu before you tap order.
                     </h3>
 
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-6 pointer-events-auto">
-                        <button className="flex items-center justify-center w-14 h-14 bg-[#FD6941] text-white rounded-full hover:bg-[#E55A35] hover:scale-105 transition-all shadow-xl group/btn">
-                            <Play fill="currentColor" className="w-6 h-6 ml-1 group-hover/btn:scale-110 transition-transform" />
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-4 md:mt-6 pointer-events-auto">
+                        <button className="flex items-center justify-center w-12 h-12 md:w-14 md:h-14 bg-[#FD6941] text-white rounded-full hover:bg-[#E55A35] hover:scale-105 transition-all shadow-xl group/btn">
+                            <Play fill="currentColor" className="w-5 h-5 md:w-6 md:h-6 ml-1 group-hover/btn:scale-110 transition-transform" />
                         </button>
                         <div>
-                            <p className="text-white font-medium">Watch Full Experience</p>
-                            <p className="text-white/70 text-sm">1:24 min overview</p>
+                            <p className="text-white text-sm md:text-base font-medium">Watch Full Experience</p>
+                            <p className="text-white/70 text-[11px] md:text-sm">1:24 min overview</p>
                         </div>
                     </div>
                 </motion.div>

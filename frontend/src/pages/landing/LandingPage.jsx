@@ -44,10 +44,10 @@ export default function LandingPage() {
     const navigate = useNavigate();
 
     const navItems = [
-        { name: "Features", link: "#bento-features", icon: <Layout className="w-4 h-4" /> },
-        { name: "Menu", link: "#menu-showcase", icon: <MenuIcon className="w-4 h-4" /> },
-        { name: "Pricing", link: "#pricing", icon: <Tag className="w-4 h-4" /> },
-        { name: "Waitlist", link: "#contact", icon: <UserPlus className="w-4 h-4" /> },
+        { name: "Menu", link: "#menu-showcase" },
+        { name: "Features", link: "#bento-features" },
+        { name: "Pricing", link: "#pricing" },
+        { name: "Waitlist", link: "#contact" },
     ];
 
     // Initialize Lenis Smooth Scroll
@@ -86,20 +86,11 @@ export default function LandingPage() {
         phone: '',
         city: '',
         businessName: '',
-        interestedIn: []
     });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    const handleCheckboxChange = (item) => {
-        setFormData(prev => ({
-            ...prev,
-            interestedIn: prev.interestedIn.includes(item)
-                ? prev.interestedIn.filter(i => i !== item)
-                : [...prev.interestedIn, item]
-        }));
-    };
 
     const handleRegister = async (e) => {
         e.preventDefault();
@@ -160,16 +151,16 @@ export default function LandingPage() {
             <FloatingNav navItems={navItems} />
 
             {/* Hero Section — Centered Layout */}
-            <section className="relative px-4 md:px-6 overflow-visible min-h-screen flex flex-col items-center justify-start bg-white pt-36 md:pt-44 text-center" id="hero-container">
+            <section className="relative px-4 md:px-6 overflow-visible flex flex-col items-center justify-start bg-white pt-28 pb-8 md:pt-44 md:pb-16 text-center" id="hero-container">
 
                 {/* Announcement pill */}
                 <motion.a
                     href="#contact"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gray-200 bg-white shadow-sm text-xs font-semibold text-gray-700 mb-8 hover:bg-gray-50 transition-colors"
+                    className="inline-flex items-center gap-2 px-3 py-1 md:px-4 md:py-1.5 rounded-full border border-gray-200 bg-white shadow-sm text-[9px] md:text-xs font-medium text-gray-700 mb-6 md:mb-8 hover:bg-gray-50 transition-colors"
                 >
-                    🎉 Now with AR Menu Generation — <span className="text-[#FD6941] font-bold">Try it free →</span>
+                    🎉 Now with AR Menu Generation — <span className="text-[#FD6941] font-medium ml-1">Try it free →</span>
                 </motion.a>
 
                 {/* Heading */}
@@ -177,7 +168,7 @@ export default function LandingPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-extrabold text-gray-900 leading-[1.08] tracking-tight max-w-5xl mx-auto font-['Outfit']"
+                    className="text-4xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-extrabold text-gray-900 leading-[1.1] md:leading-[1.08] tracking-tight max-w-5xl mx-auto font-['Urbanist']"
                 >
                     One-stop dining<br />
                     <span className="text-[#FD6941]">platform</span> for your<br />
@@ -189,7 +180,7 @@ export default function LandingPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
-                    className="mt-6 text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed"
+                    className="mt-4 md:mt-6 text-sm md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed px-4"
                 >
                     EatGreet orchestrates every touchpoint — interactive 3D menus, kitchen displays, real-time analytics, and a full manager command center in one ecosystem.
                 </motion.p>
@@ -199,13 +190,13 @@ export default function LandingPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="mt-10 flex flex-wrap items-center justify-center gap-4"
+                    className="mt-8 md:mt-10 flex flex-wrap items-center justify-center gap-3 md:gap-4"
                 >
-                    <a href="#contact" className="px-8 py-3.5 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-700 transition-all shadow-lg text-sm tracking-wide">
+                    <a href="#contact" className="px-6 md:px-8 py-3 md:py-3.5 bg-gray-900 text-white font-medium rounded-full hover:bg-gray-700 transition-all shadow-lg text-[11px] md:text-sm tracking-wide uppercase">
                         Get started free
                     </a>
-                    <a href="#contact" className="px-8 py-3.5 text-gray-700 font-semibold text-sm flex items-center gap-2 hover:text-[#FD6941] transition-colors">
-                        Contact us <ArrowRight className="w-4 h-4" />
+                    <a href="#contact" className="px-6 md:px-8 py-3 md:py-3.5 text-gray-700 font-medium text-[11px] md:text-sm flex items-center gap-2 hover:text-[#FD6941] transition-colors uppercase tracking-widest">
+                        Contact us <ArrowRight className="w-3.5 h-3.5" />
                     </a>
                 </motion.div>
 
@@ -214,7 +205,7 @@ export default function LandingPage() {
                     initial={{ opacity: 0, y: 60, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ delay: 0.5, duration: 1, type: 'spring', stiffness: 40 }}
-                    className="mt-16 w-full max-w-5xl mx-auto relative group"
+                    className="mt-10 md:mt-16 w-full max-w-5xl mx-auto relative group px-2 md:px-0"
                 >
                     {/* Premium Video Card Frame */}
                     <div className="relative rounded-[2rem] md:rounded-[3rem] border border-white/40 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] overflow-hidden bg-black/5 aspect-video isolate">
@@ -244,7 +235,7 @@ export default function LandingPage() {
             <BentoFeatures />
 
             {/* Deep Dive Grid */}
-            < section className="py-16 md:py-20 bg-gray-50" >
+            <section className="pb-16 md:pb-20 bg-gray-50" >
                 <div className="max-w-7xl mx-auto px-4 md:px-6">
                     <div className="grid md:grid-cols-2 gap-8 mb-8">
                         {/* AI Sales Reports */}
@@ -361,7 +352,7 @@ export default function LandingPage() {
             <PricingPlans />
 
             {/* Footer / CTA Section */}
-            < section id="contact" className="py-16 md:py-20 px-4 md:px-6" >
+            <section id="contact" className="pt-4 pb-16 md:py-20 px-4 md:px-6">
                 <div className="max-w-7xl mx-auto bg-white bg-opacity-100 rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-gray-100 relative z-10">
                     <div className="grid lg:grid-cols-2 gap-10 md:gap-12 items-center">
                         {/* Left Side: Illustration & Text */}
@@ -456,30 +447,6 @@ export default function LandingPage() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-3 mt-2">
-                                    <label className="text-sm font-bold text-gray-800 ml-1">Account Role<span className="text-red-500">*</span></label>
-                                    <div className="space-y-2.5">
-                                        {['Manager Dashboard', 'Kitchen Dashboard', 'Customer Order', 'Invoice'].map((item) => (
-                                            <label key={item} className="flex items-center gap-3 cursor-pointer group">
-                                                <div className="relative flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        checked={formData.interestedIn.includes(item)}
-                                                        onChange={() => handleCheckboxChange(item)}
-                                                        className="peer w-5 h-5 border-[1.5px] border-gray-400 rounded focus:ring-0 checked:bg-[#FD6941] checked:border-[#FD6941] transition-all appearance-none"
-                                                    />
-                                                    <svg className="absolute w-3.5 h-3.5 text-white hidden peer-checked:block pointer-events-none left-[3px] top-[3px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-                                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                                    </svg>
-                                                </div>
-                                                <span className="text-sm font-normal text-gray-600 group-hover:text-gray-900 transition-colors">
-                                                    {item === 'Manager Dashboard' ? 'Register as Restaurant Manager' : item}
-                                                </span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                    <p className="text-[10px] text-gray-400 italic mt-1 font-normal">* Select 'Manager Dashboard' to access restaurant controls, otherwise you'll be a customer.</p>
-                                </div>
 
                                 <div className="pt-4">
                                     <button

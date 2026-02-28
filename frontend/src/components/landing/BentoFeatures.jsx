@@ -20,15 +20,15 @@ export default function BentoFeatures() {
     const y2 = useTransform(scrollYProgress, [0, 1], ["80px", "-80px"]);
 
     return (
-        <section ref={containerRef} className="py-24 md:py-32 bg-gray-50 relative overflow-hidden" id="bento-features">
+        <section ref={containerRef} className="pt-16 pb-0 md:pt-32 md:pb-0 bg-gray-50 relative overflow-hidden" id="bento-features">
             <div className="max-w-7xl mx-auto px-4 md:px-6 relative z-10">
 
-                <div className="text-center max-w-2xl mx-auto mb-16 md:mb-24">
+                <div className="text-center max-w-2xl mx-auto mb-10 md:mb-24 px-4">
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="text-4xl md:text-5xl font-bold mb-6"
+                        className="text-3xl md:text-5xl font-bold mb-4 md:mb-6"
                     >
                         An ecosystem built for <br />
                         <span className="text-[#FD6941] italic font-['Urbanist']">absolute control.</span>
@@ -38,7 +38,7 @@ export default function BentoFeatures() {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.1 }}
-                        className="text-gray-500 text-lg"
+                        className="text-gray-500 text-sm md:text-lg"
                     >
                         Every module is hyper-connected, allowing data to flow seamlessly from the customer's phone directly to the kitchen display.
                     </motion.p>
@@ -50,14 +50,14 @@ export default function BentoFeatures() {
                     {/* Item 1 - Large Left */}
                     <motion.div
                         style={{ scale: scale1, y: y1 }}
-                        className="md:col-span-8 md:row-span-2 bg-white rounded-[2.5rem] p-8 md:p-12 relative overflow-hidden group shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-gray-100 flex flex-col justify-between"
+                        className="md:col-span-8 md:row-span-2 bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12 relative overflow-hidden group shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-gray-100 flex flex-col justify-between"
                     >
                         <div className="relative z-10 max-w-md">
-                            <div className="w-14 h-14 bg-[#FFF5F1] text-[#FD6941] rounded-2xl flex items-center justify-center mb-6">
-                                <BarChart3 className="w-7 h-7" />
+                            <div className="w-10 h-10 md:w-14 md:h-14 bg-[#FFF5F1] text-[#FD6941] rounded-xl md:rounded-2xl flex items-center justify-center mb-4 md:mb-6">
+                                <BarChart3 className="w-5 h-5 md:w-7 md:h-7" />
                             </div>
-                            <h3 className="text-3xl font-bold mb-4 font-['Urbanist']">Global Revenue Intelligence</h3>
-                            <p className="text-gray-500 text-lg leading-relaxed">Instantly visualize live sales data, peak hours, and top-selling items across all your locations in one beautiful dashboard.</p>
+                            <h3 className="text-xl md:text-3xl font-bold mb-3 md:mb-4 font-['Urbanist']">Global Revenue Intelligence</h3>
+                            <p className="text-gray-500 text-sm md:text-lg leading-relaxed">Instantly visualize live sales data, peak hours, and top-selling items across all your locations in one beautiful dashboard.</p>
                         </div>
 
                         {/* Decorative Graphic */}
@@ -80,33 +80,33 @@ export default function BentoFeatures() {
                     {/* Item 2 - Top Right */}
                     <motion.div
                         style={{ scale: scale2, y: y2 }}
-                        className="md:col-span-4 md:row-span-1 bg-gray-900 text-white rounded-[2.5rem] p-8 relative overflow-hidden group shadow-xl"
+                        className="md:col-span-4 md:row-span-1 bg-gray-900 text-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 relative overflow-hidden group shadow-xl"
                     >
                         <div className="absolute top-0 right-0 w-32 h-32 bg-[#FD6941] blur-[60px] opacity-20 rounded-full group-hover:scale-150 transition-transform duration-700" />
 
                         <div className="relative z-10">
-                            <ShieldCheck className="w-8 h-8 text-[#FD6941] mb-4" />
-                            <h3 className="text-xl font-bold mb-2">Enterprise Security</h3>
-                            <p className="text-gray-400 text-sm">Bank-grade encryption protecting your customer data and financial transactions.</p>
+                            <ShieldCheck className="w-6 h-6 md:w-8 md:h-8 text-[#FD6941] mb-3 md:mb-4" />
+                            <h3 className="text-lg md:text-xl font-bold mb-1 md:mb-2">Enterprise Security</h3>
+                            <p className="text-gray-400 text-[11px] md:text-sm">Bank-grade encryption protecting your data.</p>
                         </div>
                     </motion.div>
 
                     {/* Item 3 - Bottom Middle (Small) */}
                     <motion.div
                         style={{ scale: scale3, y: y1 }}
-                        className="md:col-span-2 md:row-span-1 bg-[#FFF5F1] rounded-[2.5rem] p-6 relative overflow-hidden group flex flex-col justify-center items-center text-center border border-[#FD6941]/10"
+                        className="md:col-span-2 md:row-span-1 bg-[#FFF5F1] rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-6 relative overflow-hidden group flex flex-col justify-center items-center text-center border border-[#FD6941]/10"
                     >
-                        <ChefHat className="w-10 h-10 text-[#FD6941] mb-3 group-hover:scale-110 transition-transform" />
-                        <h3 className="text-sm font-medium text-gray-900">Kitchen Sync</h3>
+                        <ChefHat className="w-8 h-8 md:w-10 md:h-10 text-[#FD6941] mb-2 md:mb-3 group-hover:scale-110 transition-transform" />
+                        <h3 className="text-[10px] md:text-sm font-medium text-gray-900">Kitchen Sync</h3>
                     </motion.div>
 
                     {/* Item 4 - Bottom Right */}
                     <motion.div
                         style={{ scale: scale4, y: y2 }}
-                        className="md:col-span-2 md:row-span-1 bg-white rounded-[2.5rem] p-6 relative overflow-hidden group shadow-md border border-gray-50 flex flex-col justify-center items-center text-center"
+                        className="md:col-span-2 md:row-span-1 bg-white rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-6 relative overflow-hidden group shadow-md border border-gray-50 flex flex-col justify-center items-center text-center"
                     >
-                        <Users className="w-10 h-10 text-blue-500 mb-3 group-hover:scale-110 transition-transform" />
-                        <h3 className="text-sm font-medium text-gray-900">Auto-Staffing</h3>
+                        <Users className="w-8 h-8 md:w-10 md:h-10 text-blue-500 mb-2 md:mb-3 group-hover:scale-110 transition-transform" />
+                        <h3 className="text-[10px] md:text-sm font-medium text-gray-900">Auto-Staffing</h3>
                     </motion.div>
 
                 </div>

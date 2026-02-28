@@ -10,9 +10,13 @@ import {
     BarChart3,
     ShieldCheck,
     Globe,
-    UtensilsCrossed
+    UtensilsCrossed,
+    Layout,
+    Menu as MenuIcon,
+    Tag,
+    UserPlus
 } from 'lucide-react';
-import heroDashboard from '../../assets/hero-dashboard.png';
+import { FloatingNav } from '../../components/landing/FloatingNav';
 import menuIcon from '../../assets/menu-icon.png';
 import logoFull from '../../assets/logo-full.png';
 import contactIllustrationHD from '../../assets/contact-illustration-hd.png';
@@ -21,9 +25,59 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../../utils/api';
 
+import HeroVideo from '../../components/landing/HeroVideo';
+import InfiniteMenuScroll from '../../components/landing/InfiniteMenuScroll';
+import BentoFeatures from '../../components/landing/BentoFeatures';
+import PricingPlans from '../../components/landing/PricingPlans';
+import { ContainerScroll } from '../../components/landing/ContainerScroll';
+import LandingFooter from '../../components/landing/LandingFooter';
+import arVideo from '../../assets/AR_Menu_Experience_Video_Generation.mp4';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+gsap.registerPlugin(ScrollTrigger);
+
+import FluidCanvas from '../../components/landing/FluidCanvas';
+import Lenis from 'lenis';
+
 export default function LandingPage() {
     const { hash } = useLocation();
     const navigate = useNavigate();
+
+    const navItems = [
+        { name: "Features", link: "#bento-features", icon: <Layout className="w-4 h-4" /> },
+        { name: "Menu", link: "#menu-showcase", icon: <MenuIcon className="w-4 h-4" /> },
+        { name: "Pricing", link: "#pricing", icon: <Tag className="w-4 h-4" /> },
+        { name: "Waitlist", link: "#contact", icon: <UserPlus className="w-4 h-4" /> },
+    ];
+
+    // Initialize Lenis Smooth Scroll
+    useEffect(() => {
+        const lenis = new Lenis({
+            duration: 1.2,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            gestureDirection: 'vertical',
+            smooth: true,
+            mouseMultiplier: 1,
+            smoothTouch: false,
+            touchMultiplier: 2,
+            infinite: false,
+        });
+
+        // Integrate Lenis with GSAP ScrollTrigger
+        lenis.on('scroll', ScrollTrigger.update);
+
+        const updateGSAP = (time) => {
+            lenis.raf(time * 1000);
+        };
+        gsap.ticker.add(updateGSAP);
+        gsap.ticker.lagSmoothing(0);
+
+        return () => {
+            lenis.destroy();
+            gsap.ticker.remove(updateGSAP);
+        };
+    }, []);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -100,112 +154,107 @@ export default function LandingPage() {
     }, [hash]);
 
     return (
-        <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
+        <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden relative">
+            <FluidCanvas />
 
-            {/* Navbar */}
-            <nav className="fixed w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
-                <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-20 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <img src={logoFull} alt="EatGreet Logo" className="h-8 md:h-10 w-auto" />
-                    </div>
+            <FloatingNav navItems={navItems} />
 
-                    <div className="hidden md:flex items-center gap-8 text-sm font-normal text-gray-600">
-                        <a href="#platform" className="hover:text-primary transition-colors">PLATFORM</a>
-                        <a href="#ecosystem" className="hover:text-primary transition-colors">ECOSYSTEM</a>
-                        <a href="#enterprise" className="hover:text-primary transition-colors">ENTERPRISE</a>
-                        <a href="#insights" className="hover:text-primary transition-colors">INSIGHTS</a>
-                    </div>
+            {/* Hero Section — Centered Layout */}
+            <section className="relative px-4 md:px-6 overflow-visible min-h-screen flex flex-col items-center justify-start bg-white pt-36 md:pt-44 text-center" id="hero-container">
 
-                    <div className="flex items-center gap-3 md:gap-4">
-                        <a href="/login" className="text-xs md:text-sm font-bold text-gray-700 hover:text-primary transition-colors">LOGIN</a>
-                        <a href="#contact" className="px-4 py-2 md:px-6 md:py-3 bg-primary text-white text-xs md:text-sm font-bold rounded-full hover:bg-[#E55A35] transition-all shadow-lg  whitespace-nowrap">
-                            GET STARTED
-                        </a>
-                    </div>
-                </div>
-            </nav>
+                {/* Announcement pill */}
+                <motion.a
+                    href="#contact"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-gray-200 bg-white shadow-sm text-xs font-semibold text-gray-700 mb-8 hover:bg-gray-50 transition-colors"
+                >
+                    🎉 Now with AR Menu Generation — <span className="text-[#FD6941] font-bold">Try it free →</span>
+                </motion.a>
 
-            {/* Hero Section */}
-            <section className="relative pt-24 md:pt-32 pb-16 md:pb-20 px-4 md:px-6 overflow-hidden">
-                <div className="absolute top-0 right-0 w-full md:w-1/2 h-full bg-[#FFF5F1] md:rounded-bl-[100px] -z-10" />
+                {/* Heading */}
+                <motion.h1
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="text-5xl sm:text-6xl md:text-7xl lg:text-[5.5rem] font-extrabold text-gray-900 leading-[1.08] tracking-tight max-w-5xl mx-auto font-['Outfit']"
+                >
+                    One-stop dining<br />
+                    <span className="text-[#FD6941]">platform</span> for your<br />
+                    restaurant
+                </motion.h1>
 
-                <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-10 md:gap-12 items-center">
-                    <div className="space-y-8">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FFF5F1] rounded-full border border-[#FD6941]/20">
-                            <span className="w-2 h-2 bg-[#FD6941] rounded-full animate-pulse" />
-                            <span className="text-xs font-bold text-[#FD6941] tracking-wide uppercase">v4.0 Global Release</span>
-                        </div>
+                {/* Subtitle */}
+                <motion.p
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="mt-6 text-lg md:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed"
+                >
+                    EatGreet orchestrates every touchpoint — interactive 3D menus, kitchen displays, real-time analytics, and a full manager command center in one ecosystem.
+                </motion.p>
 
-                        <h1 className="text-4xl sm:text-5xl md:text-7xl leading-[1.1] font-bold">
-                            The Future <br className="hidden sm:block" />
-                            <span className="text-primary italic pr-2">of Dining,</span> <br className="hidden sm:block" />
-                            Today.
-                        </h1>
+                {/* CTAs */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="mt-10 flex flex-wrap items-center justify-center gap-4"
+                >
+                    <a href="#contact" className="px-8 py-3.5 bg-gray-900 text-white font-semibold rounded-full hover:bg-gray-700 transition-all shadow-lg text-sm tracking-wide">
+                        Get started free
+                    </a>
+                    <a href="#contact" className="px-8 py-3.5 text-gray-700 font-semibold text-sm flex items-center gap-2 hover:text-[#FD6941] transition-colors">
+                        Contact us <ArrowRight className="w-4 h-4" />
+                    </a>
+                </motion.div>
 
-                        <p className="text-lg text-gray-600 max-w-lg leading-relaxed">
-                            A hyper-connected ecosystem orchestrating every touchpoint. From guest tablets to kitchen displays, and global HQ analytics.
-                        </p>
+                {/* Video Card Showcase */}
+                <motion.div
+                    initial={{ opacity: 0, y: 60, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ delay: 0.5, duration: 1, type: 'spring', stiffness: 40 }}
+                    className="mt-16 w-full max-w-5xl mx-auto relative group"
+                >
+                    {/* Premium Video Card Frame */}
+                    <div className="relative rounded-[2rem] md:rounded-[3rem] border border-white/40 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] overflow-hidden bg-black/5 aspect-video isolate">
+                        {/* Glass overlay */}
+                        <div className="absolute inset-0 z-10 border-[8px] md:border-[12px] border-white/5 pointer-events-none rounded-[2rem] md:rounded-[3rem]" />
 
-                        <div className="flex flex-wrap items-center gap-4">
-                            <a href="#contact" className="w-full sm:w-auto text-center px-8 py-4 bg-primary text-white font-bold rounded-lg hover:bg-[#E55A35] transition-all shadow-xl ">
-                                BOOK A DEMO
-                            </a>
-
-                        </div>
-                    </div>
-
-                    <div className="relative">
-                        <motion.div
-                            initial={{ y: 20, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            transition={{ duration: 0.8 }}
-                            className="relative z-10"
+                        <video
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         >
-                            <img src={heroDashboard} alt="Dashboard Interface" className="w-full drop-shadow-2xl rounded-xl md:transform md:perspective-1000 md:rotate-y-minus-12 md:hover:rotate-0 transition-transform duration-500" />
-                        </motion.div>
-
-                        {/* Decorative Elements */}
-                        <div className="absolute -top-10 -right-10 w-24 h-24 bg-yellow-400 rounded-full blur-3xl opacity-20" />
-                        <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-purple-500 rounded-full blur-3xl opacity-20" />
+                            <source src={arVideo} type="video/mp4" />
+                        </video>
                     </div>
-                </div>
+
+                    {/* Glow behind card */}
+                    <div className="absolute -inset-10 bg-[#FD6941]/5 blur-[100px] rounded-full -z-10 opacity-60" />
+                </motion.div>
             </section>
 
-            {/* Unified Experience Section */}
-            <section className="py-16 md:py-24 bg-white">
-                <div className="max-w-7xl mx-auto px-4 md:px-6 text-center">
-                    <span className="text-[#FD6941] font-bold tracking-widest text-xs uppercase mb-2 block">The Integrated Flow</span>
-                    <h2 className="text-3xl md:text-4xl font-bold mb-10 md:mb-16">A Unified Experience</h2>
+            {/* Menu Showcase Section */}
+            <InfiniteMenuScroll />
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                        {[
-                            { icon: Users, label: "Customer", desc: "Scan, 3D Menu Explore & Seamless Pay", color: "text-[#FD6941]", bg: "bg-[#FFF5F1]" },
-                            { icon: Briefcase, label: "Manager", desc: "Real-time floor tracking & Auto-Staffing", color: "text-blue-500", bg: "bg-blue-50" },
-                            { icon: ChefHat, label: "Kitchen", desc: "AI Order Prioritization & Prep Sync", color: "text-purple-500", bg: "bg-purple-50" },
-                            { icon: ShieldCheck, label: "Super Admin", desc: "Global Revenue & Supply Intelligence", color: "text-green-500", bg: "bg-green-50" },
-                        ].map((feature, idx) => (
-                            <motion.div
-                                key={idx}
-                                whileHover={{ y: -5 }}
-                                className="group p-6 rounded-2xl hover:bg-white hover:shadow-xl transition-all border border-transparent hover:border-gray-50"
-                            >
-                                <div className={`w-16 h-16 mx-auto ${feature.bg} ${feature.color} rounded-2xl flex items-center justify-center mb-4 text-3xl group-hover:scale-110 transition-transform`}>
-                                    <feature.icon className="w-8 h-8" />
-                                </div>
-                                <h3 className="text-lg font-bold mb-2">{feature.label}</h3>
-                                <p className="text-xs text-gray-500 leading-relaxed">{feature.desc}</p>
-                            </motion.div>
-                        ))}
-                    </div>
-                </div>
-            </section>
+            {/* Smart Bento Ecosystem Features */}
+            <BentoFeatures />
 
             {/* Deep Dive Grid */}
-            <section className="py-16 md:py-20 bg-gray-50">
+            < section className="py-16 md:py-20 bg-gray-50" >
                 <div className="max-w-7xl mx-auto px-4 md:px-6">
                     <div className="grid md:grid-cols-2 gap-8 mb-8">
                         {/* AI Sales Reports */}
-                        <div className="bg-[#FFF5F1] p-6 md:p-10 rounded-3xl flex flex-col justify-between relative overflow-hidden group">
+                        <motion.div
+                            initial={{ opacity: 0, x: -30 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true, margin: "-100px" }}
+                            transition={{ duration: 0.6 }}
+                            className="bg-[#FFF5F1] p-6 md:p-10 rounded-3xl flex flex-col justify-between relative overflow-hidden group"
+                        >
                             <div className="relative z-10">
                                 <span className="text-[#FD6941] font-bold text-xs tracking-widest uppercase mb-2 block">Twin Intelligence</span>
                                 <h3 className="text-2xl md:text-3xl font-bold mb-4">AI-Driven Sales Reports</h3>
@@ -214,7 +263,7 @@ export default function LandingPage() {
                                     ANALYZE NOW <ArrowRight className="w-4 h-4" />
                                 </button>
                             </div>
-                            <div className="absolute right-0 bottom-0 top-20 w-2/3 opacity-80 translate-x-12 translate-y-12 transition-transform group-hover:translate-x-8 group-hover:translate-y-8">
+                            <div className="absolute right-0 bottom-0 top-20 w-2/3 opacity-80 translate-x-12 translate-y-12 transition-transform duration-500 group-hover:translate-x-8 group-hover:translate-y-8">
                                 {/* Abstract chart representation using CSS */}
                                 <div className="w-full h-full bg-white rounded-tl-2xl shadow-xl p-4">
                                     <div className="space-y-3 pt-6">
@@ -222,16 +271,29 @@ export default function LandingPage() {
                                         <div className="h-2 w-1/2 bg-gray-100 rounded" />
                                         <div className="flex justify-between items-end h-32 mt-8 gap-2">
                                             {[40, 65, 45, 80, 55, 90].map((h, i) => (
-                                                <div key={i} style={{ height: `${h}%` }} className="w-full bg-[#FD6941] rounded-t hover:bg-[#FD6941] transition-colors" />
+                                                <motion.div
+                                                    key={i}
+                                                    initial={{ height: 0 }}
+                                                    whileInView={{ height: `${h}%` }}
+                                                    transition={{ delay: 0.2 + (i * 0.1), duration: 0.8, type: "spring" }}
+                                                    viewport={{ once: true }}
+                                                    className="w-full bg-[#FD6941] rounded-t hover:bg-[#FD6941]/80 transition-colors cursor-pointer"
+                                                />
                                             ))}
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* 3D Multimedia Menus */}
-                        <div className="bg-primary text-white p-6 md:p-10 rounded-3xl relative overflow-hidden flex flex-col justify-center">
+                        <motion.div
+                            initial={{ opacity: 0, x: 30 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true, margin: "-100px" }}
+                            transition={{ duration: 0.6 }}
+                            className="bg-primary text-white p-6 md:p-10 rounded-3xl relative overflow-hidden flex flex-col justify-center"
+                        >
                             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
                             <div className="relative z-10 max-w-md">
@@ -248,12 +310,24 @@ export default function LandingPage() {
                                 </div>
                             </div>
 
-                            <img src={menuIcon} alt="3D Menu" className="absolute bottom-4 right-4 w-32 md:w-48 opacity-90 drop-shadow-2xl animate-float" />
-                        </div>
+                            <motion.img
+                                animate={{ y: [0, -10, 0] }}
+                                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                                src={menuIcon}
+                                alt="3D Menu"
+                                className="absolute bottom-4 right-4 w-32 md:w-48 opacity-90 drop-shadow-2xl"
+                            />
+                        </motion.div>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8">
-                        <div className="bg-white p-8 rounded-3xl flex items-center gap-6 shadow-sm border border-gray-100">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            whileHover={{ y: -5, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.05)" }}
+                            className="bg-white p-8 rounded-3xl flex items-center gap-6 shadow-sm border border-gray-100 transition-colors cursor-default"
+                        >
                             <div className="w-16 h-16 bg-[#FFF5F1] rounded-2xl flex items-center justify-center text-[#FD6941] flex-shrink-0">
                                 <Globe className="w-8 h-8" />
                             </div>
@@ -261,9 +335,16 @@ export default function LandingPage() {
                                 <h4 className="text-xl font-bold mb-2">Global Revenue Tracking</h4>
                                 <p className="text-gray-500 text-sm">Multi-currency, multi-regional synchronization in real-time.</p>
                             </div>
-                        </div>
+                        </motion.div>
 
-                        <div className="bg-white p-8 rounded-3xl flex items-center gap-6 shadow-sm border border-gray-100">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            whileInView={{ opacity: 1, scale: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.1 }}
+                            whileHover={{ y: -5, boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.05)" }}
+                            className="bg-white p-8 rounded-3xl flex items-center gap-6 shadow-sm border border-gray-100 transition-colors cursor-default"
+                        >
                             <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center text-blue-500 flex-shrink-0">
                                 <ShieldCheck className="w-8 h-8" />
                             </div>
@@ -271,14 +352,17 @@ export default function LandingPage() {
                                 <h4 className="text-xl font-bold mb-2">Enterprise-Grade Security</h4>
                                 <p className="text-gray-500 text-sm">Military-grade encryption for every transaction and customer data point.</p>
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
-            </section>
+            </section >
+
+            {/* SaaS Pricing Tiers */}
+            <PricingPlans />
 
             {/* Footer / CTA Section */}
-            <section id="contact" className="py-16 md:py-20 px-4 md:px-6">
-                <div className="max-w-7xl mx-auto bg-[#F8F9FA] rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 shadow-sm border border-gray-100">
+            < section id="contact" className="py-16 md:py-20 px-4 md:px-6" >
+                <div className="max-w-7xl mx-auto bg-white bg-opacity-100 rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-gray-100 relative z-10">
                     <div className="grid lg:grid-cols-2 gap-10 md:gap-12 items-center">
                         {/* Left Side: Illustration & Text */}
                         <div className="space-y-6">
@@ -410,49 +494,9 @@ export default function LandingPage() {
                         </div>
                     </div>
                 </div>
+            </section >
 
-                <div className="max-w-7xl mx-auto mt-20 flex flex-col md:flex-row justify-between items-center text-xs text-gray-400 gap-8">
-                    <div className="flex items-center gap-2">
-                        <img src={logoFull} alt="EatGreet Logo" className="h-10 w-auto grayscale opacity-80 hover:grayscale-0 hover:opacity-100 transition-all" />
-                    </div>
-
-                    <div className="flex gap-12">
-                        <div>
-                            <h4 className="font-bold text-gray-900 mb-4 uppercase tracking-widest">Product</h4>
-                            <ul className="space-y-2">
-                                <li>Menu Management</li>
-                                <li>Order Tracking</li>
-                                <li>Kitchen Dashboard</li>
-                                <li>Sales Reports</li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="font-bold text-gray-900 mb-4 uppercase tracking-widest">Ecosystem</h4>
-                            <ul className="space-y-2 relative">
-                                <li>Manager Portal</li>
-                                <li>Kitchen Display</li>
-                                <li>Customer App</li>
-                                <li>Digital Menu</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div className="text-right">
-                        <h4 className="font-bold text-gray-900 mb-2 uppercase tracking-widest">HQ Locations</h4>
-                        <p>Singapore • London • New York</p>
-                        <p className="mt-2">Global Operations 24/7/365</p>
-                    </div>
-                </div>
-
-                <div className="max-w-7xl mx-auto mt-12 py-6 border-t border-gray-100 flex justify-between text-[10px] text-gray-400 uppercase tracking-widest">
-                    <p>© 2024 EatGreet Technologies. All rights reserved.</p>
-                    <div className="flex gap-6">
-                        <a href="#">Terms</a>
-                        <a href="#">Privacy</a>
-                        <a href="#">Security</a>
-                    </div>
-                </div>
-            </section>
-        </div>
+            <LandingFooter />
+        </div >
     );
 }

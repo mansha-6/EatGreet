@@ -48,42 +48,47 @@ export const FloatingNav = ({
                     duration: 0.2,
                 }}
                 className={cn(
-                    "flex max-w-fit fixed top-10 inset-x-0 mx-auto border border-black/[0.08] rounded-full bg-white/70 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.05)] z-[5000] pr-2 pl-4 py-2 items-center justify-center space-x-6",
+                    "flex fixed top-6 md:top-10 inset-x-4 md:inset-x-0 mx-auto border border-black/[0.08] rounded-full bg-white/80 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.05)] z-[5000] px-3 md:px-4 py-2 items-center justify-between md:justify-center md:space-x-6 max-w-[95%] md:max-w-fit",
                     className
                 )}
             >
-                {/* Logo */}
-                <div className="flex items-center pr-2 border-r border-black/[0.05]">
-                    <img src={logoFull} alt="Logo" className="h-5 w-auto" />
+                {/* Logo - Always visible */}
+                <div className="flex items-center pr-2 md:pr-4 md:border-r border-black/[0.05]">
+                    <img src={logoFull} alt="Logo" className="h-4 md:h-5 w-auto" />
                 </div>
 
-                {navItems.map((navItem, idx) => (
-                    <a
-                        key={`link=${idx}`}
-                        href={navItem.link}
-                        className={cn(
-                            "relative text-gray-600 items-center flex space-x-1 hover:text-primary transition-colors text-xs font-medium tracking-[0.15em] uppercase"
-                        )}
-                    >
-                        <span className="block sm:hidden">{navItem.icon}</span>
-                        <span className="hidden sm:block">{navItem.name}</span>
-                    </a>
-                ))}
+                {/* Nav Items Container for better control */}
+                <div className="flex items-center space-x-3 md:space-x-6">
+                    {navItems.map((navItem, idx) => (
+                        <a
+                            key={`link=${idx}`}
+                            href={navItem.link}
+                            className={cn(
+                                "relative text-gray-600 items-center flex hover:text-primary transition-colors text-[10px] md:text-xs font-medium tracking-[0.1em] md:tracking-[0.15em] uppercase"
+                            )}
+                        >
+                            <span className="md:hidden">{navItem.icon}</span>
+                            <span className="hidden md:block">{navItem.name}</span>
+                        </a>
+                    ))}
+                </div>
 
-                <div className="h-4 w-px bg-black/[0.05]" />
+                <div className="hidden md:block h-4 w-px bg-black/[0.05]" />
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 md:gap-2">
                     <a
                         href="/login"
-                        className="text-[10px] font-medium text-gray-500 hover:text-black transition-colors px-3 uppercase tracking-widest"
+                        className="hidden sm:block text-[10px] font-medium text-gray-500 hover:text-black transition-colors px-2 md:px-3 uppercase tracking-widest"
                     >
                         LOGIN
                     </a>
                     <a
                         href="#contact"
-                        className="px-5 py-2 bg-primary text-white text-[10px] font-medium rounded-full hover:bg-[#E55A35] transition-all shadow-lg shadow-primary/20 whitespace-nowrap tracking-widest uppercase"
+                        className="px-4 md:px-5 py-2 bg-primary text-white text-[9px] md:text-[10px] font-medium rounded-full hover:bg-[#E55A35] transition-all shadow-lg shadow-primary/20 whitespace-nowrap tracking-widest uppercase"
                     >
-                        GET STARTED
+                        {/* Smaller text on mobile to avoid overflow */}
+                        <span className="sm:hidden">START</span>
+                        <span className="hidden sm:block">GET STARTED</span>
                     </a>
                 </div>
             </motion.div>

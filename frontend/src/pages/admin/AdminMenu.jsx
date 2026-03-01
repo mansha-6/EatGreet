@@ -845,7 +845,7 @@ const AdminMenu = () => {
                                 {/* Image Container */}
                                 <div className="relative w-32 sm:w-full h-full sm:h-52 shrink-0 rounded-[1.2rem] sm:rounded-2xl overflow-hidden sm:mb-1 bg-gray-50">
                                     <MediaSlider
-                                        media={[...(item.models || []), ...(item.media || [])].length > 0 ? [...(item.models || []), ...(item.media || [])] : [{ url: item.image || 'https://via.placeholder.com/150', type: 'image/jpeg' }]}
+                                        media={[...(item.media || []), ...(item.models || [])].length > 0 ? [...(item.media || []), ...(item.models || [])] : [{ url: item.image || 'https://via.placeholder.com/150', type: 'image/jpeg' }]}
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                     />
                                     {/* Availability Tag */}

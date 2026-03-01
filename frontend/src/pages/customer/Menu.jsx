@@ -528,7 +528,7 @@ const Menu = () => {
 
                                 {/* Media Slider if available, else Image */}
                                 <MediaSlider
-                                    media={[...(item.models || []), ...(item.media || []), { url: item.image, type: 'image' }]}
+                                    media={[...(item.media || []), ...(item.models || []), { url: item.image, type: 'image' }]}
                                     className="w-full h-full object-cover"
                                     modelCheckId={`model-${item._id}`}
                                     compact={true}

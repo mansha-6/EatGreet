@@ -152,7 +152,7 @@ const MediaSlider = ({ media, interval = 30000, className = "", showArButton = t
                                 ar-modes="webxr scene-viewer quick-look"
 
                                 disable-pan
-                                loading="eager"
+                                loading="lazy"
                                 reveal="auto"
                                 shadow-intensity="1"
                                 shadow-softness="1"

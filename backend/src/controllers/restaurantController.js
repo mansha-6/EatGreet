@@ -6,33 +6,41 @@ const { sendEmail } = require('../utils/emailService');
 // @access  Private (Admin)
 const getRestaurantDetails = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id); // req.user is set by auth middleware
-        if (user && user.restaurantDetails) {
-            res.json({
-                _id: user._id,
-                name: user.restaurantName || user.name,
-                description: user.restaurantDetails.description,
-                address: user.restaurantDetails.address,
-                contactNumber: user.restaurantDetails.contactNumber,
-                logo: user.restaurantDetails.logo,
-                gstNumber: user.restaurantDetails.gstNumber,
-                cuisineType: user.restaurantDetails.cuisineType,
-                businessEmail: user.restaurantDetails.businessEmail,
-                isActive: user.restaurantDetails.isActive ?? true,
-                totalTables: user.restaurantDetails.totalTables || 0,
-                currency: user.currency || 'INR',
-                location: user.restaurantDetails.location,
-                operatingHours: user.restaurantDetails.operatingHours,
-                monthlyExpense: user.restaurantDetails.monthlyExpense || 0,
-                tableNumbers: user.restaurantDetails.tableNumbers || [],
-                orderPreferences: user.orderPreferences,
-                bankDetails: user.bankDetails,
-                notificationPreferences: user.notificationPreferences,
-                staff: user.staff
-            });
-        } else {
-            res.status(404).json({ message: 'Restaurant details not set' });
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
+
+        await user.syncSubscription();
+
+        if (!user.restaurantDetails) {
+            return res.status(404).json({ message: 'Restaurant details not set' });
+        }
+
+        res.json({
+            _id: user._id,
+            name: user.restaurantName || user.name,
+            description: user.restaurantDetails.description,
+            address: user.restaurantDetails.address,
+            contactNumber: user.restaurantDetails.contactNumber,
+            logo: user.restaurantDetails.logo,
+            gstNumber: user.restaurantDetails.gstNumber,
+            cuisineType: user.restaurantDetails.cuisineType,
+            businessEmail: user.restaurantDetails.businessEmail,
+            isActive: user.restaurantDetails.isActive ?? true,
+            totalTables: user.restaurantDetails.totalTables || 0,
+            currency: user.currency || 'INR',
+            location: user.restaurantDetails.location,
+            operatingHours: user.restaurantDetails.operatingHours,
+            monthlyExpense: user.restaurantDetails.monthlyExpense || 0,
+            tableNumbers: user.restaurantDetails.tableNumbers || [],
+            orderPreferences: user.orderPreferences,
+            bankDetails: user.bankDetails,
+            notificationPreferences: user.notificationPreferences,
+            subscription: user.subscription || { plan: 'None', status: 'None' },
+            joinedAt: user.restaurantDetails?.joinedAt || user.createdAt,
+            staff: user.staff
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -157,6 +165,10 @@ const getRestaurantPublic = async (req, res) => {
     try {
         const user = await User.findById(req.params.id).select('-password');
 
+        if (user) {
+            await user.syncSubscription();
+        }
+
         // Check if user exists and is an admin (restaurant owner)
         if (!user || (user.role !== 'admin' && user.role !== 'superadmin')) {
             return res.status(404).json({ message: 'Restaurant not found' });
@@ -197,6 +209,10 @@ const getRestaurantByName = async (req, res) => {
             ]
         }).select('-password');
 
+        if (user) {
+            await user.syncSubscription();
+        }
+
         if (!user || (user.role !== 'admin' && user.role !== 'superadmin')) {
             return res.status(404).json({ message: 'Restaurant not found' });
         }
@@ -225,20 +241,28 @@ const getRestaurantByName = async (req, res) => {
 // @desc    Get all restaurants (Super Admin) - Now fetching from Users
 const getAllRestaurants = async (req, res) => {
     try {
-        // Find users who are admins (restaurant owners)
-        const users = await User.find({ role: 'admin' }).select('-password');
+        // Find users who are admins or superadmins with a restaurant name
+        const users = await User.find({
+            role: { $in: ['admin', 'superadmin'] },
+            restaurantName: { $exists: true, $ne: '' }
+        }).select('-password');
+        const now = new Date();
 
         // Map users to the structure expected by frontend (simulating old Restaurant model structure)
-        const restaurants = users.map(user => ({
-            _id: user._id,
-            name: user.name, // Owner Name
-            email: user.email,
-            restaurantName: user.restaurantName, // Business Name
-            createdAt: user.restaurantDetails?.joinedAt || user.createdAt,
-            isActive: user.restaurantDetails?.isActive ?? true,
-            subscription: user.subscription || { plan: 'None', status: 'None' },
-            phone: user.phone,
-            city: user.city
+        const restaurants = await Promise.all(users.map(async user => {
+            await user.syncSubscription();
+
+            return {
+                _id: user._id,
+                name: user.name, // Owner Name
+                email: user.email,
+                restaurantName: user.restaurantName, // Business Name
+                createdAt: user.restaurantDetails?.joinedAt || user.createdAt,
+                isActive: user.get('restaurantDetails.isActive') ?? true,
+                subscription: user.subscription || { plan: 'None', status: 'None' },
+                phone: user.phone,
+                city: user.city
+            };
         }));
 
         res.json(restaurants);
@@ -250,11 +274,17 @@ const getAllRestaurants = async (req, res) => {
 // @desc    Update restaurant subscription (Super Admin)
 const updateSubscription = async (req, res) => {
     try {
-        const { userId, plan, status, endDate, autoRenew } = req.body;
+        const { userId, plan, status, endDate, autoRenew, isActive } = req.body;
         const user = await User.findById(userId);
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Update Activation Status if provided
+        if (isActive !== undefined) {
+            if (!user.restaurantDetails) user.restaurantDetails = {};
+            user.restaurantDetails.isActive = isActive;
         }
 
         user.subscription = {
@@ -267,7 +297,8 @@ const updateSubscription = async (req, res) => {
         };
 
         await user.save();
-        res.json({ message: 'Subscription updated successfully', subscription: user.subscription });
+        await user.syncSubscription();
+        res.json({ message: 'Subscription updated successfully', subscription: user.subscription, isActive: user.restaurantDetails?.isActive });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -301,7 +332,7 @@ const sendSubscriptionReminder = async (req, res) => {
                 </div>
             `
         });
-        
+
         user.subscription.lastReminderSent = new Date();
         await user.save();
 
@@ -311,13 +342,38 @@ const sendSubscriptionReminder = async (req, res) => {
     }
 };
 
-module.exports = { 
-    getRestaurantDetails, 
-    updateRestaurantDetails, 
-    createRestaurant, 
-    getRestaurantPublic, 
-    getAllRestaurants, 
+// @desc    Delete a restaurant
+// @route   DELETE /api/restaurant/:id
+// @access  Private (Super Admin)
+const deleteRestaurant = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'Restaurant not found' });
+        }
+
+        // Technically checking role if they are an Admin (Restaurant)
+        if (user.role !== 'Admin') {
+            return res.status(400).json({ message: 'User is not a restaurant owner' });
+        }
+
+        await User.deleteOne({ _id: req.params.id });
+
+        res.json({ message: 'Restaurant deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = {
+    getRestaurantDetails,
+    updateRestaurantDetails,
+    createRestaurant,
+    getRestaurantPublic,
+    getAllRestaurants,
     getRestaurantByName,
     updateSubscription,
-    sendSubscriptionReminder
+    sendSubscriptionReminder,
+    deleteRestaurant
 };

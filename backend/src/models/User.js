@@ -67,7 +67,7 @@ const userSchema = new mongoose.Schema({
 
     // Subscription Details
     subscription: {
-        plan: { type: String, enum: ['Trial', 'Silver', 'Gold', '3 Months', 'Monthly', 'Yearly', 'None'], default: 'None' },
+        plan: { type: String, enum: ['Trial', 'Monthly', 'Annually', 'None', 'Customized'], default: 'None' },
         status: { type: String, enum: ['Active', 'Expired', 'Expiring', 'None'], default: 'None' },
         startDate: { type: Date },
         endDate: { type: Date },
@@ -92,6 +92,54 @@ userSchema.pre('save', async function () {
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
+};
+
+userSchema.methods.syncSubscription = async function () {
+    // Only sync for admin roles that have a plan
+    if (!['admin', 'superadmin'].includes(this.role) || !this.subscription?.endDate) return false;
+
+    const now = new Date();
+    const endDate = new Date(this.subscription.endDate);
+    const diff = endDate.getTime() - now.getTime();
+    const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+    let changed = false;
+    let newStatus = 'Active';
+
+    if (daysLeft <= 0) {
+        newStatus = 'Expired';
+    } else if (daysLeft <= 3) {
+        newStatus = 'Expiring';
+    }
+
+    if (this.subscription.status !== newStatus) {
+        this.subscription.status = newStatus;
+        changed = true;
+    }
+
+    // Auto Deactivate Logic - Force isActive to false if expired
+    const currentlyActive = this.get('restaurantDetails.isActive');
+    if (newStatus === 'Expired') {
+        if (currentlyActive !== false) {
+            if (!this.restaurantDetails) this.restaurantDetails = {};
+            this.set('restaurantDetails.isActive', false);
+            this.markModified('restaurantDetails');
+            changed = true;
+        }
+    } else {
+        // Auto Reactivate Logic - If plan is valid but isActive is false, reactivate
+        if (currentlyActive === false) {
+            if (!this.restaurantDetails) this.restaurantDetails = {};
+            this.set('restaurantDetails.isActive', true);
+            this.markModified('restaurantDetails');
+            changed = true;
+        }
+    }
+
+    if (changed) {
+        await this.save();
+    }
+    return changed;
 };
 
 module.exports = mongoose.model('User', userSchema);

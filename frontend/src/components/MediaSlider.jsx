@@ -150,15 +150,17 @@ const MediaSlider = ({ media, interval = 30000, className = "", showArButton = t
                                 auto-rotate
                                 ar
                                 ar-modes="webxr scene-viewer quick-look"
-
+                                ar-scale="fixed"
+                                disable-zoom
                                 disable-pan
-                                loading="lazy"
+                                poster={validMedia.find(m => m.type?.startsWith('image') || (!m.type && m.url?.match(/\.(jpg|jpeg|png|webp)$/i)))?.url || ''}
+                                loading="eager"
                                 reveal="auto"
                                 shadow-intensity="1"
                                 shadow-softness="1"
                                 touch-action="none"
                                 data-js-focus-visible
-                                style={{ width: '100%', height: '100%', backgroundColor: '#f9fafb', '--poster-color': '#f9fafb' }}
+                                style={{ width: '100%', height: '100%', backgroundColor: '#f9fafb', '--poster-color': 'transparent' }}
                                 className="w-full h-full object-cover"
                             >
                                 <button

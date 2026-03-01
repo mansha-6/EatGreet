@@ -19,6 +19,14 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
 
+        const subscription = role === 'admin' ? {
+            plan: 'Trial',
+            status: 'Active',
+            startDate: new Date(),
+            endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+            autoRenew: false
+        } : { plan: 'None', status: 'None' };
+
         const user = await User.create({
             name,
             email,
@@ -27,7 +35,8 @@ const registerUser = async (req, res) => {
             phone,
             city,
             restaurantName,
-            currency: currency || 'INR'
+            currency: currency || 'INR',
+            subscription
         });
 
         if (user) {
@@ -42,6 +51,7 @@ const registerUser = async (req, res) => {
                 restaurantName: user.restaurantName,
                 currency: user.currency,
                 profilePicture: user.profilePicture,
+                subscription: user.subscription,
                 token: generateToken(user._id),
             });
         } else {
@@ -61,7 +71,7 @@ const authUser = async (req, res) => {
     try {
         // Optimization: Only select fields needed for login and initial response
         // This avoids fetching potentially large arrays like 'payments' and 'staff'
-        const user = await User.findOne({ email }).select('name email password role restaurantName currency profilePicture');
+        const user = await User.findOne({ email }).select('name email password role restaurantName currency profilePicture subscription');
 
         if (user && (await user.matchPassword(password))) {
             res.json({
@@ -72,6 +82,7 @@ const authUser = async (req, res) => {
                 restaurantName: user.restaurantName,
                 currency: user.currency,
                 profilePicture: user.profilePicture,
+                subscription: user.subscription,
                 token: generateToken(user._id),
             });
         } else {
@@ -100,7 +111,8 @@ const getUserProfile = async (req, res) => {
                 restaurantName: user.restaurantName,
                 currency: user.currency,
                 profilePicture: user.profilePicture,
-                restaurantDetails: user.restaurantDetails
+                restaurantDetails: user.restaurantDetails,
+                subscription: user.subscription
             });
         } else {
             res.status(404).json({ message: 'User not found' });

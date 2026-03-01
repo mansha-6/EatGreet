@@ -588,47 +588,74 @@ const AdminSettings = () => {
                     {/* Subscription Information */}
                     {activeTab === 'subscription' && (
                         <div className="space-y-6">
-                            <div className="bg-gradient-to-br from-[#FD6941]/10 to-transparent border border-[#FD6941]/20 rounded-[2rem] p-8 shadow-sm">
-                                <div className="flex justify-between items-start mb-6">
-                                    <div>
-                                        <p className="text-[#FD6941] text-sm font-normal mb-1">Current Plan</p>
-                                        <h2 className="text-3xl font-normal text-gray-900">Premium Enterprise</h2>
-                                    </div>
-                                    <span className="px-4 py-1.5 bg-[#FD6941]/10 text-[#FD6941] rounded-full text-xs font-normal border border-[#FD6941]/20">
-                                        Active
-                                    </span>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-                                    <div>
-                                        <p className="text-gray-500 text-xs mb-1">Price</p>
-                                        <p className="font-normal text-xl text-gray-900">$199<span className="text-sm font-normal text-gray-500">/mo</span></p>
-                                    </div>
-                                    <div>
-                                        <p className="text-gray-500 text-xs mb-1">Expiry Date</p>
-                                        <p className="font-normal text-xl text-gray-900">Dec 31, 2026</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-gray-500 text-xs mb-1">Next Billing</p>
-                                        <p className="font-normal text-xl text-gray-900">Jan 01, 2027</p>
-                                    </div>
-                                </div>
-                                <button className="bg-[#FD6941] text-white px-6 py-3 rounded-xl font-normal hover:bg-[#FD6941]/90 transition-colors shadow-sm">
-                                    Renew / Upgrade Plan
-                                </button>
-                            </div>
+                            {(() => {
+                                const sub = user?.subscription;
+                                const endDate = sub?.endDate ? new Date(sub.endDate) : null;
+                                const daysLeft = endDate ? Math.max(0, Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24))) : 0;
+                                const planName = sub?.plan || 'Trial';
+                                const isActive = sub?.status === 'Active' || daysLeft > 0;
 
-                            <SectionCard title="Plan Features" icon={CheckCircle}>
-                                <ul className="space-y-3">
-                                    {['Unlimited Orders', 'Advanced Analytics', 'Priority Support', 'Custom Branding', 'Multiple Locations'].map((feature) => (
-                                        <li key={feature} className="flex items-center gap-3 text-sm font-normal text-gray-600">
-                                            <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center text-green-500">
-                                                <CheckCircle className="w-3 h-3" />
+                                return (
+                                    <>
+                                        <div className={`bg-gradient-to-br ${isActive ? 'from-[#FD6941]/10' : 'from-rose-50'} to-transparent border ${isActive ? 'border-[#FD6941]/20' : 'border-rose-200'} rounded-[2rem] p-8 shadow-sm`}>
+                                            <div className="flex justify-between items-start mb-6">
+                                                <div>
+                                                    <p className={`${isActive ? 'text-[#FD6941]' : 'text-rose-500'} text-sm font-normal mb-1`}>
+                                                        {isActive ? 'Current Plan' : 'Plan Status'}
+                                                    </p>
+                                                    <h2 className="text-3xl font-normal text-gray-900">{planName} Plan</h2>
+                                                </div>
+                                                <span className={`px-4 py-1.5 rounded-full text-xs font-normal border ${isActive ? 'bg-[#E7F9F0] text-[#10B981] border-emerald-100' : 'bg-rose-50 text-rose-500 border-rose-100'}`}>
+                                                    {isActive ? (daysLeft <= 3 ? `Expiring Soon (${daysLeft}d)` : 'Active') : 'Expired'}
+                                                </span>
                                             </div>
-                                            {feature}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </SectionCard>
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                                                <div>
+                                                    <p className="text-gray-500 text-xs mb-1">Status</p>
+                                                    <p className="font-normal text-xl text-gray-900">{isActive ? 'Ongoing' : 'Requires Renewal'}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-500 text-xs mb-1">Expiry Date</p>
+                                                    <p className="font-normal text-xl text-gray-900">
+                                                        {endDate ? endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-500 text-xs mb-1">Days Remaining</p>
+                                                    <p className={`font-normal text-xl ${daysLeft <= 3 ? 'text-[#FD6941]' : 'text-gray-900'}`}>
+                                                        {daysLeft} Days
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => window.open('mailto:support@eatgreet.com?subject=Subscription Renewal Requested', '_blank')}
+                                                className="bg-[#FD6941] text-white px-6 py-3 rounded-xl font-normal hover:bg-[#FD6941]/90 transition-colors shadow-sm"
+                                            >
+                                                Upgrade / Renew Subscription
+                                            </button>
+                                        </div>
+
+                                        <SectionCard title="Plan Features" icon={CheckCircle}>
+                                            <ul className="space-y-3">
+                                                {[
+                                                    'Unlimited Orders & Invoices',
+                                                    '3D & AR Menu Visualizer',
+                                                    'Advanced Sales Analytics',
+                                                    'Staff & Kitchen Management',
+                                                    'Custom Branding & Logo'
+                                                ].map((feature) => (
+                                                    <li key={feature} className="flex items-center gap-3 text-sm font-normal text-gray-600">
+                                                        <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center text-green-500">
+                                                            <CheckCircle className="w-3 h-3" />
+                                                        </div>
+                                                        {feature}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </SectionCard>
+                                    </>
+                                );
+                            })()}
                         </div>
                     )}
 

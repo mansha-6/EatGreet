@@ -98,7 +98,7 @@ const DynamicNavbar = ({ customerProps }) => {
     if (viewType === 'KITCHEN') {
         const titleName = user?.name || 'Kitchen';
         return (
-            <header className="px-4 sm:px-[30px] py-3 flex justify-between items-center sticky top-0 z-[100] bg-transparent backdrop-blur-md border-b border-gray-100 md:border-b-0 transition-all">
+            <header className="px-4 sm:px-[30px] py-3 flex justify-between items-center sticky top-0 z-[100] bg-[#F8F9FA]/60 backdrop-blur-xl border-b border-gray-100 transition-all">
                 <Link to="/" className="flex items-center gap-3 transition-transform hover:scale-105 shrink-0">
                     <img src={logo} alt="EatGreet" className="h-7 sm:h-9 w-auto object-contain" />
                 </Link>
@@ -132,7 +132,7 @@ const DynamicNavbar = ({ customerProps }) => {
     if (viewType === 'CUSTOMER') {
         const { logo: restaurantLogo } = customerProps || {};
         return (
-            <header className="bg-white shadow-sm sticky top-0 z-50">
+            <header className="bg-white/60 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100/50">
                 <div className="max-w-7xl mx-auto px-4 py-2 flex justify-between items-center">
                     <Link to={`${baseUrl}/menu`} className="flex items-center gap-2">
                         <img src={restaurantLogo || logo} alt="EatGreet" className="h-8 w-auto object-contain" />
@@ -168,10 +168,13 @@ const DynamicNavbar = ({ customerProps }) => {
     }
 
     // 3. ADMIN & SUPER_ADMIN VIEW
+    const adminBgClass = viewType === 'SUPER_ADMIN' ? 'bg-[#F0F2F4]/60' : 'bg-gray-50/60';
+    const borderColor = viewType === 'SUPER_ADMIN' ? 'border-white/20' : 'border-gray-200';
+
     return (
         <>
             {/* Main Header (Pill Style for Desktop, Simple for Mobile) */}
-            <header className="px-4 sm:px-[30px] py-3 flex items-center justify-between sticky top-0 z-[100] bg-transparent backdrop-blur-md transition-all border-b border-gray-100 md:border-b-0">
+            <header className={`px-4 sm:px-[30px] py-3 flex items-center justify-between sticky top-0 z-[100] ${adminBgClass} backdrop-blur-xl transition-all border-b ${borderColor}`}>
                 {/* Logo Section */}
                 <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                     <button

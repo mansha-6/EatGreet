@@ -3,12 +3,126 @@ import {
     Layout, CreditCard, Shield, Users,
     Bell, Activity, Lock, Database,
     Save, Upload, Eye, EyeOff, Plus, Trash2,
-    CheckCircle, AlertCircle, Clock
+    CheckCircle, AlertCircle, Clock, Rocket, Sparkles, X, ChevronRight, Circle
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
+
+const DEFAULT_PLANS = [
+    {
+        id: 1,
+        name: 'Monthly Plan',
+        tagline: 'Standard Modernization',
+        price: '2,499',
+        period: 'Per Month',
+        color: 'blue',
+        icon: Rocket,
+        features: ["Standard 3D Menu", "Up to 50 items", "Live Order Tracking", "Basic Analytics"],
+        isActive: true,
+        isBestValue: false
+    },
+    {
+        id: 2,
+        name: 'Annually Plan',
+        tagline: 'Pro Growth Choice',
+        price: '24,099',
+        period: 'Per Year',
+        color: 'orange',
+        icon: Sparkles,
+        features: ["Unlimited AR Items", "Dynamic Pricing Engine", "Real-time AI Sync", "Priority 24/7 Support", "Advanced Sales Hub"],
+        isActive: true,
+        isBestValue: true
+    },
+    {
+        id: 3,
+        name: 'Customized Plan',
+        tagline: 'Enterprise scale',
+        price: 'Custom',
+        period: 'Tailored for Scale',
+        color: 'gray',
+        icon: Shield,
+        features: ["White-label branding", "Global Supply Chain Tech", "Custom POS Integration", "SLA & Dedicated Manager", "Unlimited Sites"],
+        isActive: true,
+        isBestValue: false
+    }
+];
 
 const SuperAdminSettings = () => {
     const [activeTab, setActiveTab] = useState('platform');
     const [showApiKey, setShowApiKey] = useState(false);
+    const [plans, setPlans] = useState(DEFAULT_PLANS);
+    const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+    const [editingPlan, setEditingPlan] = useState(null);
+
+    // Form State for Modal
+    const [planForm, setPlanForm] = useState({
+        name: '',
+        tagline: '',
+        price: '',
+        period: 'Per Month',
+        features: [''],
+        isBestValue: false
+    });
+
+    const handleOpenModal = (plan = null) => {
+        if (plan) {
+            setEditingPlan(plan);
+            setPlanForm({ ...plan, features: [...plan.features] });
+        } else {
+            setEditingPlan(null);
+            setPlanForm({
+                name: '',
+                tagline: '',
+                price: '',
+                period: 'Per Month',
+                features: [''],
+                isBestValue: false
+            });
+        }
+        setIsPlanModalOpen(true);
+    };
+
+    const handleSavePlan = () => {
+        if (!planForm.name || !planForm.price) {
+            toast.error('Please fill in required fields');
+            return;
+        }
+
+        if (editingPlan) {
+            setPlans(plans.map(p => p.id === editingPlan.id ? { ...p, ...planForm } : p));
+            toast.success('Plan updated successfully');
+        } else {
+            const newPlan = {
+                ...planForm,
+                id: Date.now(),
+                isActive: true,
+                color: planForm.name.toLowerCase().includes('annual') ? 'orange' : 'blue',
+                icon: planForm.name.toLowerCase().includes('annual') ? Sparkles : Rocket
+            };
+            setPlans([...plans, newPlan]);
+            toast.success('New plan created');
+        }
+        setIsPlanModalOpen(false);
+    };
+
+    const handleTogglePlan = (id) => {
+        setPlans(plans.map(p => {
+            if (p.id === id) {
+                const newState = !p.isActive;
+                toast.success(`Plan ${newState ? 'enabled' : 'disabled'}`);
+                return { ...p, isActive: newState };
+            }
+            return p;
+        }));
+    };
+
+    const handleAddFeature = () => setPlanForm({ ...planForm, features: [...planForm.features, ''] });
+    const handleRemoveFeature = (idx) => setPlanForm({ ...planForm, features: planForm.features.filter((_, i) => i !== idx) });
+    const handleFeatureChange = (idx, val) => {
+        const newFeatures = [...planForm.features];
+        newFeatures[idx] = val;
+        setPlanForm({ ...planForm, features: newFeatures });
+    };
 
     return (
         <div className="flex flex-col lg:flex-row gap-8 pb-10 max-w-7xl mx-auto h-[calc(100vh-6rem)]">
@@ -89,7 +203,10 @@ const SuperAdminSettings = () => {
                             {activeTab === 'security' && 'Monitor security protocols and system activity'}
                         </p>
                     </div>
-                    <button className="bg-black hover:bg-gray-800 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-sm">
+                    <button
+                        onClick={() => toast.success('Settings saved successfully')}
+                        className="bg-black hover:bg-gray-800 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-sm active:scale-95"
+                    >
                         <Save className="w-4 h-4" />
                         Save Changes
                     </button>
@@ -153,34 +270,92 @@ const SuperAdminSettings = () => {
                     {activeTab === 'subscription' && (
                         <div className="space-y-6">
                             <div className="flex justify-end">
-                                <button className="flex items-center gap-2 text-[#FD6941] font-bold text-sm bg-[#FD6941]/10 px-4 py-2 rounded-lg hover:bg-[#FD6941]/20 transition-colors">
+                                <button
+                                    onClick={() => handleOpenModal()}
+                                    className="flex items-center gap-2 text-[#FD6941] font-bold text-sm bg-[#FD6941]/10 px-4 py-2 rounded-lg hover:bg-[#FD6941]/20 transition-colors active:scale-95"
+                                >
                                     <Plus className="w-4 h-4" /> Create New Plan
                                 </button>
                             </div>
 
-                            {/* Plan Card (Mock) */}
-                            <SectionCard title="Active Plans" icon={CreditCard}>
-                                <div className="space-y-4">
-                                    <div className="p-4 border border-gray-100 rounded-2xl bg-gray-50 hover:bg-white hover:shadow-md transition-all">
-                                        <div className="flex justify-between items-start mb-4">
-                                            <div>
-                                                <h4 className="font-bold text-lg text-gray-800">Premium Restaurant</h4>
-                                                <p className="text-sm text-gray-500">Full access to all features</p>
+                            {/* Plans Dashboard */}
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                                {plans.map((plan) => {
+                                    const Icon = plan.icon || Rocket;
+                                    const isOrange = plan.color === 'orange';
+
+                                    return (
+                                        <motion.div
+                                            key={plan.id}
+                                            layout
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            className={`bg-white rounded-[2.5rem] p-8 shadow-sm border relative group overflow-hidden flex flex-col min-h-[400px] transition-all duration-300 ${!plan.isActive ? 'grayscale opacity-60' : ''
+                                                } ${isOrange ? 'border-[#FD6941]/20' : 'border-gray-100'}`}
+                                        >
+                                            {/* Decorative Backgrounds */}
+                                            <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl -translate-y-12 translate-x-12 ${isOrange ? 'bg-[#FD6941]/5' : 'bg-blue-500/5'
+                                                }`} />
+
+                                            <div className="flex justify-between items-start mb-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`p-3 rounded-2xl ${isOrange ? 'bg-orange-50 text-[#FD6941]' : 'bg-blue-50 text-blue-500'}`}>
+                                                        <Icon className="w-6 h-6" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="font-bold text-xl text-gray-800 tracking-tight">{plan.name}</h4>
+                                                        <p className={`text-xs font-bold ${isOrange ? 'text-[#FD6941]' : 'text-gray-400'}`}>{plan.tagline}</p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col items-end gap-2">
+                                                    {plan.isBestValue && (
+                                                        <div className="px-3 py-1 bg-[#FD6941] text-white rounded-full text-[8px] font-bold uppercase tracking-[0.1em] flex items-center gap-1 shadow-lg shadow-[#FD6941]/20">
+                                                            <Sparkles className="w-2.5 h-2.5 fill-white" /> Best Value
+                                                        </div>
+                                                    )}
+                                                    <span className="text-2xl font-black text-gray-900 leading-none">
+                                                        {plan.price === 'Custom' ? 'Custom' : `₹${plan.price}`}
+                                                    </span>
+                                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{plan.period}</span>
+                                                </div>
                                             </div>
-                                            <span className="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-bold">Active</span>
-                                        </div>
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                                            <InputGroup label="Monthly Price" defaultValue="$49.99" />
-                                            <InputGroup label="Validity (Days)" defaultValue="30" />
-                                            <InputGroup label="Grace Period (Days)" defaultValue="3" />
-                                        </div>
-                                        <div className="flex items-center justify-end gap-3">
-                                            <button className="text-sm font-bold text-gray-500 hover:text-gray-700">Disable</button>
-                                            <button className="text-sm font-bold text-[#FD6941] hover:text-[#FD6941]">Edit Plan</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </SectionCard>
+
+                                            <div className={`space-y-3 mb-8 p-5 rounded-3xl border ${isOrange ? 'bg-[#FFF5F1]/50 border-[#FD6941]/10' : 'bg-gray-50/50 border-gray-100'
+                                                }`}>
+                                                {plan.features.map((feat, i) => (
+                                                    <div key={i} className="flex items-center gap-3 text-sm text-gray-600">
+                                                        <CheckCircle className={`w-4 h-4 ${isOrange ? 'text-[#FD6941]' : 'text-blue-500'}`} />
+                                                        <span className="font-medium">{feat}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-auto">
+                                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${plan.isActive ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'
+                                                    }`}>
+                                                    {plan.isActive ? 'Publicly Active' : 'Disabled'}
+                                                </span>
+                                                <div className="flex items-center gap-4">
+                                                    <button
+                                                        onClick={() => handleTogglePlan(plan.id)}
+                                                        className={`text-xs font-bold transition-all ${plan.isActive ? 'text-gray-400 hover:text-red-500' : 'text-green-500 hover:text-green-600'
+                                                            }`}
+                                                    >
+                                                        {plan.isActive ? 'Disable' : 'Enable Plan'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleOpenModal(plan)}
+                                                        className={`text-xs font-bold transition-colors ${isOrange ? 'text-[#FD6941] hover:text-[#e15a35]' : 'text-blue-500 hover:text-blue-600'
+                                                            }`}
+                                                    >
+                                                        Edit Details
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
                         </div>
                     )}
 
@@ -326,6 +501,149 @@ const SuperAdminSettings = () => {
 
                 </div>
             </div>
+            {/* Plan Edit/Create Modal */}
+            <AnimatePresence>
+                {isPlanModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsPlanModalOpen(false)}
+                            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl relative z-10 overflow-hidden"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="p-8">
+                                <div className="flex items-center justify-between mb-8">
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-gray-800">{editingPlan ? 'Edit Plan' : 'Create New Plan'}</h2>
+                                        <p className="text-sm text-gray-500">Define your platform tiers and pricing</p>
+                                    </div>
+                                    <button
+                                        onClick={() => setIsPlanModalOpen(false)}
+                                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                    >
+                                        <X className="w-6 h-6 text-gray-400" />
+                                    </button>
+                                </div>
+
+                                <div className="space-y-6 overflow-y-auto max-h-[60vh] pr-2 no-scrollbar">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Plan Name</label>
+                                            <input
+                                                type="text"
+                                                className="w-full px-5 py-3.5 bg-gray-50 border border-transparent focus:bg-white focus:border-[#FD6941]/30 rounded-2xl text-sm font-bold outline-none transition-all"
+                                                placeholder="e.g. Pro Plan"
+                                                value={planForm.name}
+                                                onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Tagline</label>
+                                            <input
+                                                type="text"
+                                                className="w-full px-5 py-3.5 bg-gray-50 border border-transparent focus:bg-white focus:border-[#FD6941]/30 rounded-2xl text-sm font-bold outline-none transition-all"
+                                                placeholder="e.g. Best for growth"
+                                                value={planForm.tagline}
+                                                onChange={(e) => setPlanForm({ ...planForm, tagline: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Price (₹)</label>
+                                            <input
+                                                type="text"
+                                                className="w-full px-5 py-3.5 bg-gray-50 border border-transparent focus:bg-white focus:border-[#FD6941]/30 rounded-2xl text-sm font-bold outline-none transition-all"
+                                                placeholder="9,999"
+                                                value={planForm.price}
+                                                onChange={(e) => setPlanForm({ ...planForm, price: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Period</label>
+                                            <select
+                                                className="w-full px-5 py-3.5 bg-gray-50 border border-transparent focus:bg-white focus:border-[#FD6941]/30 rounded-2xl text-sm font-bold outline-none transition-all appearance-none cursor-pointer"
+                                                value={planForm.period}
+                                                onChange={(e) => setPlanForm({ ...planForm, period: e.target.value })}
+                                            >
+                                                <option>Per Month</option>
+                                                <option>Per Year</option>
+                                                <option>Lifetime</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between px-1">
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Plan Features</label>
+                                            <button
+                                                onClick={handleAddFeature}
+                                                className="text-[10px] font-bold text-[#FD6941] hover:underline"
+                                            >
+                                                + Add Line
+                                            </button>
+                                        </div>
+                                        <div className="space-y-3">
+                                            {planForm.features.map((feat, idx) => (
+                                                <div key={idx} className="flex gap-2">
+                                                    <input
+                                                        type="text"
+                                                        className="flex-1 px-5 py-3 bg-gray-50 border border-transparent focus:bg-white focus:border-[#FD6941]/30 rounded-xl text-xs font-medium outline-none transition-all"
+                                                        placeholder="Feature description..."
+                                                        value={feat}
+                                                        onChange={(e) => handleFeatureChange(idx, e.target.value)}
+                                                    />
+                                                    <button
+                                                        onClick={() => handleRemoveFeature(idx)}
+                                                        className="p-3 text-gray-300 hover:text-red-500 transition-colors"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between p-5 bg-gray-50 rounded-[1.8rem] border border-gray-100">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-orange-100 rounded-lg text-orange-500">
+                                                <Sparkles className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-bold text-gray-800">Highlight as Best Value</p>
+                                                <p className="text-[10px] text-gray-400">Attract more customers to this tier</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => setPlanForm({ ...planForm, isBestValue: !planForm.isBestValue })}
+                                            className={`w-12 h-6 rounded-full relative transition-colors ${planForm.isBestValue ? 'bg-[#FD6941]' : 'bg-gray-300'}`}
+                                        >
+                                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${planForm.isBestValue ? 'left-7' : 'left-1'}`} />
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={handleSavePlan}
+                                    className="w-full mt-8 bg-black hover:bg-gray-900 text-white py-4 rounded-2xl font-bold transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                                >
+                                    <CheckCircle className="w-5 h-5" />
+                                    {editingPlan ? 'Update Plan' : 'Create Plan'}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
@@ -367,16 +685,22 @@ const InputGroup = ({ label, defaultValue }) => (
     </div>
 );
 
-const ToggleItem = ({ title, description }) => (
-    <div className="flex items-center justify-between py-2">
-        <div>
-            <h4 className="font-bold text-gray-800 text-sm">{title}</h4>
-            <p className="text-xs text-gray-500">{description}</p>
+const ToggleItem = ({ title, description }) => {
+    const [enabled, setEnabled] = useState(true);
+    return (
+        <div className="flex items-center justify-between py-2">
+            <div>
+                <h4 className="font-bold text-gray-800 text-sm">{title}</h4>
+                <p className="text-xs text-gray-500">{description}</p>
+            </div>
+            <button
+                onClick={() => setEnabled(!enabled)}
+                className={`w-12 h-6 rounded-full relative transition-colors ${enabled ? 'bg-[#FD6941]' : 'bg-gray-300'}`}
+            >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${enabled ? 'right-1' : 'left-1'}`} />
+            </button>
         </div>
-        <div className="w-12 h-6 bg-[#FD6941] rounded-full relative cursor-pointer shadow-inner">
-            <div className="w-4 h-4 bg-white rounded-full absolute top-1 right-1 shadow-md"></div>
-        </div>
-    </div>
-);
+    );
+};
 
 export default SuperAdminSettings;

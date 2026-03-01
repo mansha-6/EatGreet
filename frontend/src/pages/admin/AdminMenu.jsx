@@ -1052,6 +1052,7 @@ const AdminMenu = () => {
                                                             ar
                                                             ar-modes="webxr scene-viewer quick-look"
                                                             ar-scale="fixed"
+                                                            disable-zoom
                                                             disable-pan
                                                             shadow-intensity="1"
                                                             shadow-softness="1"

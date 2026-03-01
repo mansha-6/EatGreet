@@ -69,6 +69,7 @@ export const authAPI = {
   getUsers: () => api.get('/auth/users'),
   updatePassword: () => Promise.resolve({ data: { message: 'Password update not implemented yet' } }), // Pending backend
   getRestaurants: () => api.get('/restaurant/all'),
+  deleteRestaurant: (id) => api.delete(`/restaurant/${id}`),
   updateSubscription: (data) => api.put('/restaurant/subscription', data),
   sendReminder: (data) => api.post('/restaurant/reminder', data),
 };

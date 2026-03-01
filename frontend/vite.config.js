@@ -24,11 +24,22 @@ export default defineConfig({
     include: ['three', 'react-is'],
   },
   build: {
+    target: 'esnext',
+    minify: 'terser',
+    cssMinify: true,
     rollupOptions: {
-      external: [],
+      output: {
+        manualChunks: {
+          'vendor-three': ['three', '@google/model-viewer'],
+          'vendor-recharts': ['recharts'],
+          'vendor-framer': ['framer-motion'],
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+        },
+      },
     },
     commonjsOptions: {
       include: [/three/, /react-is/, /node_modules/],
     },
+    chunkSizeWarningLimit: 1000,
   },
 })

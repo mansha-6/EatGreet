@@ -105,6 +105,49 @@ input[type=number] {
     -moz-appearance: textfield;
 }
 
+/* ───── Date Input Customization ───── */
+input[type="date"] {
+    accent-color: #FD6941 !important;
+    color-scheme: light !important;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    /* Custom filter for themed indicator matches #FD6941 */
+    filter: invert(48%) sepia(23%) saturate(3025%) hue-rotate(336deg) brightness(110%) contrast(105%);
+    padding: 2px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    background: rgba(253, 105, 65, 0.05);
+    transform: scale(1.1);
+}
+
+input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+    padding: 0;
+}
+
+input[type="date"]::-webkit-datetime-edit-text {
+    color: #9CA3AF;
+    padding: 0 0.2rem;
+}
+
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
+input[type="date"]::-webkit-datetime-edit-year-field {
+    color: #111827;
+}
+
+input[type="date"]::-webkit-datetime-edit-month-field:focus,
+input[type="date"]::-webkit-datetime-edit-day-field:focus,
+input[type="date"]::-webkit-datetime-edit-year-field:focus {
+    background-color: #FD6941;
+    color: white;
+    border-radius: 4px;
+}
+
 /* Remove focus outline from Recharts chart elements */
 .recharts-wrapper,
 .recharts-wrapper *,

@@ -1,44 +1,55 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation, useParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, Suspense, lazy } from 'react';
 import { Toaster } from 'react-hot-toast';
-import LandingPage from './pages/landing/LandingPage';
-import Login from './pages/auth/Login';
-import Signup from './pages/auth/Signup';
+import { SettingsProvider } from './context/SettingsContext';
+import ErrorBoundary from './components/ErrorBoundary';
+
+// Lazy loading all pages and layouts for better performance
+const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
+const Login = lazy(() => import('./pages/auth/Login'));
+const Signup = lazy(() => import('./pages/auth/Signup'));
 
 // Super Admin Imports
-import SuperAdminDashboard from './pages/super-admin/SuperAdminDashboard';
-import Restaurants from './pages/super-admin/Restaurants';
-import Payments from './pages/super-admin/Payments';
-import Reports from './pages/super-admin/Reports';
-import Users from './pages/super-admin/Users';
-import SuperAdminProfile from './pages/super-admin/SuperAdminProfile';
-import SuperAdminSettings from './pages/super-admin/SuperAdminSettings';
-import SuperAdminLogin from './pages/super-admin/SuperAdminLogin';
+const SuperAdminLayout = lazy(() => import('./layouts/SuperAdminLayout'));
+const SuperAdminDashboard = lazy(() => import('./pages/super-admin/SuperAdminDashboard'));
+const Restaurants = lazy(() => import('./pages/super-admin/Restaurants'));
+const Payments = lazy(() => import('./pages/super-admin/Payments'));
+const Reports = lazy(() => import('./pages/super-admin/Reports'));
+const Users = lazy(() => import('./pages/super-admin/Users'));
+const SuperAdminProfile = lazy(() => import('./pages/super-admin/SuperAdminProfile'));
+const SuperAdminSettings = lazy(() => import('./pages/super-admin/SuperAdminSettings'));
+const SuperAdminLogin = lazy(() => import('./pages/super-admin/SuperAdminLogin'));
 
 // Admin Imports
-import AdminLogin from './pages/admin/AdminLogin';
-import AdminLayout from './layouts/AdminLayout';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminMenu from './pages/admin/AdminMenu';
-import AdminCategory from './pages/admin/AdminCategory';
-import AdminOffers from './pages/admin/AdminOffers';
-import AdminOrders from './pages/admin/AdminOrders';
-import AdminTable from './pages/admin/AdminTable';
-import AdminProfile from './pages/admin/AdminProfile';
-import AdminSettings from './pages/admin/AdminSettings';
-import AdminSales from './pages/admin/AdminSales';
-import SuperAdminLayout from './layouts/SuperAdminLayout';
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
+const AdminLayout = lazy(() => import('./layouts/AdminLayout'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminMenu = lazy(() => import('./pages/admin/AdminMenu'));
+const AdminCategory = lazy(() => import('./pages/admin/AdminCategory'));
+const AdminOffers = lazy(() => import('./pages/admin/AdminOffers'));
+const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
+const AdminTable = lazy(() => import('./pages/admin/AdminTable'));
+const AdminProfile = lazy(() => import('./pages/admin/AdminProfile'));
+const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
+const AdminSales = lazy(() => import('./pages/admin/AdminSales'));
 
-import KitchenLayout from './layouts/KitchenLayout';
-import KitchenDashboard from './pages/kitchen/KitchenDashboard';
-import KitchenProfile from './pages/kitchen/KitchenProfile';
-import KitchenSettings from './pages/kitchen/KitchenSettings';
+// Kitchen Imports
+const KitchenLayout = lazy(() => import('./layouts/KitchenLayout'));
+const KitchenDashboard = lazy(() => import('./pages/kitchen/KitchenDashboard'));
+const KitchenProfile = lazy(() => import('./pages/kitchen/KitchenProfile'));
+const KitchenSettings = lazy(() => import('./pages/kitchen/KitchenSettings'));
 
 // Customer Imports
-import CustomerLayout from './layouts/CustomerLayout';
-import Menu from './pages/customer/Menu';
-import CustomerProfile from './pages/customer/CustomerProfile';
-import CustomerSettings from './pages/customer/CustomerSettings';
+const CustomerLayout = lazy(() => import('./layouts/CustomerLayout'));
+const Menu = lazy(() => import('./pages/customer/Menu'));
+const CustomerProfile = lazy(() => import('./pages/customer/CustomerProfile'));
+const CustomerSettings = lazy(() => import('./pages/customer/CustomerSettings'));
+
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center bg-[#EBF2F2]">
+    <div className="w-10 h-10 border-4 border-[#FD6941]/20 border-t-[#FD6941] rounded-full animate-spin"></div>
+  </div>
+);
 
 
 // Protected Route for Store Admins
@@ -117,8 +128,7 @@ const TitleUpdater = () => {
   return null;
 };
 
-import { SettingsProvider } from './context/SettingsContext';
-import ErrorBoundary from './components/ErrorBoundary';
+
 
 function App() {
   return (
@@ -126,88 +136,90 @@ function App() {
       <Router>
         <TitleUpdater />
         <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} />
-        <Routes>
-          {/* ... public routes ... */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            {/* ... public routes ... */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
 
-          {/* Admin Auth */}
-          <Route path="/admin/login" element={<AdminLogin />} />
+            {/* Admin Auth */}
+            <Route path="/admin/login" element={<AdminLogin />} />
 
-          {/* Super Admin Auth */}
-          <Route path="/super-admin/login" element={<SuperAdminLogin />} />
+            {/* Super Admin Auth */}
+            <Route path="/super-admin/login" element={<SuperAdminLogin />} />
 
-          {/* Protected Admin Routes */}
-          <Route path="/admin" element={<Navigate to={`/${JSON.parse(localStorage.getItem('user'))?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant'}/admin`} replace />} />
-          <Route path="/admin/*" element={<AdminSubpathRedirect />} />
+            {/* Protected Admin Routes */}
+            <Route path="/admin" element={<Navigate to={`/${JSON.parse(localStorage.getItem('user'))?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant'}/admin`} replace />} />
+            <Route path="/admin/*" element={<AdminSubpathRedirect />} />
 
-          <Route path="/:restaurantName/admin" element={
-            <ProtectedRoute>
-              <AdminLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<AdminDashboard />} />
-            <Route path="menu" element={<AdminMenu />} />
-            <Route path="category" element={<AdminCategory />} />
-            <Route path="offers" element={<AdminOffers />} />
-            <Route path="orders" element={<AdminOrders />} />
-            <Route path="table" element={<AdminTable />} />
-            <Route path="sales" element={<AdminSales />} />
-            <Route path="profile" element={<AdminProfile />} />
-            <Route path="settings" element={<AdminSettings />} />
-          </Route>
+            <Route path="/:restaurantName/admin" element={
+              <ProtectedRoute>
+                <AdminLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<AdminDashboard />} />
+              <Route path="menu" element={<AdminMenu />} />
+              <Route path="category" element={<AdminCategory />} />
+              <Route path="offers" element={<AdminOffers />} />
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="table" element={<AdminTable />} />
+              <Route path="sales" element={<AdminSales />} />
+              <Route path="profile" element={<AdminProfile />} />
+              <Route path="settings" element={<AdminSettings />} />
+            </Route>
 
-          {/* Super Admin Routes */}
-          <Route path="/super-admin" element={
-            <SuperAdminRoute>
-              <SuperAdminLayout />
-            </SuperAdminRoute>
-          }>
-            <Route index element={<SuperAdminDashboard />} />
-            <Route path="restaurants" element={<Restaurants />} />
-            <Route path="payments" element={<Payments />} />
-            <Route path="reports" element={<Reports />} />
-            <Route path="users" element={<Users />} />
-            <Route path="profile" element={<SuperAdminProfile />} />
-            <Route path="settings" element={<SuperAdminSettings />} />
-          </Route>
+            {/* Super Admin Routes */}
+            <Route path="/super-admin" element={
+              <SuperAdminRoute>
+                <SuperAdminLayout />
+              </SuperAdminRoute>
+            }>
+              <Route index element={<SuperAdminDashboard />} />
+              <Route path="restaurants" element={<Restaurants />} />
+              <Route path="payments" element={<Payments />} />
+              <Route path="reports" element={<Reports />} />
+              <Route path="users" element={<Users />} />
+              <Route path="profile" element={<SuperAdminProfile />} />
+              <Route path="settings" element={<SuperAdminSettings />} />
+            </Route>
 
-          <Route path="/kitchen" element={<Navigate to={`/${JSON.parse(localStorage.getItem('user'))?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant'}/kitchen`} replace />} />
+            <Route path="/kitchen" element={<Navigate to={`/${JSON.parse(localStorage.getItem('user'))?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant'}/kitchen`} replace />} />
 
-          <Route path="/:restaurantName/kitchen" element={
-            <ProtectedRoute>
-              <KitchenLayout />
-            </ProtectedRoute>
-          }>
-            <Route index element={<KitchenDashboard />} />
-            <Route path="profile" element={<KitchenProfile />} />
-            <Route path="settings" element={<KitchenSettings />} />
-          </Route>
-
-
-
-          {/* Dynamic Restaurant Routes */}
-          <Route path="/r/:restaurantId" element={<CustomerLayout />}>
-            <Route index element={<Menu />} />
-            <Route path="menu" element={<Menu />} />
-            <Route path="profile" element={<CustomerProfile />} />
-
-          </Route>
-
-          {/* New Table Specific Route */}
-          <Route path="/:restaurantName/table/:tableNo" element={<CustomerLayout />}>
-            <Route index element={<Menu />} />
-            <Route path="menu" element={<Menu />} />
-            <Route path="profile" element={<CustomerProfile />} />
-
-          </Route>
+            <Route path="/:restaurantName/kitchen" element={
+              <ProtectedRoute>
+                <KitchenLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<KitchenDashboard />} />
+              <Route path="profile" element={<KitchenProfile />} />
+              <Route path="settings" element={<KitchenSettings />} />
+            </Route>
 
 
 
-          {/* Fallback */}
-          <Route path="*" element={<SessionClearRedirect />} />
-        </Routes>
+            {/* Dynamic Restaurant Routes */}
+            <Route path="/r/:restaurantId" element={<CustomerLayout />}>
+              <Route index element={<Menu />} />
+              <Route path="menu" element={<Menu />} />
+              <Route path="profile" element={<CustomerProfile />} />
+
+            </Route>
+
+            {/* New Table Specific Route */}
+            <Route path="/:restaurantName/table/:tableNo" element={<CustomerLayout />}>
+              <Route index element={<Menu />} />
+              <Route path="menu" element={<Menu />} />
+              <Route path="profile" element={<CustomerProfile />} />
+
+            </Route>
+
+
+
+            {/* Fallback */}
+            <Route path="*" element={<SessionClearRedirect />} />
+          </Routes>
+        </Suspense>
       </Router>
     </ErrorBoundary>
   );

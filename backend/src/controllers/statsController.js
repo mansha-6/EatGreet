@@ -189,7 +189,7 @@ const getSuperAdminStats = async (req, res) => {
         const totalUsers = await User.countDocuments();
         const totalAdmins = await User.countDocuments({ role: 'admin' });
         const totalCustomers = await User.countDocuments({ role: 'customer' });
-        
+
         const activeRestaurants = await User.countDocuments({
             role: 'admin',
             'restaurantDetails.isActive': true
@@ -204,18 +204,16 @@ const getSuperAdminStats = async (req, res) => {
         const platformTotalRevenue = totalRevenueResult.length > 0 ? totalRevenueResult[0].total : 0;
 
         // Current Monthly Subscription MRR (Estimated from Active Tiers)
-        const activeSubscribers = await User.find({ 
-            role: 'admin', 
-            'subscription.status': 'Active' 
+        const activeSubscribers = await User.find({
+            role: 'admin',
+            'subscription.status': 'Active'
         });
 
         const estimatedMRR = activeSubscribers.reduce((acc, user) => {
             const plan = user.subscription.plan;
-            let fee = 2999;
-            if (plan === 'Silver') fee = 999;
-            if (plan === 'Gold') fee = 1999;
-            if (plan === '3 Months') fee = 833;
-            if (plan === 'Yearly') fee = 2499;
+            let fee = 0;
+            if (plan === 'Monthly') fee = 2499;
+            if (plan === 'Annually') fee = 2008; // ₹24,099 / 12 ~ 2008 monthly MRR contribution
             return acc + fee;
         }, 0);
 
@@ -224,9 +222,9 @@ const getSuperAdminStats = async (req, res) => {
         const roleDist = await User.aggregate([
             { $group: { _id: "$role", value: { $sum: 1 } } }
         ]);
-        const roleDistribution = roleDist.map(r => ({ 
-            name: r._id.charAt(0).toUpperCase() + r._id.slice(1), 
-            value: r.value 
+        const roleDistribution = roleDist.map(r => ({
+            name: r._id.charAt(0).toUpperCase() + r._id.slice(1),
+            value: r.value
         }));
 
         // Plan Distribution
@@ -234,9 +232,9 @@ const getSuperAdminStats = async (req, res) => {
             { $match: { role: 'admin' } },
             { $group: { _id: "$subscription.plan", value: { $sum: 1 } } }
         ]);
-        const planDistribution = planDist.map(p => ({ 
-            name: p._id || 'None', 
-            value: p.value 
+        const planDistribution = planDist.map(p => ({
+            name: p._id || 'None',
+            value: p.value
         }));
 
         // City Distribution
@@ -251,7 +249,7 @@ const getSuperAdminStats = async (req, res) => {
         // 4. Growth & Revenue Trends
         const { startDate, endDate } = req.query;
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        
+
         // Growth (New Users)
         const userGrowth = await User.aggregate([
             { $group: { _id: { $month: "$createdAt" }, count: { $sum: 1 } } }

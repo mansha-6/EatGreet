@@ -842,7 +842,7 @@ const AdminSales = () => {
             worksheet.mergeCells('B2:I2');
             const headerCell = worksheet.getCell('B2');
             headerCell.value = (restaurant?.name || 'Restaurant').toUpperCase();
-            headerCell.font = { size: 36, bold: true, color: { argb: textDark } };
+            headerCell.font = { size: 32, bold: true, color: { argb: textDark } };
             headerCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
             // Premium Logo Positioning
@@ -850,8 +850,8 @@ const AdminSales = () => {
                 const logoId = workbook.addImage({ base64: resLogo, extension: 'png' });
                 // Position to the left of the centered name
                 worksheet.addImage(logoId, {
-                    tl: { col: 3.5, row: 1.15 },
-                    ext: { width: 90, height: 90 }
+                    tl: { col: 4.15, row: 1.15 },
+                    ext: { width: 85, height: 85 }
                 });
             }
 

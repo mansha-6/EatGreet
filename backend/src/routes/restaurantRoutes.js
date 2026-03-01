@@ -1,14 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { 
-    getRestaurantDetails, 
-    updateRestaurantDetails, 
-    createRestaurant, 
-    getRestaurantPublic, 
-    getAllRestaurants, 
+const {
+    getRestaurantDetails,
+    updateRestaurantDetails,
+    createRestaurant,
+    getRestaurantPublic,
+    getAllRestaurants,
     getRestaurantByName,
     updateSubscription,
-    sendSubscriptionReminder 
+    sendSubscriptionReminder,
+    deleteRestaurant
 } = require('../controllers/restaurantController');
 const { protect, admin } = require('../middleware/authMiddleware');
 
@@ -22,6 +23,7 @@ router.put('/subscription', protect, updateSubscription);
 router.post('/reminder', protect, sendSubscriptionReminder);
 
 router.get('/:id', getRestaurantPublic);
+router.delete('/:id', protect, deleteRestaurant);
 router.get('/slug/:name', getRestaurantByName);
 
 module.exports = router;

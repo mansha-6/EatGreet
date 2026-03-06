@@ -177,6 +177,7 @@ const getRestaurantPublic = async (req, res) => {
         const restaurantData = {
             _id: user._id,
             name: user.restaurantName || user.name,
+            restaurantName: user.restaurantName,
             description: user.restaurantDetails?.description,
             address: user.restaurantDetails?.address,
             contactNumber: user.restaurantDetails?.contactNumber,
@@ -220,6 +221,7 @@ const getRestaurantByName = async (req, res) => {
         const restaurantData = {
             _id: user._id,
             name: user.restaurantName || user.name,
+            restaurantName: user.restaurantName,
             description: user.restaurantDetails?.description,
             address: user.restaurantDetails?.address,
             contactNumber: user.restaurantDetails?.contactNumber,
@@ -285,6 +287,18 @@ const updateSubscription = async (req, res) => {
         if (isActive !== undefined) {
             if (!user.restaurantDetails) user.restaurantDetails = {};
             user.restaurantDetails.isActive = isActive;
+            
+            // Helpful UX: If the Super Admin manually reactivates an expired/new restaurant, 
+            // give them a 14-day extension (Trial) so it doesn't immediately flip back to false
+            const now = new Date();
+            const isExpired = !user.subscription.endDate || new Date(user.subscription.endDate) <= now;
+            if (isActive === true && isExpired) {
+                user.subscription.endDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // +14 days
+                user.subscription.status = 'Active';
+                if (user.subscription.plan === 'None') {
+                    user.subscription.plan = 'Trial';
+                }
+            }
         }
 
         user.subscription = {

@@ -60,10 +60,10 @@ const ProtectedRoute = ({ children }) => {
   if (!isAuthenticated) {
     return <Navigate to="/admin/login" replace />;
   }
-  // Redirect Super Admins to their own dashboard if they try to access admin routes
-  if (role === 'superadmin') {
+  // Super Admins can access admin routes for management
+  /* if (role === 'superadmin') {
     return <Navigate to="/super-admin" replace />;
-  }
+  } */
   return children;
 };
 

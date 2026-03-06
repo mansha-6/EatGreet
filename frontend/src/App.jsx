@@ -19,6 +19,7 @@ const Users = lazy(() => import('./pages/super-admin/Users'));
 const SuperAdminProfile = lazy(() => import('./pages/super-admin/SuperAdminProfile'));
 const SuperAdminSettings = lazy(() => import('./pages/super-admin/SuperAdminSettings'));
 const SuperAdminLogin = lazy(() => import('./pages/super-admin/SuperAdminLogin'));
+const PendingApprovals = lazy(() => import('./pages/super-admin/PendingApprovals'));
 
 // Admin Imports
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
@@ -32,6 +33,7 @@ const AdminTable = lazy(() => import('./pages/admin/AdminTable'));
 const AdminProfile = lazy(() => import('./pages/admin/AdminProfile'));
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
 const AdminSales = lazy(() => import('./pages/admin/AdminSales'));
+const Onboarding = lazy(() => import('./pages/admin/Onboarding'));
 
 // Kitchen Imports
 const KitchenLayout = lazy(() => import('./layouts/KitchenLayout'));
@@ -56,14 +58,24 @@ const LoadingSpinner = () => (
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
   const role = localStorage.getItem('userRole');
+  const user = JSON.parse(localStorage.getItem('user'));
+  const location = useLocation();
 
   if (!isAuthenticated) {
     return <Navigate to="/admin/login" replace />;
   }
-  // Super Admins can access admin routes for management
-  /* if (role === 'superadmin') {
-    return <Navigate to="/super-admin" replace />;
-  } */
+
+  // Redirect to onboarding if not done and it's an admin
+  if (role === 'admin' && !user?.isOnboarded && !location.pathname.includes('/onboarding')) {
+    return <Navigate to="/admin/onboarding" replace />;
+  }
+
+  // Prevent accessing onboarding if already onboarded
+  if (role === 'admin' && user?.isOnboarded && location.pathname.includes('/onboarding')) {
+    const restaurantSlug = user?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant';
+    return <Navigate to={`/${restaurantSlug}/admin`} replace />;
+  }
+
   return children;
 };
 
@@ -149,6 +161,12 @@ function App() {
             {/* Super Admin Auth */}
             <Route path="/super-admin/login" element={<SuperAdminLogin />} />
 
+            <Route path="/admin/onboarding" element={
+              <ProtectedRoute>
+                <Onboarding />
+              </ProtectedRoute>
+            } />
+
             {/* Protected Admin Routes */}
             <Route path="/admin" element={<Navigate to={`/${JSON.parse(localStorage.getItem('user'))?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant'}/admin`} replace />} />
             <Route path="/admin/*" element={<AdminSubpathRedirect />} />
@@ -177,6 +195,7 @@ function App() {
             }>
               <Route index element={<SuperAdminDashboard />} />
               <Route path="restaurants" element={<Restaurants />} />
+              <Route path="approvals" element={<PendingApprovals />} />
               <Route path="payments" element={<Payments />} />
               <Route path="reports" element={<Reports />} />
               <Route path="users" element={<Users />} />

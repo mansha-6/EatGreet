@@ -46,9 +46,11 @@ api.interceptors.response.use(
     // 400 with specific message: Tenant/Restaurant resolution failed
     if (error.response) {
       const isAuthError = error.response.status === 401;
+      const isLoginRequest = error.config.url.includes('/auth/login');
 
-      // Only redirect for Auth errors. 400 errors (like 'Restaurant not found') should be handled by the component.
-      if (isAuthError) {
+      // Only redirect for Auth errors that AREN'T login attempts. 
+      // 401 during login means "Invalid Credentials", not "Session Expired".
+      if (isAuthError && !isLoginRequest) {
         console.warn("Session expired. Redirecting to login...", error.response.data);
         localStorage.clear();
         // Redirect to login if not already there
@@ -69,6 +71,8 @@ export const authAPI = {
   getUsers: () => api.get('/auth/users'),
   updatePassword: () => Promise.resolve({ data: { message: 'Password update not implemented yet' } }), // Pending backend
   getRestaurants: () => api.get('/restaurant/all'),
+  getPendingApprovals: () => api.get('/restaurant/pending'),
+  approveRestaurant: (id) => api.put(`/restaurant/approve/${id}`),
   deleteRestaurant: (id) => api.delete(`/restaurant/${id}`),
   updateSubscription: (data) => api.put('/restaurant/subscription', data),
   sendReminder: (data) => api.post('/restaurant/reminder', data),
@@ -133,6 +137,7 @@ export const customerAPI = {
 export const restaurantAPI = {
   getDetails: () => api.get('/restaurant'),
   updateDetails: (details) => api.put('/restaurant', details),
+  completeOnboarding: (details) => api.post('/restaurant/onboard', details),
   getBySlug: (slug) => api.get(`/restaurant/slug/${slug}`),
   getPublicDetails: (id) => api.get(`/restaurant/${id}`),
 };

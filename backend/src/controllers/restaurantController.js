@@ -160,6 +160,68 @@ const createRestaurant = async (req, res) => {
     }
 }
 
+// @desc    Complete restaurant onboarding
+// @route   POST /api/restaurant/onboard
+// @access  Private (Admin)
+const completeOnboarding = async (req, res) => {
+    try {
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const {
+            restaurantName,
+            description,
+            address,
+            contactNumber,
+            gstNumber,
+            cuisineType,
+            businessEmail,
+            location,
+            operatingHours
+        } = req.body;
+
+        // Mandatory fields check (as a backup to frontend validation)
+        if (!restaurantName || !address || !contactNumber || !gstNumber || !cuisineType || !businessEmail) {
+            return res.status(400).json({ message: 'Please fill all mandatory fields' });
+        }
+
+        user.restaurantName = restaurantName;
+        user.restaurantDetails = {
+            ...user.restaurantDetails,
+            description,
+            address,
+            contactNumber,
+            gstNumber,
+            cuisineType,
+            businessEmail,
+            location: location || { lat: 23.0225, lng: 72.5714 },
+            operatingHours: operatingHours || { open: '09:00', close: '23:00' },
+            isActive: true,
+            joinedAt: user.restaurantDetails?.joinedAt || new Date()
+        };
+
+        user.isOnboarded = true;
+
+        const updatedUser = await user.save();
+        res.json({
+            message: 'Onboarding completed successfully',
+            user: {
+                _id: updatedUser._id,
+                name: updatedUser.name,
+                email: updatedUser.email,
+                role: updatedUser.role,
+                restaurantName: updatedUser.restaurantName,
+                isOnboarded: updatedUser.isOnboarded,
+                restaurantDetails: updatedUser.restaurantDetails
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 // @desc Get public restaurant info by ID (Mapped from User)
 const getRestaurantPublic = async (req, res) => {
     try {
@@ -368,13 +430,58 @@ const deleteRestaurant = async (req, res) => {
         }
 
         // Technically checking role if they are an Admin (Restaurant)
-        if (user.role !== 'Admin') {
+        if (user.role !== 'admin') {
             return res.status(400).json({ message: 'User is not a restaurant owner' });
         }
 
         await User.deleteOne({ _id: req.params.id });
 
         res.json({ message: 'Restaurant deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get all pending restaurant registrations (Super Admin)
+const getPendingApprovals = async (req, res) => {
+    try {
+        const users = await User.find({
+            role: 'admin',
+            isApproved: false
+        }).select('-password').sort({ createdAt: -1 });
+
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Approve a restaurant registration (Super Admin)
+const approveRestaurant = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (user.isApproved) {
+            return res.status(400).json({ message: 'User is already approved' });
+        }
+
+        // Generate a random default password
+        const defaultPassword = Math.random().toString(36).slice(-8).toUpperCase() + '@' + Math.floor(100 + Math.random() * 900);
+        
+        user.isApproved = true;
+        user.password = defaultPassword; // Schema middleware will hash it on .save()
+        
+        await user.save();
+
+        // Send approval email
+        const { sendApprovalEmail } = require('../utils/emailService');
+        await sendApprovalEmail(user.email, user.name, defaultPassword, user.restaurantName || 'your restaurant');
+
+        res.json({ message: 'Restaurant approved and credentials sent via email' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -389,5 +496,8 @@ module.exports = {
     getRestaurantByName,
     updateSubscription,
     sendSubscriptionReminder,
-    deleteRestaurant
+    deleteRestaurant,
+    completeOnboarding,
+    getPendingApprovals,
+    approveRestaurant
 };

@@ -36,12 +36,20 @@ const registerUser = async (req, res) => {
             city,
             restaurantName,
             currency: currency || 'INR',
-            subscription
+            subscription,
+            isApproved: role === 'admin' ? false : true
         });
 
         if (user) {
-            // Send welcome email (asynchronous, don't wait for it to finish)
-            sendWelcomeEmail(user.email, user.name);
+            // Send welcome/under-review email
+            sendWelcomeEmail(user.email, user.name, user.role === 'admin');
+
+            if (user.role === 'admin' && !user.isApproved) {
+                return res.status(201).json({
+                    message: 'Registration successful. Your account is pending approval from Super Admin. You will receive an email once approved.',
+                    isApproved: false
+                });
+            }
 
             res.status(201).json({
                 _id: user._id,
@@ -52,6 +60,8 @@ const registerUser = async (req, res) => {
                 currency: user.currency,
                 profilePicture: user.profilePicture,
                 subscription: user.subscription,
+                isOnboarded: user.isOnboarded,
+                isApproved: user.isApproved,
                 token: generateToken(user._id),
             });
         } else {
@@ -69,11 +79,13 @@ const authUser = async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Optimization: Only select fields needed for login and initial response
-        // This avoids fetching potentially large arrays like 'payments' and 'staff'
-        const user = await User.findOne({ email }).select('name email password role restaurantName currency profilePicture subscription');
+        const user = await User.findOne({ email }).select('name email password role restaurantName currency profilePicture subscription isOnboarded isApproved');
 
         if (user && (await user.matchPassword(password))) {
+            if (!user.isApproved) {
+                return res.status(401).json({ message: 'Your account is pending approval. Please check your email for confirmation.' });
+            }
+
             res.json({
                 _id: user._id,
                 name: user.name,
@@ -83,6 +95,8 @@ const authUser = async (req, res) => {
                 currency: user.currency,
                 profilePicture: user.profilePicture,
                 subscription: user.subscription,
+                isOnboarded: user.isOnboarded,
+                isApproved: user.isApproved,
                 token: generateToken(user._id),
             });
         } else {
@@ -112,7 +126,8 @@ const getUserProfile = async (req, res) => {
                 currency: user.currency,
                 profilePicture: user.profilePicture,
                 restaurantDetails: user.restaurantDetails,
-                subscription: user.subscription
+                subscription: user.subscription,
+                isOnboarded: user.isOnboarded
             });
         } else {
             res.status(404).json({ message: 'User not found' });
@@ -155,6 +170,7 @@ const updateUserProfile = async (req, res) => {
                 currency: updatedUser.currency,
                 profilePicture: updatedUser.profilePicture,
                 restaurantDetails: updatedUser.restaurantDetails,
+                isOnboarded: updatedUser.isOnboarded,
                 token: generateToken(updatedUser._id),
             });
         } else {

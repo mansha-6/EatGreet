@@ -11,6 +11,8 @@ const userSchema = new mongoose.Schema({
     restaurantName: { type: String }, // Added to derive tenant database name
     currency: { type: String, default: 'INR' },
     profilePicture: { type: String },
+    isOnboarded: { type: Boolean, default: false },
+    isApproved: { type: Boolean, default: true },
 
     // Embed Restaurant Details (Merged 'resto_names' into Users)
     restaurantDetails: {

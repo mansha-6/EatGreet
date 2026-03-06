@@ -28,11 +28,20 @@ export default function AdminLogin() {
                 navigate('/super-admin/login');
                 return;
             } else if (userData.role === 'admin') {
-                const restaurantSlug = userData.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant';
-                navigate(`/${restaurantSlug}/admin`);
+                if (!userData.isOnboarded) {
+                    navigate('/admin/onboarding');
+                } else {
+                    const restaurantSlug = userData.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant';
+                    navigate(`/${restaurantSlug}/admin`);
+                }
             } else {
-                const restaurantSlug = userData.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant';
-                navigate(`/${restaurantSlug}/admin`);
+                // Fallback for other roles or legacy data
+                if (userData.isOnboarded === false && userData.role === 'admin') {
+                    navigate('/admin/onboarding');
+                } else {
+                    const restaurantSlug = userData.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant';
+                    navigate(`/${restaurantSlug}/admin`);
+                }
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed. Please check your credentials.');

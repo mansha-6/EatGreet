@@ -636,19 +636,12 @@ const Menu = () => {
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    // The ID is constructed as `model-${item._id}` in MediaSlider.jsx. 
-                                                    // HOWEVER, in Menu.jsx we pass `modelCheckId` prop to MediaSlider.
-                                                    // Let's verify what ID is actually assigned.
-                                                    // Looking at line 495: modelCheckId={`model-${item._id}`}
-                                                    // Looking at MediaSlider.jsx: id={modelCheckId}
-                                                    // So the ID should be correct.
                                                     const viewerId = `model-${item._id}`;
                                                     const viewer = document.getElementById(viewerId);
                                                     if (viewer) {
                                                         if (viewer.activateAR) {
                                                             viewer.activateAR();
                                                         } else {
-                                                            // Fallback or error if method doesn't exist (e.g. older browser/module)
                                                             console.warn("activateAR method not found on model-viewer element");
                                                         }
                                                     } else {
@@ -711,10 +704,18 @@ const Menu = () => {
                                 </div>
                             </div>
                         </div>
-                    ))
-                    }
-                </div >
-            </div >
+                    ))}
+                    {filteredItems.length === 0 && (
+                        <div className="col-span-full py-20 text-center">
+                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <UtensilsCrossed className="w-8 h-8 text-gray-300" />
+                            </div>
+                            <h3 className="text-lg font-normal text-gray-800 mb-1">No items found</h3>
+                            <p className="text-sm text-gray-500">Try adjusting your search or category filters.</p>
+                        </div>
+                    )}
+                </div>
+                </div>
 
             {/* Live Floating Cart/Bill */}
             {totalItems > 0 && (

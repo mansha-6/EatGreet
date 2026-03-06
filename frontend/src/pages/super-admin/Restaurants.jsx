@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
     Search, Filter, Plus, MoreVertical, Edit2, Ban,
     X, Check, Calendar, ChevronLeft, ChevronRight, Download,
-    CheckCircle, Trash2
+    CheckCircle, Trash2, Globe, LayoutDashboard
 } from 'lucide-react';
 import { restaurantAPI, authAPI } from '../../utils/api';
 import toast from 'react-hot-toast';
@@ -109,6 +110,7 @@ const SingleDatePicker = ({ value, onChange, onClose }) => {
 };
 
 export default function Restaurants() {
+    const navigate = useNavigate();
     const [restaurants, setRestaurants] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -238,7 +240,14 @@ export default function Restaurants() {
             <div className="max-w-[1600px] mx-auto w-full flex-1 flex flex-col space-y-6 min-h-0">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
                     <div className="space-y-1">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4">
+                            <button 
+                                onClick={() => navigate('/super-admin')}
+                                className="p-2.5 bg-white hover:bg-gray-50 rounded-2xl shadow-sm border border-gray-100 transition-all text-gray-400 hover:text-black active:scale-95"
+                                title="Back to Dashboard"
+                            >
+                                <LayoutDashboard className="w-5 h-5" />
+                            </button>
                             <h1 className="text-4xl font-normal text-gray-900">Restaurants</h1>
                             <span className="bg-[#FD6941]/10 text-[#FD6941] px-4 py-1 rounded-full text-sm font-normal">
                                 {restaurants.length} Total
@@ -246,6 +255,13 @@ export default function Restaurants() {
                         </div>
                         <p className="text-gray-500 font-normal">Manage Partner restaurants, Monitor performance, Control access.</p>
                     </div>
+                    <button
+                        onClick={() => navigate('/signup')}
+                        className="bg-black text-white px-8 py-3.5 rounded-full text-sm font-normal hover:bg-gray-800 transition-all shadow-lg flex items-center gap-2 active:scale-95"
+                    >
+                        <Plus className="w-5 h-5" />
+                        Add Restaurant
+                    </button>
                 </div>
 
                 <div className="flex-1 min-h-0 bg-white/60 backdrop-blur-sm rounded-[2.5rem] border border-white/60 shadow-sm flex flex-col overflow-hidden">
@@ -321,6 +337,27 @@ export default function Restaurants() {
                                             </span>
                                         </div>
                                         <div className="col-span-2 flex items-center justify-end gap-2 pr-2">
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const slug = restaurant.restaurantName?.toLowerCase()?.replace(/\s+/g, '-');
+                                                    navigate(`/${slug}/admin`);
+                                                }}
+                                                className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors text-gray-400 hover:text-black"
+                                                title="Manage Restaurant"
+                                            >
+                                                <LayoutDashboard className="w-4 h-4" />
+                                            </button>
+                                            <a
+                                                href={`/r/${restaurant._id}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors text-gray-400 hover:text-[#FD6941]"
+                                                title="Visit Restaurant"
+                                            >
+                                                <Globe className="w-4 h-4" />
+                                            </a>
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();

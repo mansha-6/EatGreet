@@ -117,23 +117,13 @@ userSchema.methods.syncSubscription = async function () {
         changed = true;
     }
 
-    // Auto Deactivate Logic - Force isActive to false if expired
+    // Auto Deactivate Logic - Force isActive to false ONLY if it's expired
     const currentlyActive = this.get('restaurantDetails.isActive');
-    if (newStatus === 'Expired') {
-        if (currentlyActive !== false) {
-            if (!this.restaurantDetails) this.restaurantDetails = {};
-            this.set('restaurantDetails.isActive', false);
-            this.markModified('restaurantDetails');
-            changed = true;
-        }
-    } else {
-        // Auto Reactivate Logic - If plan is valid but isActive is false, reactivate
-        if (currentlyActive === false) {
-            if (!this.restaurantDetails) this.restaurantDetails = {};
-            this.set('restaurantDetails.isActive', true);
-            this.markModified('restaurantDetails');
-            changed = true;
-        }
+    if (newStatus === 'Expired' && currentlyActive !== false) {
+        if (!this.restaurantDetails) this.restaurantDetails = {};
+        this.set('restaurantDetails.isActive', false);
+        this.markModified('restaurantDetails');
+        changed = true;
     }
 
     if (changed) {

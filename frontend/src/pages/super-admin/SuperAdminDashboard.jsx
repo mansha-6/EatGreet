@@ -7,14 +7,16 @@ import {
     AlertTriangle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { statsAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
 
-const DashboardStat = ({ title, value, change, icon: Icon, gradient, colorClass }) => (
+const DashboardStat = ({ title, value, change, icon: Icon, gradient, colorClass, onClick }) => (
     <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`p-5 rounded-[1.8rem] shadow-sm border border-white/50 relative overflow-hidden ${gradient} flex flex-col justify-between h-36`}
+        onClick={onClick}
+        className={`p-5 rounded-[1.8rem] shadow-sm border border-white/50 relative overflow-hidden ${gradient} flex flex-col justify-between h-36 ${onClick ? 'cursor-pointer' : ''}`}
     >
         <div className="flex justify-between items-start">
             <div>
@@ -36,10 +38,11 @@ const DashboardStat = ({ title, value, change, icon: Icon, gradient, colorClass 
 );
 
 export default function SuperAdminDashboard() {
+    const navigate = useNavigate();
     const { currencySymbol } = useSettings();
     const [stats, setStats] = useState({
         totalRestaurants: 0,
-        activeRestaurants: 0, // This is activeSubscriptions in backend response
+        activeRestaurants: 0,
         estimatedMRR: 0,
         recentRestaurants: []
     });
@@ -65,6 +68,15 @@ export default function SuperAdminDashboard() {
                         <h1 className="text-3xl font-normal text-gray-900">Dashboard</h1>
                         <p className="text-gray-500 text-sm font-normal">System Overview & Management</p>
                     </div>
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => navigate('/super-admin/restaurants')}
+                        className="bg-black text-white px-8 py-3.5 rounded-full text-sm font-normal hover:bg-gray-800 transition-all shadow-lg flex items-center gap-2"
+                    >
+                        <Store className="w-5 h-5" />
+                        Manage Restaurants
+                    </motion.button>
                 </div>
 
                 {/* Stats Grid */}
@@ -76,6 +88,7 @@ export default function SuperAdminDashboard() {
                         icon={Store}
                         gradient="bg-gradient-to-br from-[#E2F0E9] to-[#D4E9F2]"
                         colorClass="text-emerald-600"
+                        onClick={() => navigate('/super-admin/restaurants')}
                     />
                     <DashboardStat
                         title="Active Packages"
@@ -125,6 +138,7 @@ export default function SuperAdminDashboard() {
                                         <th className="pb-4 text-xs font-normal text-gray-400 tracking-widest uppercase">Plan Tier</th>
                                         <th className="pb-4 text-xs font-normal text-gray-400 tracking-widest uppercase text-center">Status</th>
                                         <th className="pb-4 text-xs font-normal text-gray-400 tracking-widest uppercase text-right">Join Date</th>
+                                        <th className="pb-4 text-xs font-normal text-gray-400 tracking-widest uppercase text-right px-4">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
@@ -153,6 +167,14 @@ export default function SuperAdminDashboard() {
                                             </td>
                                             <td className="py-5 text-right">
                                                 <p className="text-xs text-gray-400 font-normal">{new Date(res.createdAt).toLocaleDateString()}</p>
+                                            </td>
+                                            <td className="py-5 text-right px-4">
+                                                <button
+                                                    onClick={() => navigate(`/${res.restaurantName?.toLowerCase()?.replace(/\s+/g, '-')}/admin`)}
+                                                    className="px-4 py-1.5 bg-gray-100 hover:bg-black hover:text-white text-gray-600 rounded-full text-[10px] font-normal transition-all uppercase tracking-wider"
+                                                >
+                                                    Visit Dashboard
+                                                </button>
                                             </td>
                                         </tr>
                                     ))}

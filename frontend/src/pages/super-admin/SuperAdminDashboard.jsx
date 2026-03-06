@@ -4,7 +4,8 @@ import {
     TrendingUp,
     Store,
     Ticket,
-    AlertTriangle
+    AlertTriangle,
+    CheckCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -99,20 +100,21 @@ export default function SuperAdminDashboard() {
                         colorClass="text-emerald-600"
                     />
                     <DashboardStat
+                        title="Pending Approvals"
+                        value={stats.pendingApprovals || 0}
+                        change="New"
+                        icon={CheckCircle}
+                        gradient="bg-gradient-to-br from-[#FFF5F1] to-[#FFE4D9]"
+                        colorClass="text-[#FD6941]"
+                        onClick={() => navigate('/super-admin/approvals')}
+                    />
+                    <DashboardStat
                         title="Monthly Revenue"
                         value={`${currencySymbol}${(stats.estimatedMRR || 0).toLocaleString()}`}
                         change="Forecast"
                         icon={BarChart3}
                         gradient="bg-gradient-to-br from-[#F5F3FF] to-[#EBE9FE]"
                         colorClass="text-violet-600"
-                    />
-                    <DashboardStat
-                        title="Subscription Status"
-                        value="Healthy"
-                        change="Stable"
-                        icon={TrendingUp}
-                        gradient="bg-gradient-to-br from-[#FAF3E5] to-[#F1E4C9]"
-                        colorClass="text-orange-600"
                     />
                 </div>
 

@@ -121,11 +121,15 @@ export default function LandingPage() {
             const response = await authAPI.register(signupData);
             const userData = response.data;
 
-            setSuccess('Registration successful! Please login to your dashboard.');
-
-            setTimeout(() => {
-                navigate('/login');
-            }, 1500);
+            if (userData.isApproved === false) {
+                setSuccess('Application submitted! Your account is under review. Please check your email for updates.');
+                setFormData({ name: '', email: '', password: '', phone: '', city: '', businessName: '' });
+            } else {
+                setSuccess('Registration successful! Redirecting to login...');
+                setTimeout(() => {
+                    navigate('/admin/login');
+                }, 1500);
+            }
         } catch (err) {
             setError(err.response?.data?.message || 'Registration failed. Please check your details.');
         } finally {

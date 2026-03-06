@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
     Settings, Bell, Menu as MenuIcon, X, LogOut, ChevronDown,
-    ShoppingBag, Heart, ChefHat, LayoutDashboard, Utensils, Layers, Table2, TrendingUp, Users, CreditCard, FileText
+    ShoppingBag, Heart, ChefHat, LayoutDashboard, Utensils, Layers, Table2, TrendingUp, Users, CreditCard, FileText, CheckCircle
 } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 import { useAdminNotifications } from '../hooks/useAdminNotifications';
@@ -54,6 +54,7 @@ const DynamicNavbar = ({ customerProps }) => {
                 return [
                     { label: 'Dashboard', path: '/super-admin', icon: LayoutDashboard },
                     { label: 'Restaurants', path: '/super-admin/restaurants', icon: Utensils },
+                    { label: 'Approvals', path: '/super-admin/approvals', icon: CheckCircle },
                     { label: 'Payment', path: '/super-admin/payments', icon: CreditCard },
                     { label: 'Reports', path: '/super-admin/reports', icon: FileText },
                     { label: 'Users', path: '/super-admin/users', icon: Users },

@@ -195,6 +195,11 @@ const getSuperAdminStats = async (req, res) => {
             'restaurantDetails.isActive': true
         });
 
+        const pendingApprovals = await User.countDocuments({
+            role: 'admin',
+            isApproved: false
+        });
+
         // 2. Financials (Aggregated from all user payments)
         const totalRevenueResult = await User.aggregate([
             { $unwind: "$payments" },
@@ -282,6 +287,7 @@ const getSuperAdminStats = async (req, res) => {
             totalRestaurants: totalAdmins,
             totalCustomers,
             activeRestaurants,
+            pendingApprovals,
             platformTotalRevenue,
             estimatedMRR,
             roleDistribution,

@@ -41,29 +41,37 @@ const registerUser = async (req, res) => {
         });
 
         if (user) {
-<<<<<<< Updated upstream
-            // Send welcome/under-review email
-            sendWelcomeEmail(user.email, user.name, user.role === 'admin');
+            const isAdmin = user.role === 'admin';
 
-            if (user.role === 'admin' && !user.isApproved) {
-                return res.status(201).json({
-                    message: 'Registration successful. Your account is pending approval from Super Admin. You will receive an email once approved.',
-                    isApproved: false
+            // 1. Send welcome email to the new user (Under Review if Admin)
+            await sendWelcomeEmail(
+                user.email,
+                user.name,
+                user.restaurantName,
+                user.phone,
+                user.city,
+                isAdmin // isPending = true if admin
+            );
+
+            // 2. Notify the Super Admin about this new registration
+            if (isAdmin) {
+                await sendAdminNotificationEmail({
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone,
+                    city: user.city,
+                    restaurantName: user.restaurantName
                 });
             }
-=======
-            // 1. Send welcome email to the new user (with all details)
-            sendWelcomeEmail(user.email, user.name, user.restaurantName, user.phone, user.city);
 
-            // 2. Notify the app admin about this new registration
-            sendAdminNotificationEmail({
-                name: user.name,
-                email: user.email,
-                phone: user.phone,
-                city: user.city,
-                restaurantName: user.restaurantName
-            });
->>>>>>> Stashed changes
+            // If it's a pending admin, we stop here with a specific message
+            if (isAdmin && !user.isApproved) {
+                return res.status(201).json({
+                    message: 'Registration successful! Your application is pending approval from our Super Admin team. You will receive an email with your credentials once verified.',
+                    isApproved: false,
+                    email: user.email
+                });
+            }
 
             res.status(201).json({
                 _id: user._id,

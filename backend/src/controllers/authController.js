@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const { sendWelcomeEmail } = require('../utils/emailService');
+const { sendWelcomeEmail, sendAdminNotificationEmail } = require('../utils/emailService');
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -41,6 +41,7 @@ const registerUser = async (req, res) => {
         });
 
         if (user) {
+<<<<<<< Updated upstream
             // Send welcome/under-review email
             sendWelcomeEmail(user.email, user.name, user.role === 'admin');
 
@@ -50,6 +51,19 @@ const registerUser = async (req, res) => {
                     isApproved: false
                 });
             }
+=======
+            // 1. Send welcome email to the new user (with all details)
+            sendWelcomeEmail(user.email, user.name, user.restaurantName, user.phone, user.city);
+
+            // 2. Notify the app admin about this new registration
+            sendAdminNotificationEmail({
+                name: user.name,
+                email: user.email,
+                phone: user.phone,
+                city: user.city,
+                restaurantName: user.restaurantName
+            });
+>>>>>>> Stashed changes
 
             res.status(201).json({
                 _id: user._id,

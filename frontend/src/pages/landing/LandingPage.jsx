@@ -14,7 +14,12 @@ import {
     Layout,
     Menu as MenuIcon,
     Tag,
-    UserPlus
+    UserPlus,
+    Mail,
+    Phone,
+    MapPin,
+    Building2,
+    User
 } from 'lucide-react';
 import { FloatingNav } from '../../components/landing/FloatingNav';
 import menuIcon from '../../assets/menu-icon.png';
@@ -111,7 +116,7 @@ export default function LandingPage() {
             const signupData = {
                 name: formData.name,
                 email: formData.email,
-                password: formData.password,
+                password: formData.phone, // Use phone as password since password field is removed
                 phone: formData.phone,
                 city: formData.city,
                 role: 'admin', // Always admin for improved landing page flow
@@ -357,109 +362,147 @@ export default function LandingPage() {
 
             {/* Footer / CTA Section */}
             <section id="contact" className="pt-4 pb-16 md:py-20 px-4 md:px-6">
-                <div className="max-w-7xl mx-auto bg-white bg-opacity-100 rounded-[2rem] md:rounded-[3rem] p-6 md:p-12 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] border border-gray-100 relative z-10">
-                    <div className="grid lg:grid-cols-2 gap-10 md:gap-12 items-center">
-                        {/* Left Side: Illustration & Text */}
-                        <div className="space-y-6">
-                            <div>
-                                <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight text-center lg:text-left">We’d Love to answer your questions</h2>
-                                <p className="text-gray-500 text-base md:text-lg text-center lg:text-left">Have a query? We'd be happy to answer any questions you might have.</p>
-                            </div>
-                            <div className="flex justify-center lg:justify-start">
-                                <img src={contactIllustrationHD} alt="Contact Illustration" className="w-full max-w-md object-contain" />
-                            </div>
+                <div className="max-w-7xl mx-auto bg-white rounded-[2rem] md:rounded-[3rem] p-8 md:p-16 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.06)] border border-gray-100 relative z-10">
+
+                    {/* Centered Heading - Single Line */}
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 tracking-tight">
+                            We’d Love to answer your questions
+                        </h2>
+                        <p className="text-gray-500 text-lg md:text-xl max-w-3xl mx-auto">
+                            Have a query? We'd be happy to answer any questions you might have.
+                        </p>
+                    </div>
+
+                    <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+                        {/* Left Side: Illustration */}
+                        <div className="flex justify-center order-2 lg:order-1">
+                            <motion.img
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                whileInView={{ opacity: 1, scale: 1 }}
+                                src={contactIllustrationHD}
+                                alt="Contact Illustration"
+                                className="w-full max-w-md object-contain drop-shadow-xl"
+                            />
                         </div>
 
-                        {/* Right Side: Form */}
-                        <div className="bg-transparent">
-                            <form className="grid gap-5" onSubmit={handleRegister}>
-                                {error && <div className="bg-red-50 text-red-500 p-4 rounded-2xl text-sm font-bold">{error}</div>}
-                                {success && <div className="bg-green-50 text-green-500 p-4 rounded-2xl text-sm font-bold">{success}</div>}
+                        {/* Right Side: Form - Improved Contrast */}
+                        <div className="relative order-1 lg:order-2">
+                            <form className="space-y-8" onSubmit={handleRegister}>
+                                {error && (
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className="bg-red-50 text-red-700 p-4 rounded-2xl text-sm font-bold border border-red-200"
+                                    >
+                                        {error}
+                                    </motion.div>
+                                )}
+                                {success && (
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className="bg-green-50 text-green-700 p-4 rounded-2xl text-sm font-bold border border-green-200"
+                                    >
+                                        {success}
+                                    </motion.div>
+                                )}
 
-                                <div className="grid md:grid-cols-2 gap-5">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold text-gray-800 ml-1">Full Name<span className="text-red-500">*</span></label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.name}
-                                            onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-[#FD6941] outline-none transition-all placeholder-gray-400"
-                                            placeholder="Your Name"
-                                        />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-7">
+                                    {/* Full Name - Full Width */}
+                                    <div className="md:col-span-2 space-y-2 group">
+                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors">Full Name<span className="text-red-500">*</span></label>
+                                        <div className="relative">
+                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#FD6941] transition-colors" />
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.name}
+                                                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                                className="w-full pl-12 pr-5 h-12 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941] outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm"
+                                                placeholder="Enter your full name"
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold text-gray-800 ml-1">Email Address<span className="text-red-500">*</span></label>
-                                        <input
-                                            type="email"
-                                            required
-                                            value={formData.email}
-                                            onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-[#FD6941] outline-none transition-all placeholder-gray-400"
-                                            placeholder="you@example.com"
-                                        />
+
+                                    {/* Email Address */}
+                                    <div className="space-y-2.5 group">
+                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-widest group-focus-within:text-[#FD6941] transition-colors">Email Address<span className="text-red-500">*</span></label>
+                                        <div className="relative">
+                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#FD6941] transition-colors" />
+                                            <input
+                                                type="email"
+                                                required
+                                                value={formData.email}
+                                                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                                className="w-full pl-12 pr-5 h-12 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941] outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm"
+                                                placeholder="you@example.com"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Mobile Number */}
+                                    <div className="space-y-2 group">
+                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors">Mobile Number<span className="text-red-500">*</span></label>
+                                        <div className="relative">
+                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#FD6941] transition-colors" />
+                                            <input
+                                                type="tel"
+                                                required
+                                                value={formData.phone}
+                                                onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                                className="w-full pl-12 pr-5 h-12 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941] outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm"
+                                                placeholder="+91..."
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* City */}
+                                    <div className="space-y-2 group">
+                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors">City<span className="text-red-500">*</span></label>
+                                        <div className="relative">
+                                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#FD6941] transition-colors" />
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.city}
+                                                onChange={e => setFormData({ ...formData, city: e.target.value })}
+                                                className="w-full pl-12 pr-5 h-12 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941] outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm"
+                                                placeholder="Your City"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Business Name */}
+                                    <div className="space-y-2 group">
+                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors">Business Name<span className="text-red-500">*</span></label>
+                                        <div className="relative">
+                                            <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#FD6941] transition-colors" />
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.businessName}
+                                                onChange={e => setFormData({ ...formData, businessName: e.target.value })}
+                                                className="w-full pl-12 pr-5 h-12 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941] outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm"
+                                                placeholder="Restaurant name"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
-
-                                <div className="grid md:grid-cols-2 gap-5">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold text-gray-800 ml-1">Password<span className="text-red-500">*</span></label>
-                                        <input
-                                            type="password"
-                                            required
-                                            value={formData.password}
-                                            onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-[#FD6941] outline-none transition-all placeholder-gray-400"
-                                            placeholder="Min. 6 characters"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold text-gray-800 ml-1">Phone no.<span className="text-red-500">*</span></label>
-                                        <input
-                                            type="tel"
-                                            required
-                                            value={formData.phone}
-                                            onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-[#FD6941] outline-none transition-all placeholder-gray-400"
-                                            placeholder="+91..."
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid md:grid-cols-2 gap-5">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold text-gray-800 ml-1">City<span className="text-red-500">*</span></label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.city}
-                                            onChange={e => setFormData({ ...formData, city: e.target.value })}
-                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-[#FD6941] outline-none transition-all placeholder-gray-400"
-                                            placeholder="Your City"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold text-gray-800 ml-1">Business Name (Restaurant)<span className="text-red-500">*</span></label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={formData.businessName}
-                                            onChange={e => setFormData({ ...formData, businessName: e.target.value })}
-                                            className="w-full px-5 py-3.5 bg-[#EAEAEA] border-none rounded-2xl focus:ring-2 focus:ring-[#FD6941] outline-none transition-all placeholder-gray-400"
-                                            placeholder="Your Restaurant Name"
-                                        />
-                                    </div>
-                                </div>
-
 
                                 <div className="pt-4">
                                     <button
                                         type="submit"
                                         disabled={isLoading}
-                                        className="px-12 py-3.5 bg-[#FD6941] text-white font-bold rounded-full hover:bg-[#E55A35] transition-all shadow-lg  text-lg disabled:opacity-70 flex items-center gap-2"
+                                        className="w-full md:w-fit px-12 py-4 bg-[#FD6941] text-white font-extrabold rounded-xl hover:bg-[#E55A35] hover:shadow-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2.5 text-[17px] group shadow-lg shadow-[#FD6941]/10"
                                     >
-                                        {isLoading ? 'Creating Account...' : 'Register Now'} <ArrowRight className="w-5 h-5" />
+                                        {isLoading ? 'Creating Account...' : 'Register Now'}
+                                        <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
                                     </button>
+                                    <p className="mt-6 text-center lg:text-left text-xs text-gray-500 font-bold flex items-center justify-center lg:justify-start gap-2">
+                                        <ShieldCheck className="w-4 h-4 text-green-500" />
+                                        Secured with industry-standard encryption.
+                                    </p>
                                 </div>
                             </form>
                         </div>

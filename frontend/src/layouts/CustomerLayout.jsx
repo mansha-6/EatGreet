@@ -159,7 +159,8 @@ const CustomerLayout = () => {
                         setShowBill,
                         totalItems,
                         baseUrl,
-                        logo: restaurantLogo
+                        logo: restaurantLogo,
+                        businessName
                     }} />
 
                     {/* Content - key={tenantName} forces a clean remount when switching restaurants */}

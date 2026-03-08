@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Store, MapPin, Clock, FileText, Upload, Save, Loader2, Mail, Phone, Info, Utensils } from 'lucide-react';
+import { Store, MapPin, Clock, FileText, Upload, Save, Loader2, Mail, Phone, Info, Utensils, CheckCircle } from 'lucide-react';
+
 import toast from 'react-hot-toast';
 import { restaurantAPI, uploadAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
+import LocationPickerMap from '../../components/LocationPickerMap';
+
 
 const Onboarding = () => {
     const navigate = useNavigate();
@@ -26,16 +29,27 @@ const Onboarding = () => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
+        if (name === 'contactNumber') {
+            const numericValue = value.replace(/\D/g, '').slice(0, 10);
+            setFormData(prev => ({ ...prev, [name]: numericValue }));
+            return;
+        }
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+
     const handleNestedChange = (category, field, value) => {
         if (category === 'location') {
-            setFormData(prev => ({ ...prev, location: { ...prev.location, [field]: value } }));
+            if (typeof field === 'object') {
+                setFormData(prev => ({ ...prev, location: { ...prev.location, ...field } }));
+            } else {
+                setFormData(prev => ({ ...prev, location: { ...prev.location, [field]: value } }));
+            }
         } else if (category === 'hours') {
             setFormData(prev => ({ ...prev, operatingHours: { ...prev.operatingHours, [field]: value } }));
         }
     };
+
 
     const handleLogoUpload = async (e) => {
         const file = e.target.files[0];
@@ -104,7 +118,7 @@ const Onboarding = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-5 h-full">
                     
                     {/* Left Panel - Info */}
-                    <div className="lg:col-span-2 bg-gradient-to-br from-[#FD6941] to-[#FF8C6B] p-8 lg:p-12 text-white flex flex-col justify-between">
+                    <div className="lg:col-span-2 bg-gradient-to-br from-[#FD6941] to-[#FF8C6B] p-8 lg:p-12 text-white flex flex-col justify-between shrink-0">
                         <div>
                             <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-8">
                                 <Store className="w-8 h-8 text-white" />
@@ -122,25 +136,28 @@ const Onboarding = () => {
                                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                                     <FileText className="w-5 h-5 text-white" />
                                 </div>
-                                <p className="text-sm font-light">Complete GST & legal details</p>
+                                <p className="text-sm font-light text-white/90">Add GST & business info</p>
                             </div>
                             <div className="flex items-center gap-4">
                                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                                     <MapPin className="w-5 h-5 text-white" />
                                 </div>
-                                <p className="text-sm font-light">Set your location for delivery</p>
+                                <p className="text-sm font-light text-white/90">Pin location on the map</p>
                             </div>
                             <div className="flex items-center gap-4">
                                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                                     <Utensils className="w-5 h-5 text-white" />
                                 </div>
-                                <p className="text-sm font-light">Choose your cuisine style</p>
+                                <p className="text-sm font-light text-white/90">Define your menu cuisine</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* Right Panel - Form */}
-                    <div className="lg:col-span-3 p-8 lg:p-12">
+
+                    {/* Right Panel - Form (Scrollable) */}
+                    <div className="lg:col-span-3 p-8 lg:p-12 lg:max-h-[85vh] overflow-y-auto no-scrollbar">
+
+
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div className="space-y-4">
                                 <h2 className="text-2xl font-normal text-gray-800">Restaurant Details</h2>
@@ -204,7 +221,10 @@ const Onboarding = () => {
                                             name="contactNumber"
                                             value={formData.contactNumber}
                                             onChange={handleChange}
-                                            placeholder="+91 98765 43210"
+                                            placeholder="Enter 10-digit number"
+                                            maxLength="10"
+                                            pattern="\d*"
+                                            inputMode="numeric"
                                             className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
                                             required
                                         />
@@ -243,6 +263,24 @@ const Onboarding = () => {
                                         <MapPin className="absolute right-4 top-4 w-4 h-4 text-gray-300" />
                                     </div>
                                 </div>
+
+                                <div className="md:col-span-2 space-y-2">
+                                    <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1">Pin Restaurant Location</label>
+                                    <Suspense fallback={
+                                        <div className="h-64 rounded-2xl bg-gray-50 animate-pulse flex items-center justify-center text-xs text-gray-400 border border-gray-100">
+                                            <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading map...
+                                        </div>
+                                    }>
+                                        <LocationPickerMap
+                                            lat={formData.location.lat}
+                                            lng={formData.location.lng}
+                                            onLocationSelect={(lat, lng) => handleNestedChange('location', { lat, lng })}
+                                            onAddressUpdate={(addr) => setFormData(prev => ({ ...prev, address: addr }))}
+                                        />
+                                    </Suspense>
+                                </div>
+
+
 
                                 <div className="md:col-span-2 grid grid-cols-2 gap-4">
                                     <div>

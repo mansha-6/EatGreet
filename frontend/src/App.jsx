@@ -72,11 +72,13 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/admin/onboarding" replace />;
   }
 
-  // Existing/working restaurants should not see onboarding again
+/* 
+  // Temporarily disabled for testing - Existing/working restaurants should not see onboarding again
   if (role === 'admin' && !shouldRequireOnboarding(user) && location.pathname.includes('/onboarding')) {
     const restaurantSlug = user?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant';
     return <Navigate to={`/${restaurantSlug}/admin`} replace />;
   }
+*/
 
   return children;
 };

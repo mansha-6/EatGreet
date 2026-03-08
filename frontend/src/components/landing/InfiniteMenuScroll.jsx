@@ -63,8 +63,14 @@ export default function InfiniteMenuScroll() {
     const duplicatedItemsRow2 = [...menuItems].reverse().concat([...menuItems].reverse(), [...menuItems].reverse());
 
     return (
-        <section ref={containerRef} className="pt-8 pb-16 md:pt-16 md:pb-32 bg-white overflow-hidden relative" id="menu-showcase">
+        <section 
+            ref={containerRef} 
+            onMouseLeave={() => setActiveEmoji(null)}
+            className="pt-8 pb-16 md:pt-16 md:pb-32 bg-white overflow-hidden relative" 
+            id="menu-showcase"
+        >
             <EmojiCursor emoji={activeEmoji} isVisible={!!activeEmoji} />
+
 
             <div className="max-w-7xl mx-auto px-4 md:px-6 text-center mb-10 md:mb-16">
                 <span className="text-[#FD6941] font-medium tracking-widest text-[10px] md:text-xs uppercase mb-2 block">Visual Dining</span>

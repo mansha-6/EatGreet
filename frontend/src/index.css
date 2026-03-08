@@ -51,6 +51,26 @@ body {
         scrollbar-width: none;
         /* Firefox */
     }
+
+    .custom-scrollbar::-webkit-scrollbar {
+        display: block !important;
+        width: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #FD6941;
+        border-radius: 20px;
+        opacity: 0.1;
+    }
+
+    .custom-scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: #FD6941 transparent;
+    }
 }
 
 /* Global scrollbar removal */

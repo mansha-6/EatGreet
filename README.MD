@@ -15,7 +15,32 @@ Key highlights:
 - 📊 **Sales analytics** with dynamic charts
 - 🗺️ **Location picker** integrated with Leaflet maps
 - 🎬 **Media slider** for image/video offer promotions
-- ☁️ **Cloudinary** integration for media uploads
+- ☁️ **Cloudinary** integration (Direct Secure Uploads)
+- 📧 **Automated Email System** for OTP, Welcome, and Approvals
+
+---
+
+## 🚀 Recent Updates (March 2026)
+
+We have recently implemented major stability and UX improvements:
+
+### 1. 📧 Integrated Email OTP & SMTP
+- **Secure Authentication**: Added Gmail App Password support for reliable OTP delivery.
+- **Automated Workflow**: Automated Welcome emails for users and Approval notifications with credentials for restaurant owners.
+- **Error Tracking**: Detailed server-side logging for mail delivery failures (e.g., SMTP Auth errors).
+
+### 2. 📱 Full Mobile Responsiveness
+- **Admin Command Center**: Re-engineered the Admin Dashboard, Menu, and Orders pages for 100% mobile and tablet compatibility.
+- **Floating Mobile Drawer**: Implemented a responsive sidebar navigation for small screens.
+- **Dynamic Scaling**: Fluid typography and grid layouts that adapt to any device size.
+
+### 3. ✅ Optimized Onboarding Flow
+- **Stricter Logic**: Fixed a bug where new users could skip the onboarding process. The app now enforces mandatory business profile completion before dashboard access.
+- **SPA Routing Fix**: Added `vercel.json` configuration to handle internal React routing on Vercel (fixes "404 on refresh" error).
+
+### 4. 🔒 Enhanced Media Security
+- **Signature-based Uploads**: Switched to direct-to-Cloudinary uploads using backend signatures, reducing server load and improving security.
+- **Support for 3D/AR**: Enhanced support for GLB/GLTF model uploads in the Menu section.
 
 ---
 
@@ -28,19 +53,19 @@ Key highlights:
 | [Vite](https://vitejs.dev/) | Build Tool & Dev Server |
 | [Tailwind CSS](https://tailwindcss.com/) | Utility-first Styling |
 | [Socket.io Client](https://socket.io/) | Real-time Communication |
-| [Leaflet](https://leafletjs.com/) | Interactive Maps |
 | [Three.js](https://threejs.org/) | 3D / AR Model Rendering |
 | [Recharts](https://recharts.org/) | Sales & Analytics Charts |
 
 ### Backend
 | Technology | Purpose |
 |---|---|
-| [Node.js](https://nodejs.org/) + [Express 5](https://expressjs.com/) | REST API Server |
-| [MongoDB](https://www.mongodb.com/) + [Mongoose](https://mongoosejs.com/) | Database & ODM |
+| [Node.js](https://nodejs.org/) | Runtime Environment |
+| [Express 5](https://expressjs.com/) | REST API Server |
+| [MongoDB](https://www.mongodb.com/) | Database |
+| [Nodemailer](https://nodemailer.com/) | Email Services |
 | [Socket.io](https://socket.io/) | Real-time WebSocket Server |
 | [JWT](https://jwt.io/) | Authentication |
 | [Cloudinary](https://cloudinary.com/) | Media Storage |
-| [Bcrypt.js](https://github.com/dcodeIO/bcrypt.js) | Password Hashing |
 
 ---
 
@@ -48,32 +73,20 @@ Key highlights:
 
 ### 👑 Super Admin
 - Manage all registered restaurants across the platform
+- **Restaurant Approval**: Review registration requests and approve with one click (triggers automated email with credentials).
 - View platform-wide payments and revenue reports
 - Manage platform users and access levels
-- Configure global platform settings
 
 ### 🍴 Restaurant Admin
-- **Dashboard** — Live sales overview, revenue charts (hourly / daily / all-time), and key metrics
-- **Menu Management** — Add, edit, remove items with images, videos, and 3D model (AR) support
-- **Category Management** — Organise menu items into categories
-- **Offers** — Create promotional banners with image or video media
-- **Orders** — Real-time order tracking with status updates (Pending → Preparing → Ready → Delivered)
-- **Tables** — Manage dine-in tables and QR code assignment
-- **Sales** — Detailed transaction history with date range filtering and export
-- **Settings** — Restaurant profile, branding, operating hours, location (map picker), and expenses
-- **Profile** — Admin account management
+- **Onboarding** — Mandatory setup for Business Details, GST, and Location.
+- **Dashboard** — Live sales overview with responsive charts.
+- **Menu Management** — Add items with images, videos, and 3D models.
+- **Orders** — Real-time tracking with status updates (Pending → Preparing → Ready → Delivered).
+- **Sales & Reports** — Exportable transaction history.
 
 ### 👨‍🍳 Kitchen Staff
-- Live kitchen order dashboard via Socket.io
-- Update order status in real time
-- Profile and settings management
-
-### 🧑‍💻 Customer
-- **Menu Page** — Browse the full menu with categories, search, filters, and AR view
-- **Media Offer Slider** — Auto-play promotional image/video offers
-- **Favourites** — Save favourite items
-- **Order Placement** — Add to cart and place orders
-- **Profile & Settings** — Customer account management
+- Live kitchen order dashboard via Socket.io.
+- Update order status in real time.
 
 ---
 
@@ -83,31 +96,21 @@ Key highlights:
 EatGreet/
 ├── backend/                    # Node.js / Express API Server
 │   ├── index.js                # Entry point, Express & Socket.io setup
-│   ├── .env                    # Environment variables (not committed)
-│   └── src/
-│       ├── controllers/        # Route handler logic
-│       ├── db/                 # MongoDB connection
-│       ├── middleware/         # Auth & tenant middleware
-│       ├── models/             # Mongoose schemas (User, MenuItem, Order, Offer, ...)
-│       ├── routes/             # API route definitions
-│       └── utils/              # Helpers (seed super admin, etc.)
+│   ├── src/
+│   │   ├── controllers/        # Route handler logic
+│   │   ├── middleware/         # Auth & tenant middleware
+│   │   ├── models/             # Mongoose schemas
+│   │   └── utils/              # emailService.js, seedSuperAdmin.js
 │
 ├── frontend/                   # React / Vite Frontend
-│   ├── public/                 # Static assets
-│   ├── vite.config.js          # Vite config (proxy → localhost:5001)
+│   ├── vercel.json             # Vercel Routing Configuration
 │   └── src/
-│       ├── components/         # Shared components (Navbar, MediaSlider, Map, ...)
-│       ├── context/            # React Context providers
-│       ├── hooks/              # Custom React hooks
-│       ├── layouts/            # Role-specific layout wrappers
+│       ├── components/         # Navbar, MediaSlider, Map, ...
+│       ├── context/            # SocketContext, SettingsContext
 │       ├── pages/
-│       │   ├── admin/          # Restaurant admin pages (Dashboard, Menu, Orders, Sales, ...)
-│       │   ├── customer/       # Customer-facing pages (Menu, Profile, Favourites)
-│       │   ├── kitchen/        # Kitchen staff pages
-│       │   ├── super-admin/    # Platform super-admin pages
-│       │   ├── auth/           # Login / Signup
-│       │   └── landing/        # Public landing page
-│       └── utils/              # Frontend utility functions
+│       │   ├── admin/          # Responsive Dashboard, Menu, Orders
+│       │   ├── super-admin/    # Restaurant Management
+│       │   └── landing/        # Smart Public Landing Page
 │
 └── README.MD
 ```
@@ -154,6 +157,11 @@ CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 
+# Email (Gmail recommended with App Password)
+EMAIL_USER=eatgreetofficial@gmail.com
+EMAIL_PASS=your_16_digit_app_password
+APP_ADMIN_EMAIL=admin@eatgreet.com
+
 # Frontend URL (for CORS)
 FRONTEND_URL=http://localhost:5173
 ```
@@ -174,7 +182,15 @@ Open a new terminal:
 ```bash
 cd frontend
 npm install
-npm run dev
+```
+
+Create a `.env` file in the `frontend/` directory:
+
+```env
+VITE_API_BASE_URL=http://localhost:5001/api
+```
+
+Start the frontend: `npm run dev`
 # Frontend runs on http://localhost:5173
 ```
 
@@ -214,6 +230,9 @@ npm run dev
 | `CLOUDINARY_CLOUD_NAME` | Your Cloudinary cloud name |
 | `CLOUDINARY_API_KEY` | Your Cloudinary API key |
 | `CLOUDINARY_API_SECRET` | Your Cloudinary API secret |
+| `EMAIL_USER` | Your email for sending (e.g., `eatgreetofficial@gmail.com`) |
+| `EMAIL_PASS` | Your 16-digit app password for the email |
+| `APP_ADMIN_EMAIL` | Admin email for notifications (e.g., `admin@eatgreet.com`) |
 | `FRONTEND_URL` | Your deployed frontend URL (e.g. `https://eatgreet.vercel.app`) |
 
 ---
@@ -229,7 +248,7 @@ npm run dev
 |---|---|
 | `VITE_API_BASE_URL` | Your deployed backend URL (e.g. `https://eatgreet-api.onrender.com/api`) |
 
-5. Deploy!
+5. Deploy! The `vercel.json` ensures SPA routes like `/admin/orders` don't 404 on refresh.
 
 ---
 

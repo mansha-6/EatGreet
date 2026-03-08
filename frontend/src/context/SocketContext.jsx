@@ -49,7 +49,8 @@ export const SocketProvider = ({ children }) => {
             withCredentials: false,
             // Polling first avoids continuous websocket-only handshake failures on some hosts/proxies.
             transports: ['polling', 'websocket'],
-            reconnectionAttempts: Infinity,
+            path: '/socket.io',
+            reconnectionAttempts: 10,
             reconnectionDelay: 5000,
             reconnectionDelayMax: 10000,
             timeout: 20000, // Increased timeout to 20s
@@ -64,6 +65,13 @@ export const SocketProvider = ({ children }) => {
 
         newSocket.on('connect_error', (err) => {
             console.error('Socket Connection Error:', err);
+            const status = err?.context?.status;
+            const message = String(err?.message || '');
+            if (status === 404 || message.includes('404')) {
+                console.error('Socket endpoint returned 404. Stopping further reconnect attempts.');
+                newSocket.io.opts.reconnection = false;
+                newSocket.close();
+            }
         });
 
         return () => {

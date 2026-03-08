@@ -465,15 +465,17 @@ export default function LandingPage() {
 
     // Initialize Lenis Smooth Scroll
     useEffect(() => {
+        // Disable Lenis on touch devices as it often interferes with native scroll feel
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        if (isTouchDevice) return;
+
         const lenis = new Lenis({
-            duration: 1.1,
+            duration: 1.2,
             easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
             direction: 'vertical',
             gestureDirection: 'vertical',
             smooth: true,
             mouseMultiplier: 1,
-            smoothTouch: true, // often smoother behavior by letting Lenis handle it correctly
-            touchMultiplier: 1.5,
             infinite: false,
         });
 

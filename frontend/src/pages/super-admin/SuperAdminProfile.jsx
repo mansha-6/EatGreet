@@ -226,7 +226,6 @@ const SuperAdminProfile = () => {
                 </div>
             </div>
         </div>
-        </div >
     );
 };
 

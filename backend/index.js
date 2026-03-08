@@ -9,31 +9,33 @@ const seedSuperAdmin = require('./src/utils/seedSuperAdmin');
 const app = express();
 const server = http.createServer(app);
 
-// Enhanced CORS Configuration
+// Enhanced CORS configuration
 const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:5000',
     'https://eat-greet.vercel.app',
-    process.env.FRONTEND_URL
+    process.env.FRONTEND_URL,
+    ...(process.env.FRONTEND_URLS || '').split(',').map((s) => s.trim())
 ].filter(Boolean);
 
-// Create a robust CORS options object
+const isOriginAllowed = (origin) => {
+    if (!origin) return true;
+    if (process.env.NODE_ENV === 'development') return true;
+    return allowedOrigins.includes(origin);
+};
+
+const corsOriginHandler = (origin, callback) => {
+    if (isOriginAllowed(origin)) {
+        callback(null, true);
+        return;
+    }
+
+    console.warn(`CORS blocked for origin: ${origin}`);
+    callback(new Error('Not allowed by CORS'));
+};
+
 const corsOptions = {
-    origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps)
-        if (!origin) return callback(null, true);
-
-        const isAllowed = allowedOrigins.some(allowed =>
-            origin.startsWith(allowed) || allowed === origin
-        );
-
-        if (isAllowed || process.env.NODE_ENV === 'development') {
-            callback(null, true); // Reflect origin
-        } else {
-            console.warn(`CORS blocked for origin: ${origin}`);
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: corsOriginHandler,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-restaurant-name', 'Origin', 'Accept']
@@ -52,17 +54,7 @@ app.use((req, res, next) => {
 // Socket.io Setup
 const io = new Server(server, {
     cors: {
-        origin: (origin, callback) => {
-            if (!origin) return callback(null, true);
-            const isAllowed = allowedOrigins.some(allowed =>
-                origin.startsWith(allowed) || allowed === origin
-            );
-            if (isAllowed || process.env.NODE_ENV === 'development') {
-                callback(null, true);
-            } else {
-                callback(new Error('Not allowed by CORS'));
-            }
-        },
+        origin: corsOriginHandler,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true
     },

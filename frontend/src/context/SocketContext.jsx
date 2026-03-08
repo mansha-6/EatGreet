@@ -23,11 +23,15 @@ export const SocketProvider = ({ children }) => {
             return;
         }
 
+        // Prefer explicit socket URL when provided.
+        const explicitSocketUrl = import.meta.env.VITE_SOCKET_URL || '';
         // Derive socket URL from VITE_API_BASE_URL or default to localhost
         const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
         let socketUrl = '';
 
-        if (apiBaseUrl.startsWith('http')) {
+        if (explicitSocketUrl.startsWith('http')) {
+            socketUrl = explicitSocketUrl.replace(/\/$/, '');
+        } else if (apiBaseUrl.startsWith('http')) {
             socketUrl = apiBaseUrl.replace('/api', '');
         } else if (apiBaseUrl.startsWith('/')) {
             // Relative path, use current origin
@@ -40,8 +44,10 @@ export const SocketProvider = ({ children }) => {
         console.log('Attempting Socket Connection to:', socketUrl);
 
         const newSocket = io(socketUrl, {
-            withCredentials: true,
-            transports: ['polling', 'websocket'], // Polling first for better compatibility, then upgrade
+            // Socket auth uses app tokens, not browser cookies.
+            // Keep this false to avoid CORS wildcard + credentials conflicts.
+            withCredentials: false,
+            transports: ['websocket', 'polling'],
             reconnectionAttempts: Infinity,
             reconnectionDelay: 5000,
             reconnectionDelayMax: 10000,

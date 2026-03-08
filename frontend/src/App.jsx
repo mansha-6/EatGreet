@@ -8,7 +8,6 @@ import { shouldRequireOnboarding } from './utils/onboarding';
 
 // Lazy loading all pages and layouts for better performance
 const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
-const Login = lazy(() => import('./pages/auth/Login'));
 const Signup = lazy(() => import('./pages/auth/Signup'));
 
 // Super Admin Imports
@@ -72,13 +71,13 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/admin/onboarding" replace />;
   }
 
-/* 
-  // Temporarily disabled for testing - Existing/working restaurants should not see onboarding again
-  if (role === 'admin' && !shouldRequireOnboarding(user) && location.pathname.includes('/onboarding')) {
-    const restaurantSlug = user?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant';
-    return <Navigate to={`/${restaurantSlug}/admin`} replace />;
-  }
-*/
+  /* 
+    // Temporarily disabled for testing - Existing/working restaurants should not see onboarding again
+    if (role === 'admin' && !shouldRequireOnboarding(user) && location.pathname.includes('/onboarding')) {
+      const restaurantSlug = user?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant';
+      return <Navigate to={`/${restaurantSlug}/admin`} replace />;
+    }
+  */
 
   return children;
 };
@@ -126,7 +125,6 @@ const TitleUpdater = () => {
     else if (pathname === '/super-admin/login') title = 'Super Admin Login';
 
     // Auth & Landing
-    else if (pathname === '/login') title = 'Login';
     else if (pathname === '/signup') title = 'Signup';
 
     // Default fallback
@@ -156,7 +154,6 @@ function App() {
           <Routes>
             {/* ... public routes ... */}
             <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
 
             {/* Admin Auth */}

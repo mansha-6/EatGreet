@@ -186,9 +186,6 @@ const DynamicNavbar = ({ customerProps }) => {
     }
 
     // 3. ADMIN & SUPER_ADMIN VIEW
-    const adminBgClass = viewType === 'SUPER_ADMIN' ? 'bg-[#F0F2F4]/60' : 'bg-gray-50/60';
-    const borderColor = viewType === 'SUPER_ADMIN' ? 'border-white/20' : 'border-gray-200';
-
     return (
         <>
             {impersonatedRestaurant && user?.role === 'superadmin' && (
@@ -208,7 +205,7 @@ const DynamicNavbar = ({ customerProps }) => {
                 </div>
             )}
             {/* Main Header (Pill Style for Desktop, Simple for Mobile) */}
-            <header className={`px-4 sm:px-[30px] py-3 flex items-center justify-between sticky top-0 z-[100] ${adminBgClass} backdrop-blur-xl transition-all border-b ${borderColor}`}>
+            <header className="px-4 sm:px-[30px] py-3 flex items-center justify-between sticky top-0 z-[100] bg-transparent transition-all">
                 {/* Logo Section */}
                 <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                     <button

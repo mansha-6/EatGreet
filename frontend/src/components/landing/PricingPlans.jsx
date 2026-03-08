@@ -396,7 +396,7 @@ export default function PricingPlans() {
                                 background: isHighlighted ? '#FD6941' : '#111111',
                             }}
                             transition={{ duration: 0.35 }}
-                            className="w-full py-4 md:py-5 rounded-2xl md:rounded-[1.5rem] font-normal tracking-wider uppercase text-xs md:text-sm text-white shadow-xl transition-opacity duration-300 hover:opacity-85"
+                            className="w-full py-4 md:py-5 rounded-full font-normal tracking-wider uppercase text-xs md:text-sm text-white shadow-xl transition-opacity duration-300 hover:opacity-85"
                         >
                             Start My Trial
                         </motion.a>
@@ -443,7 +443,7 @@ export default function PricingPlans() {
 
                         <a
                             href="#contact"
-                            className="w-full py-4 md:py-5 rounded-2xl md:rounded-[1.5rem] font-normal tracking-wider uppercase text-xs md:text-sm transition-all duration-300 shadow-xl bg-black text-white hover:bg-gray-900 shadow-black/10"
+                            className="w-full py-4 md:py-5 rounded-full font-normal tracking-wider uppercase text-xs md:text-sm transition-all duration-300 shadow-xl bg-black text-white hover:bg-gray-900 shadow-black/10"
                         >
                             Contact Sales
                         </a>

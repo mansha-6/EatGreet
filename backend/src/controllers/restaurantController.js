@@ -472,8 +472,8 @@ const approveRestaurant = async (req, res) => {
             return res.status(400).json({ message: 'User is already approved' });
         }
 
-        // Generate a random default password
-        const defaultPassword = Math.random().toString(36).slice(-8).toUpperCase() + '@' + Math.floor(100 + Math.random() * 900);
+        // Generate a random default password (exactly 8 characters)
+        const defaultPassword = Math.random().toString(36).slice(-8).toUpperCase();
 
         user.isApproved = true;
         user.password = defaultPassword; // Schema middleware will hash it on .save()

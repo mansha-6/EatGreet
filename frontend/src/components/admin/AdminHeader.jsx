@@ -116,7 +116,7 @@ const AdminHeader = () => {
       </div>
 
       {/* Center Navigation Pills (Desktop) */}
-      <nav className="hidden lg:flex items-center bg-white p-1.5 rounded-full shadow-[0_2px_10px_-2px_rgba(0,0,0,0.05)] border border-gray-100 gap-1">
+      <nav className="hidden lg:flex items-center gap-1">
         {navItems.map((item) => (
           <Link
             key={item.path}

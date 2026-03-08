@@ -11,7 +11,7 @@ export default function SuperAdminNavbar() {
 
     const handleLogout = () => {
         logout();
-        navigate('/login');
+        navigate('/super-admin/login');
     };
 
     const navItems = [

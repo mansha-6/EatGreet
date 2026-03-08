@@ -135,7 +135,8 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                 autocompleteService.current.getPlacePredictions(
                     {
                         input: value,
-                        // Removed restrictive types to show more options as requested
+                        // Focus on cities in India
+                        types: ['(cities)'],
                         componentRestrictions: { country: 'in' } // Focus on Indian locations
                     },
                     (predictions) => {
@@ -169,8 +170,24 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                     const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`);
                     const data = await response.json();
                     if (data.results && data.results[0]) {
-                        const address = data.results[0].formatted_address;
-                        setFormData(prev => ({ ...prev, city: address }));
+                        let city = '';
+                        for (let component of data.results[0].address_components) {
+                            if (component.types.includes('locality')) {
+                                city = component.long_name;
+                                break;
+                            }
+                        }
+                        if (!city) {
+                            for (let component of data.results[0].address_components) {
+                                if (component.types.includes('administrative_area_level_2')) {
+                                    city = component.long_name;
+                                    break;
+                                }
+                            }
+                        }
+                        const finalLocation = city || data.results[0].formatted_address;
+
+                        setFormData(prev => ({ ...prev, city: finalLocation }));
                         setFieldErrors(prev => ({ ...prev, city: '' }));
                         toast.success("Location updated!", { id: loadToast });
                     } else {
@@ -280,7 +297,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                             required
                             value={formData.name}
                             onChange={handleInputChange}
-                            className={`w-full pl-12 pr-5 h-12 bg-white border ${fieldErrors.name ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-2xl outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
+                            className={`w-full pl-12 pr-5 h-12 bg-white border ${fieldErrors.name ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-full outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
                             placeholder="Only alphabets allowed"
                         />
                     </div>
@@ -304,7 +321,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                             required
                             value={formData.email}
                             onChange={handleInputChange}
-                            className={`w-full pl-12 pr-5 h-12 bg-white border ${fieldErrors.email ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-2xl outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
+                            className={`w-full pl-12 pr-5 h-12 bg-white border ${fieldErrors.email ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-full outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
                             placeholder="you@example.com"
                         />
                     </div>
@@ -328,7 +345,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                             required
                             value={formData.phone}
                             onChange={handleInputChange}
-                            className={`w-full pl-12 pr-5 h-12 bg-white border ${fieldErrors.phone ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-2xl outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
+                            className={`w-full pl-12 pr-5 h-12 bg-white border ${fieldErrors.phone ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-full outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
                             placeholder="10 digits only"
                         />
                     </div>
@@ -337,7 +354,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                 {/* Location */}
                 <div className="space-y-2 group relative">
                     <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors flex justify-between h-4 items-center">
-                        <span>Your Location<span className="text-red-500">*</span></span>
+                        <span>City<span className="text-red-500">*</span></span>
                         {fieldErrors.city && (
                             <span className="text-[10px] text-red-500 font-bold lowercase tracking-normal italic animate-in fade-in slide-in-from-right-2 duration-300">
                                 {fieldErrors.city}
@@ -352,8 +369,8 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                             required
                             value={formData.city}
                             onChange={handleCityChange}
-                            className={`w-full pl-12 pr-12 h-12 bg-white border ${fieldErrors.city ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-2xl outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
-                            placeholder="Search your location..."
+                            className={`w-full pl-12 pr-12 h-12 bg-white border ${fieldErrors.city ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-full outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
+                            placeholder="Search your city..."
                             autoComplete="off"
                         />
                         <button
@@ -374,7 +391,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -10 }}
-                                className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden max-h-48 overflow-y-auto"
+                                className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden max-h-48 overflow-y-auto"
                             >
                                 {citySuggestions.map((city, idx) => (
                                     <button
@@ -409,7 +426,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                             required
                             value={formData.businessName}
                             onChange={handleInputChange}
-                            className={`w-full pl-12 pr-5 h-12 bg-white border ${fieldErrors.businessName ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-2xl outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
+                            className={`w-full pl-12 pr-5 h-12 bg-white border ${fieldErrors.businessName ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-full outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
                             placeholder="Restaurant name"
                         />
                     </div>
@@ -420,7 +437,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full md:w-fit px-12 py-4 bg-[#FD6941] text-white font-extrabold rounded-xl hover:bg-[#E55A35] hover:shadow-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2.5 text-[17px] group shadow-lg shadow-[#FD6941]/10"
+                    className="w-full md:w-fit px-12 py-4 bg-[#FD6941] text-white font-extrabold rounded-full hover:bg-[#E55A35] hover:shadow-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2.5 text-[17px] group shadow-lg shadow-[#FD6941]/10"
                 >
                     {isLoading ? 'Creating Account...' : 'Register Now'}
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />

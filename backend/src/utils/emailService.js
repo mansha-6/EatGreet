@@ -70,44 +70,88 @@ const sendEmail = async (options) => {
  * WELCOME EMAIL (Initial registration)
  */
 const sendWelcomeEmail = async (userEmail, userName, restaurantName, phone, city, isPending = false) => {
-    const welcomeHeader = isPending ? '⏳ Application Received!' : '🎉 Welcome to EatGreet!';
-    const welcomeSubtext = isPending ? 'Your EatGreet journey is about to begin' : 'Your restaurant journey starts now';
-
     const html = `
-    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; padding: 0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08); border: 1px solid #eee;">
-        <div style="background: linear-gradient(135deg, #FD6941 0%, #ff8c6b 100%); padding: 40px 32px; text-align: center;">
-            <h1 style="color: #fff; margin: 0; font-size: 28px; font-weight: 800;">${welcomeHeader}</h1>
-            <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 15px;">${welcomeSubtext}</p>
-        </div>
-        <div style="background: #ffffff; padding: 32px;">
-            <p style="font-size: 16px; color: #333; margin-top: 0;">Hi <b>${userName}</b>,</p>
-            <p style="color: #555; line-height: 1.7;">Thank you for registering <b>${restaurantName || 'your business'}</b> with EatGreet!</p>
-            
-            ${isPending ? `
-                <p style="color: #555; line-height: 1.7;">Your application is currently <b>under review</b> by our Admin team. We verify each registration to maintain our community quality.</p>
-                <div style="background-color: #f9f9f9; padding: 18px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #FD6941;">
-                    <p style="margin: 0 0 10px; font-weight: 700; color: #333;">Next Steps:</p>
-                    <ul style="margin: 0; padding-left: 20px; color: #555; font-size: 14px; line-height: 1.6;">
-                        <li>Admin verification (usually < 24 hrs).</li>
-                        <li>Approval notification with your credentials.</li>
-                        <li>Complete your restaurant profile and go live!</li>
-                    </ul>
-                </div>
-            ` : `
-                <p style="color: #555; line-height: 1.7;">Your account is now active and ready. You can log in to access your dashboard and start managing your restaurant.</p>
-                <div style="text-align: center; margin: 32px 0;">
-                    <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/login" style="background: #FD6941; color: #fff; padding: 14px 40px; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 15px; display: inline-block;">Login to Dashboard →</a>
-                </div>
-            `}
-
-            <p style="color: #888; font-size: 13px; margin-top: 30px; border-top: 1px solid #f0f0f0; pt: 20px;">
-                Owner Name: ${userName}<br/>
-                Reg. Phone: ${phone || 'N/A'}<br/>
-                City: ${city || 'N/A'}
-            </p>
-            <p style="color: #333; font-size: 14px; margin-top: 24px;">Best regards,<br/><b>The EatGreet Team</b></p>
-        </div>
-    </div>`;
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body { margin: 0; padding: 0; background-color: #f8fafc; -webkit-font-smoothing: antialiased; }
+            .wrapper { width: 100%; background-color: #f8fafc; padding: 40px 15px; text-align: center; }
+            .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: left; }
+            .header-top { padding: 32px 32px 10px; }
+            .logo { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 20px; font-weight: 800; color: #0f172a; text-decoration: none; display: flex; align-items: center; }
+            .logo span { color: #FD6941; }
+            .logo-icon { margin-right: 8px; font-size: 24px; }
+            .hero { padding: 40px 32px 10px; text-align: center; }
+            .hero-title { font-family: Georgia, serif; font-size: 42px; color: #0f172a; margin: 0; font-weight: bold; line-height: 1.1; }
+            .hero-subtitle { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 18px; color: #475569; margin: 12px 0 0; }
+            .content { padding: 30px 32px 40px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
+            .text { font-size: 16px; color: #475569; line-height: 1.6; margin: 0 0 20px; }
+            .box { background-color: #f8fafc; border-radius: 16px; padding: 24px; margin: 30px 0; border: 1px solid #e2e8f0; }
+            .box-title { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: 700; margin: 0 0 12px; }
+            .btn-wrap { text-align: center; margin: 40px 0 20px; }
+            .btn { display: inline-block; background-color: #4f46e5; color: #ffffff !important; padding: 18px 48px; border-radius: 14px; font-weight: 600; font-size: 16px; text-decoration: none; box-shadow: 0 6px 20px rgba(79,70,229,0.3); }
+            .footer { background-color: #f8fafc; padding: 40px 30px; text-align: center; border-top: 1px solid #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
+            @media only screen and (max-width: 600px) {
+                .wrapper { padding: 20px 10px; }
+                .header-top, .hero, .content { padding-left: 20px; padding-right: 20px; }
+                .hero-title { font-size: 32px; }
+                .box { padding: 16px; }
+            }
+        </style>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f8fafc;">
+        <table class="wrapper" width="100%" cellpadding="0" cellspacing="0" role="presentation">
+            <tr>
+                <td align="center">
+                    <table class="container" width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px; background-color: #ffffff;">
+                        <tr>
+                            <td class="header-top">
+                                <div class="logo"><span class="logo-icon">🍽️</span> <span>Eat</span>Greet</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="hero">
+                                <h1 class="hero-title">${isPending ? 'Almost There!' : 'Hola!'}</h1>
+                                <p class="hero-subtitle">${isPending ? 'Your application is under review' : 'Welcome to EatGreet!'}</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="content">
+                                <p class="text" style="font-weight: 600; color: #0f172a;">Hi ${userName},</p>
+                                <p class="text">Thank you for registering <b>${restaurantName || 'your business'}</b> with EatGreet. ${isPending ? 'We verify each registration to maintain the highest quality standards for our community.' : 'Your account is now active and ready. You can log in to access your command center and start managing your restaurant.'}</p>
+                                
+                                ${isPending ? `
+                                <div class="box">
+                                    <p class="box-title">Next Steps</p>
+                                    <ul style="margin: 0; padding-left: 20px; color: #475569; font-size: 15px; line-height: 1.8;">
+                                        <li>Account verification (usually within 24 hours)</li>
+                                        <li>Approval notification with your secure credentials</li>
+                                        <li>Profile setup and restaurant launch</li>
+                                    </ul>
+                                </div>
+                                ` : `
+                                <div class="btn-wrap">
+                                    <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/login" class="btn" style="background-color: #4f46e5;">Get Started</a>
+                                </div>
+                                `}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="footer">
+                                <p style="color: #94a3b8; font-size: 12px; margin: 0 0 8px;">Powered by</p>
+                                <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 4px;"><span style="color: #FD6941;">Eat</span>Greet</div>
+                                <p style="color: #94a3b8; font-size: 12px; margin: 12px 0 0;">© ${new Date().getFullYear()} EatGreet. All rights reserved.</p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>`;
 
     return sendEmail({
         email: userEmail,
@@ -120,32 +164,96 @@ const sendWelcomeEmail = async (userEmail, userName, restaurantName, phone, city
  * APPROVAL EMAIL (When admin approves registration)
  */
 const sendApprovalEmail = async (userEmail, userName, defaultPassword, restaurantName) => {
-    const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`;
+    const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/login`;
     const html = `
-    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: auto; padding: 0; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08); border: 1px solid #eee;">
-        <div style="background: #10B981; padding: 40px 32px; text-align: center;">
-            <h1 style="color: #fff; margin: 0; font-size: 28px; font-weight: 800;">✅ Application Approved!</h1>
-            <p style="color: rgba(255,255,255,0.9); margin: 8px 0 0; font-size: 15px;">Welcome to the family, ${restaurantName}!</p>
-        </div>
-        <div style="background: #ffffff; padding: 32px;">
-            <p style="font-size: 16px; color: #333; margin-top: 0;">Hi <b>${userName}</b>,</p>
-            <p style="color: #555; line-height: 1.7;">Great news! Your restaurant <b>${restaurantName}</b> has been approved. You can now access your master dashboard.</p>
-            
-            <div style="background-color: #f1f8e9; padding: 24px; border-radius: 12px; margin: 25px 0; border: 1px solid #c8e6c9;">
-                <p style="margin: 0 0 8px; font-size: 13px; color: #888; text-transform: uppercase; font-weight: 700;">Your Credentials:</p>
-                <p style="margin: 5px 0; font-size: 14px; color: #222;"><b>User ID:</b> ${userEmail}</p>
-                <p style="margin: 10px 0 0; font-size: 14px; color: #222;"><b>Password:</b> <span style="background: #fff; padding: 4px 10px; border-radius: 6px; font-family: monospace; font-weight: bold; font-size: 18px; border: 1px dashed #10B981; color: #065f46;">${defaultPassword}</span></p>
-            </div>
-            
-            <p style="color: #Ef4444; font-size: 13px; font-weight: 600; text-align: center;">⚠️ Please change your password immediately after logging in.</p>
-            
-            <div style="text-align: center; margin-top: 32px;">
-                <a href="${loginUrl}" style="background-color: #FD6941; color: white; padding: 14px 40px; text-decoration: none; border-radius: 50px; font-weight: 700; font-size: 16px; display: inline-block; box-shadow: 0 4px 12px rgba(253,105,65,0.25);">Log In Now →</a>
-            </div>
-            
-            <p style="color: #333; font-size: 14px; margin-top: 32px; border-top: 1px solid #f0f0f0; padding-top: 20px;">Welcome to EatGreet!<br/><b>The EatGreet Team</b></p>
-        </div>
-    </div>`;
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body { margin: 0; padding: 0; background-color: #f8fafc; -webkit-font-smoothing: antialiased; }
+            .wrapper { width: 100%; background-color: #f8fafc; padding: 40px 15px; text-align: center; }
+            .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: left; }
+            .header-top { padding: 32px 32px 10px; }
+            .logo { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 20px; font-weight: 800; color: #0f172a; text-decoration: none; display: flex; align-items: center; }
+            .logo span { color: #FD6941; }
+            .logo-icon { margin-right: 8px; font-size: 24px; }
+            .hero { padding: 40px 32px 10px; text-align: center; }
+            .hero-title { font-family: Georgia, serif; font-size: 42px; color: #0f172a; margin: 0; font-weight: bold; line-height: 1.1; }
+            .hero-subtitle { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; font-size: 18px; color: #475569; margin: 12px 0 0; }
+            .content { padding: 30px 32px 40px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
+            .text { font-size: 16px; color: #475569; line-height: 1.6; margin: 0 0 20px; }
+            .box { background-color: #f8fafc; border-radius: 16px; padding: 32px; margin: 30px 0; border: 1px solid #e2e8f0; text-align: center; }
+            .box-title { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: 700; margin: 0 0 24px; }
+            .cred-label { font-size: 12px; color: #94a3b8; font-weight: 600; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+            .cred-val { font-size: 16px; color: #0f172a; font-weight: 500; margin: 0 0 24px; }
+            .pass-val { background: #ffffff; padding: 12px 24px; border-radius: 12px; font-family: 'SF Mono', Consolas, monospace; font-weight: 700; font-size: 24px; border: 2px dashed #cbd5e1; color: #4f46e5; display: inline-block; letter-spacing: 4px; margin: 0; }
+            .btn-wrap { text-align: center; margin: 40px 0 20px; }
+            .btn { display: inline-block; background-color: #4f46e5; color: #ffffff !important; padding: 18px 48px; border-radius: 14px; font-weight: 600; font-size: 16px; text-decoration: none; box-shadow: 0 6px 20px rgba(79,70,229,0.3); }
+            .alert { background-color: #fef2f2; border: 1px solid #fee2e2; border-radius: 12px; padding: 16px; color: #ef4444; font-size: 14px; text-align: center; font-weight: 500; margin-top: 24px; }
+            .footer { background-color: #f8fafc; padding: 40px 30px; text-align: center; border-top: 1px solid #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
+            @media only screen and (max-width: 600px) {
+                .wrapper { padding: 20px 10px; }
+                .header-top, .hero, .content { padding-left: 20px; padding-right: 20px; }
+                .hero-title { font-size: 32px; }
+                .box { padding: 20px; }
+                .pass-val { font-size: 20px; padding: 10px 16px; letter-spacing: 2px; }
+            }
+        </style>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #f8fafc;">
+        <table class="wrapper" width="100%" cellpadding="0" cellspacing="0" role="presentation">
+            <tr>
+                <td align="center">
+                    <table class="container" width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:600px; background-color: #ffffff;">
+                        <tr>
+                            <td class="header-top">
+                                <div class="logo"><span class="logo-icon">🍽️</span> <span>Eat</span>Greet</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="hero">
+                                <h1 class="hero-title">Approval Granted!</h1>
+                                <p class="hero-subtitle">Welcome to the family, ${restaurantName}</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="content">
+                                <p class="text" style="font-weight: 600; color: #0f172a;">Hi ${userName},</p>
+                                <p class="text">We are thrilled to inform you that <b>${restaurantName}</b> has been approved for the EatGreet platform. Your personalized command center is now ready for access.</p>
+                                
+                                <div class="box">
+                                    <p class="box-title">Secure Access Credentials</p>
+                                    
+                                    <p class="cred-label">USER ID</p>
+                                    <p class="cred-val">${userEmail}</p>
+                                    
+                                    <p class="cred-label">TEMPORARY PASSWORD</p>
+                                    <p class="pass-val">${defaultPassword}</p>
+                                </div>
+                                <div class="alert">
+                                    Please change your password immediately upon first login.
+                                </div>
+                                
+                                <div class="btn-wrap">
+                                    <a href="${loginUrl}" class="btn">Sign In to Dashboard</a>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="footer">
+                                <p style="color: #94a3b8; font-size: 12px; margin: 0 0 8px;">Powered by</p>
+                                <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 4px;"><span style="color: #FD6941;">Eat</span>Greet</div>
+                                <p style="color: #94a3b8; font-size: 12px; margin: 12px 0 0;">© ${new Date().getFullYear()} EatGreet. All rights reserved.</p>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+    </html>`;
 
     return sendEmail({
         email: userEmail,

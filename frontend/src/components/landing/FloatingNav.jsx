@@ -94,10 +94,9 @@ export const FloatingNav = ({
                     ease: [0.23, 1, 0.32, 1]
                 }}
                 className={cn(
-                    // ✅ Replaced "left-1/2 -translate-x-1/2" with "left-0 right-0 mx-auto"
                     "fixed top-0 left-0 right-0 mx-auto z-[5000] flex items-center transition-all duration-500",
                     scrolled
-                        ? "rounded-full bg-white/95 backdrop-blur-xl shadow-[0_25px_60px_-10px_rgba(0,0,0,0.12)] border border-black/[0.04] h-14 md:h-16 mt-4"
+                        ? "rounded-full bg-white/0.5 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] border border-white/50 h-14 md:h-16 mt-4"
                         : "h-16 md:h-20 bg-white/100 border-b border-black/[0.05]",
                     className
                 )}
@@ -145,7 +144,7 @@ export const FloatingNav = ({
                     {/* Actions */}
                     <div className="flex items-center gap-4 md:gap-8">
                         <a
-                            href="/login"
+                            href="/admin/login"
                             className="text-[13px] font-bold text-gray-700 hover:text-black transition-colors px-1 uppercase tracking-widest hidden md:block"
                         >
                             LOGIN
@@ -202,7 +201,7 @@ export const FloatingNav = ({
                                     </a>
                                 ))}
                                 <div className="pt-6 border-t border-gray-100 flex items-center justify-between">
-                                    <a href="/login" className="text-xs font-bold text-gray-900 tracking-[0.22em] uppercase">Login</a>
+                                    <a href="/admin/login" className="text-xs font-bold text-gray-900 tracking-[0.22em] uppercase">Login</a>
                                     <a href="#contact" onClick={() => setOpen(false)} className="text-xs font-extrabold text-[#FD6941] tracking-[0.2em] uppercase">Connect</a>
                                 </div>
                             </div>

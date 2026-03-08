@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const { sendWelcomeEmail, sendAdminNotificationEmail } = require('../utils/emailService');
+const { sendWelcomeEmail, sendAdminNotificationEmail, sendSuperAdminOtpEmail } = require('../utils/emailService');
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -201,23 +201,34 @@ const sendSuperAdminOtp = async (req, res) => {
             return res.status(429).json({ message: 'OTP already sent recently. Please wait 60 seconds.' });
         }
 
-        const otpCode = createOtpCode();
-        const { sendSuperAdminOtpEmail } = require('../utils/emailService');
+        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+            return res.status(503).json({
+                message: 'Email service is not configured on server. Please set EMAIL_USER and EMAIL_PASS.'
+            });
+        }
 
-        await sendSuperAdminOtpEmail(normalizedEmail, otpCode);
+        const otpCode = createOtpCode();
 
         user.superAdminOtp = {
             codeHash: hashOtp(otpCode),
-            expiresAt: new Date(now.getTime() + 60 * 1000),
+            expiresAt: new Date(now.getTime() + 2 * 60 * 1000),
             lastSentAt: now,
             attempts: 0
         };
         await user.save();
 
+        await sendSuperAdminOtpEmail(normalizedEmail, otpCode);
+
         res.status(201).json({ message: 'OTP sent to Super Admin email.' });
     } catch (error) {
         console.error('❌ Super Admin OTP Error:', error);
-        res.status(500).json({ message: error.message || 'Internal Server Error' });
+        if (error.code === 'EAUTH') {
+            return res.status(502).json({ message: 'SMTP authentication failed. Please verify email credentials.' });
+        }
+        if (['ECONNECTION', 'ETIMEDOUT', 'ESOCKET'].includes(error.code)) {
+            return res.status(504).json({ message: 'Email server timeout. Please try again in a moment.' });
+        }
+        res.status(500).json({ message: 'Failed to send OTP email. Please try again.' });
     }
 };
 

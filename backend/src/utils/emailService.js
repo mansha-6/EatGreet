@@ -8,6 +8,10 @@ const transporter = nodemailer.createTransport({
     pool: true, // Use a pool for multiple messages
     maxConnections: 5,
     maxMessages: 100,
+    // Fail fast on bad SMTP/network to avoid long API hangs
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,

@@ -480,11 +480,18 @@ const approveRestaurant = async (req, res) => {
 
         await user.save();
 
-        // Send approval email
+        // Send approval email in background so approval API stays fast
         const { sendApprovalEmail } = require('../utils/emailService');
-        await sendApprovalEmail(user.email, user.name, defaultPassword, user.restaurantName || 'your restaurant');
+        sendApprovalEmail(
+            user.email,
+            user.name,
+            defaultPassword,
+            user.restaurantName || 'your restaurant'
+        ).catch((err) => {
+            console.error('Approval email failed:', err.message);
+        });
 
-        res.json({ message: 'Restaurant approved and credentials sent via email' });
+        res.json({ message: 'Restaurant approved. Credentials email is being sent.' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

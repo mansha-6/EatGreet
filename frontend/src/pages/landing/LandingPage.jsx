@@ -18,8 +18,12 @@ import {
     Phone,
     MapPin,
     Building2,
-    User
+    User,
+    Eye,
+    Check,
+    Search
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { FloatingNav } from '../../components/landing/FloatingNav';
 import menuIcon from '../../assets/menu-icon.png';
 import logoFull from '../../assets/logo-full.png';
@@ -257,9 +261,9 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
             }
         } catch (err) {
             console.error('Registration Error Details:', err);
-            // If it's a network error (e.g., VITE_API_BASE_URL not set correctly on live), err.response is undefined
             const errorMsg = err.response?.data?.message || err.message || 'Registration failed. Please check your details.';
             setError(errorMsg);
+            toast.error(errorMsg);
         } finally {
             setIsLoading(false);
         }

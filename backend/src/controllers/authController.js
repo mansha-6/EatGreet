@@ -214,11 +214,13 @@ const sendSuperAdminOtp = async (req, res) => {
         };
         await user.save();
 
-        res.json({ message: 'OTP sent to Super Admin email.' });
+        res.status(201).json({ message: 'OTP sent to Super Admin email.' });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('❌ Super Admin OTP Error:', error);
+        res.status(500).json({ message: error.message || 'Internal Server Error' });
     }
 };
+
 
 // @desc    Verify OTP and login as super-admin
 // @route   POST /api/auth/superadmin/verify-otp

@@ -628,19 +628,23 @@ export default function LandingPage() {
                         >
                             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
-                            <div className="relative z-10 max-w-md">
+                            <div className="relative z-10">
                                 <h3 className="text-2xl md:text-3xl font-bold mb-4">3D Multimedia <br /> Menus</h3>
-                                <p className="text-white/80 mb-8 text-sm">Immersive visual dining that increases average order value by 32%.</p>
+                                <p className="text-white/80 mb-8 text-xs md:text-sm max-w-[55%] md:max-w-[60%] leading-relaxed">
+                                    Immersive visual dining that increases average order value by 32%.
+                                </p>
 
                                 <div className="flex items-center gap-3">
                                     <div className="flex -space-x-3">
                                         {[1, 2, 3].map((_, i) => (
-                                            <div key={i} className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white" />
+                                            <div key={i} className="w-8 h-8 rounded-full bg-white/20 border-2 border-white/40" />
                                         ))}
                                     </div>
-                                    <span className="text-xs font-bold uppercase tracking-wide">Active Visualization.js</span>
+                                    <span className="text-xs font-bold uppercase tracking-wide opacity-90">Active Visualization.js</span>
                                 </div>
                             </div>
+
+
 
                             <motion.img
                                 animate={{ y: [0, -10, 0] }}

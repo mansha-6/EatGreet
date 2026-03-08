@@ -12,7 +12,9 @@ export const hasExistingRestaurantSetup = (user) => {
   ];
   const filledInfoCount = requiredInfo.filter(value => !!value?.toString().trim()).length;
 
-  return hasRestaurantName && (details.isActive === true || filledInfoCount >= 3);
+  // Stricter check: We need at least some basic info filled to skip onboarding
+  // isActive: true is a default in the model, so we can't rely on it alone.
+  return hasRestaurantName && filledInfoCount >= 3;
 };
 
 export const shouldRequireOnboarding = (user) => {

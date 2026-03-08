@@ -23,14 +23,17 @@ router.route('/')
 
 router.post('/onboard', protect, admin, completeOnboarding);
 
-router.get('/all', protect, admin, getAllRestaurants);
-router.get('/pending', protect, admin, getPendingApprovals);
-router.put('/approve/:id', protect, admin, approveRestaurant);
+router.get('/all', protect, superadmin, getAllRestaurants);
+
+router.get('/pending', protect, superadmin, getPendingApprovals);
+router.put('/approve/:id', protect, superadmin, approveRestaurant);
+
 router.put('/subscription', protect, updateSubscription);
 router.post('/reminder', protect, sendSubscriptionReminder);
 
 router.get('/:id', getRestaurantPublic);
-router.delete('/:id', protect, admin, deleteRestaurant);
+router.delete('/:id', protect, superadmin, deleteRestaurant);
+
 router.get('/slug/:name', getRestaurantByName);
 
 module.exports = router;

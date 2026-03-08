@@ -21,11 +21,9 @@ const corsOptions = {
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps or curl requests)
         if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
-            callback(null, true);
-        } else {
-            callback(null, true); // Allow all in dev for now to fix user issues
-        }
+        // Always reflect the origin to allow cross-origin requests with credentials.
+        // This solves the Access-Control-Allow-Origin '*' Error with 'withCredentials' on Vercel -> Render.
+        return callback(null, origin);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -39,8 +37,12 @@ app.use(express.urlencoded({ limit: '20mb', extended: true }));
 // Socket.io Setup
 const io = new Server(server, {
     cors: {
-        origin: allowedOrigins.length > 0 ? allowedOrigins : "*",
-        methods: ["GET", "POST"],
+        origin: function (origin, callback) {
+            // Reflect the exact origin to allow socket connections with credentials
+            if (!origin) return callback(null, true);
+            return callback(null, origin);
+        },
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true
     },
     pingTimeout: 60000,

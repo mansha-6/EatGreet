@@ -10,18 +10,28 @@ const app = express();
 const server = http.createServer(app);
 
 // Enhanced CORS configuration
+const normalizeOrigin = (value) => {
+    if (!value) return '';
+    return String(value).trim().replace(/\/+$/, '').toLowerCase();
+};
+
 const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:5000',
     'https://eat-greet.vercel.app',
     process.env.FRONTEND_URL,
     ...(process.env.FRONTEND_URLS || '').split(',').map((s) => s.trim())
-].filter(Boolean);
+].filter(Boolean).map(normalizeOrigin);
 
 const isOriginAllowed = (origin) => {
     if (!origin) return true;
     if (process.env.NODE_ENV === 'development') return true;
-    return allowedOrigins.includes(origin);
+    const normalizedOrigin = normalizeOrigin(origin);
+
+    if (allowedOrigins.includes(normalizedOrigin)) return true;
+    if (normalizedOrigin.endsWith('.vercel.app')) return true;
+
+    return false;
 };
 
 const corsOriginHandler = (origin, callback) => {

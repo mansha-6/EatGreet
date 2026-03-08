@@ -47,7 +47,8 @@ export const SocketProvider = ({ children }) => {
             // Socket auth uses app tokens, not browser cookies.
             // Keep this false to avoid CORS wildcard + credentials conflicts.
             withCredentials: false,
-            transports: ['websocket', 'polling'],
+            // Polling first avoids continuous websocket-only handshake failures on some hosts/proxies.
+            transports: ['polling', 'websocket'],
             reconnectionAttempts: Infinity,
             reconnectionDelay: 5000,
             reconnectionDelayMax: 10000,

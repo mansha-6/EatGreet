@@ -52,12 +52,17 @@ const navItems = [
 
 // Load Google Maps Script
 if (typeof window !== 'undefined' && !window.google && !document.getElementById('google-maps-script')) {
-    const script = document.createElement('script');
-    script.id = 'google-maps-script';
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=places`;
-    script.async = true;
-    script.defer = true;
-    document.head.appendChild(script);
+    const mapsKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    if (mapsKey) {
+        const script = document.createElement('script');
+        script.id = 'google-maps-script';
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${mapsKey}&libraries=places`;
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+    } else {
+        console.warn("Google Maps API key is missing. City autocomplete will be disabled.");
+    }
 }
 
 const WaitlistForm = ({ handleRegisterSuccess }) => {
@@ -251,7 +256,10 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                 handleRegisterSuccess();
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Registration failed. Please check your details.');
+            console.error('Registration Error Details:', err);
+            // If it's a network error (e.g., VITE_API_BASE_URL not set correctly on live), err.response is undefined
+            const errorMsg = err.response?.data?.message || err.message || 'Registration failed. Please check your details.';
+            setError(errorMsg);
         } finally {
             setIsLoading(false);
         }

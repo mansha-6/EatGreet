@@ -114,7 +114,8 @@ const paymentRoutes = require('./src/routes/paymentRoutes');
 const offerRoutes = require('./src/routes/offerRoutes'); // Added offerRoutes
 const { resolveTenant } = require('./src/middleware/tenantMiddleware');
 
-app.options('*', cors(corsOptions));
+// Express 5 wildcard syntax (replaces '*' used in Express 4)
+app.options('/{*any}', cors(corsOptions));
 
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date(), env: process.env.NODE_ENV });

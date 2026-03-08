@@ -9,22 +9,35 @@ const seedSuperAdmin = require('./src/utils/seedSuperAdmin');
 const app = express();
 const server = http.createServer(app);
 
-// Update CORS to allow Socket.io and Frontend
+// Enhanced CORS Configuration
 const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:5000',
-    'http://192.168.0.100:5173',
+    'https://eat-greet.vercel.app',
     process.env.FRONTEND_URL
 ].filter(Boolean);
 
+// Create a robust CORS function
+const corsOriginFunction = (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl)
+    if (!origin) return callback(null, true);
+
+    // Check if origin is allowed
+    const isAllowed = allowedOrigins.some(allowed =>
+        origin.startsWith(allowed) || allowed === origin
+    );
+
+    if (isAllowed || process.env.NODE_ENV === 'development') {
+        // Correct origin response (never '*') to allow credentials
+        callback(null, origin);
+    } else {
+        console.warn(`CORS blocked for origin: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+    }
+};
+
 const corsOptions = {
-    origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-        // Always reflect the origin to allow cross-origin requests with credentials.
-        // This solves the Access-Control-Allow-Origin '*' Error with 'withCredentials' on Vercel -> Render.
-        return callback(null, origin);
-    },
+    origin: corsOriginFunction,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-restaurant-name']
@@ -34,21 +47,23 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ limit: '20mb', extended: true }));
 
+// Request Logging Middleware (Helpful for debugging 404s on live)
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
+});
+
 // Socket.io Setup
 const io = new Server(server, {
     cors: {
-        origin: function (origin, callback) {
-            // Reflect the exact origin to allow socket connections with credentials
-            if (!origin) return callback(null, true);
-            return callback(null, origin);
-        },
+        origin: corsOriginFunction,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true
     },
     pingTimeout: 60000,
     pingInterval: 25000,
     connectTimeout: 60000,
-    transports: ['polling', 'websocket'] // Match client side
+    transports: ['polling', 'websocket']
 });
 
 // Store io instance in app to use in controllers
@@ -90,6 +105,12 @@ const statsRoutes = require('./src/routes/statsRoutes');
 const paymentRoutes = require('./src/routes/paymentRoutes');
 const offerRoutes = require('./src/routes/offerRoutes'); // Added offerRoutes
 const { resolveTenant } = require('./src/middleware/tenantMiddleware');
+
+app.options('*', cors(corsOptions));
+
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date(), env: process.env.NODE_ENV });
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/restaurant', restaurantRoutes);

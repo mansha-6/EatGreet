@@ -4,22 +4,28 @@
     font-family: 'Urbanist' !important;
 }
 
-html,
+html {
+    scroll-behavior: smooth;
+    height: -webkit-fill-available;
+}
+
 body {
     font-weight: 500;
-    overflow-x: hidden;
-    position: relative;
-    width: 100%;
     margin: 0;
     padding: 0;
-    overscroll-behavior: none;
+    width: 100%;
+    min-height: 100vh;
+    /* Important for mobile scrolling */
+    overflow-x: hidden;
+    overflow-y: auto;
+    position: relative;
+    -webkit-overflow-scrolling: touch;
 }
 
 #root {
-    overflow-x: hidden;
     width: 100%;
     position: relative;
-    overscroll-behavior: none;
+    overflow-x: hidden;
 }
 
 * {

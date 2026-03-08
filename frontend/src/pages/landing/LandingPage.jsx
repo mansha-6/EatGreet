@@ -512,7 +512,7 @@ export default function LandingPage() {
     }, [hash]);
 
     return (
-        <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden relative">
+        <div className="min-h-screen bg-white text-gray-900 overflow-visible relative">
             <FluidCanvas />
 
             <FloatingNav navItems={navItems} />

@@ -254,8 +254,8 @@ export default function Payments() {
     };
 
     return (
-        <div className="h-screen bg-[#F0F2F4] p-4 md:p-6 flex flex-col overflow-hidden">
-            <div className="max-w-[1600px] mx-auto w-full flex-1 flex flex-col space-y-6 min-h-0">
+        <div className="flex-1 min-h-0 w-full bg-[#F0F2F4] px-4 md:px-10 py-6 flex flex-col overflow-hidden">
+            <div className="max-w-[1850px] mx-auto w-full flex-1 flex flex-col space-y-6 min-h-0">
                 {/* Header */}
                 <div className="flex justify-between items-center shrink-0">
                     <div>
@@ -265,17 +265,21 @@ export default function Payments() {
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setIsDatePickerOpen(true)}
-                            className="flex items-center gap-2 pr-6 pl-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-normal shadow-sm hover:border-gray-400 transition-all"
+                            className="bg-white border border-gray-200 text-gray-600 hover:text-black hover:border-gray-400 p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden h-10 w-10 sm:h-[52px] sm:w-[52px] sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2"
                         >
-                            <Calendar className="w-4 h-4 text-[#FD6941]" />
-                            {dateRange.start ? `${dateRange.start} - ${dateRange.end || 'Now'}` : 'All Time'}
+                            <Calendar className="w-5 h-5 sm:w-5 sm:h-5 shrink-0 text-[#FD6941]" />
+                            <span className="max-w-0 opacity-0 group-hover:max-w-[180px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                                {dateRange.start ? `${dateRange.start} - ${dateRange.end || 'Now'}` : 'All Time'}
+                            </span>
                         </button>
                         <button
                             onClick={handleDownloadPDF}
-                            className="flex items-center gap-2 px-6 py-2 bg-black text-white rounded-full text-sm font-normal shadow-lg hover:bg-gray-800 transition-colors"
+                            className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-lg text-sm overflow-hidden h-10 w-10 sm:h-[52px] sm:w-[52px] sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2 active:scale-95"
                         >
-                            <Download className="w-4 h-4" />
-                            Export Report
+                            <Download className="w-5 h-5 sm:w-5 sm:h-5 shrink-0" />
+                            <span className="max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                                Export Report
+                            </span>
                         </button>
                     </div>
                 </div>

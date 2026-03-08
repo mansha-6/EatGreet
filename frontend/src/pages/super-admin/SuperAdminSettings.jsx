@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    Layout, CreditCard, Shield, Users,
+    CreditCard, Shield, Users,
     Bell, Activity, Lock, Database,
-    Save, Upload, Eye, EyeOff, Plus, Trash2,
-    CheckCircle, AlertCircle, Clock, Rocket, Sparkles, X, ChevronRight, Circle
+    Eye, EyeOff, Plus, Trash2,
+    CheckCircle, Rocket, Sparkles, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
+import { useSettings } from '../../context/SettingsContext';
+import { authAPI } from '../../utils/api';
+
 
 const DEFAULT_PLANS = [
     {
@@ -48,7 +51,13 @@ const DEFAULT_PLANS = [
 ];
 
 const SuperAdminSettings = () => {
-    const [activeTab, setActiveTab] = useState('platform');
+    const { currencySymbol } = useSettings();
+    const [activeTab, setActiveTab] = useState('subscription');
+    const [loginActivity, setLoginActivity] = useState([]);
+    const [isLogLoading, setIsLogLoading] = useState(false);
+    const [logsError, setLogsError] = useState('');
+    const SETTINGS_STORAGE_KEY = 'super_admin_settings_v1';
+
     const [showApiKey, setShowApiKey] = useState(false);
     const [plans, setPlans] = useState(DEFAULT_PLANS);
     const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
@@ -63,6 +72,60 @@ const SuperAdminSettings = () => {
         features: [''],
         isBestValue: false
     });
+
+    const [autoSettings, setAutoSettings] = useState(() => {
+        try {
+            const saved = localStorage.getItem(SETTINGS_STORAGE_KEY);
+            if (saved) return JSON.parse(saved);
+        } catch (_) { }
+        return {
+            paymentProvider: 'Stripe',
+            testMode: true,
+            apiKey: 'pk_test_51Mz...',
+            webhookSecret: 'whsec_...',
+            orderAutoClose: '120',
+            cancelWindow: '5',
+            sessionTimeout: '30',
+            maxLoginAttempts: '5',
+            otpExpiry: '180',
+            emailNotifications: true,
+            paymentAlerts: true,
+            orderAlerts: true,
+            systemHealthAlerts: true,
+            force2fa: false
+        };
+    });
+
+    const updateSetting = (key, value) => {
+        setAutoSettings(prev => ({ ...prev, [key]: value }));
+    };
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(autoSettings));
+        }, 600);
+        return () => clearTimeout(timer);
+    }, [autoSettings]);
+
+    const fetchLoginActivity = async () => {
+        try {
+            setLogsError('');
+            setIsLogLoading(true);
+            const response = await authAPI.getSuperAdminLoginActivity();
+            setLoginActivity(response.data || []);
+        } catch (error) {
+            setLogsError('Failed to load login activity');
+        } finally {
+            setIsLogLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab !== 'security') return;
+        fetchLoginActivity();
+        const timer = setInterval(fetchLoginActivity, 15000);
+        return () => clearInterval(timer);
+    }, [activeTab]);
 
     const handleOpenModal = (plan = null) => {
         if (plan) {
@@ -125,19 +188,13 @@ const SuperAdminSettings = () => {
     };
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8 pb-10 max-w-7xl mx-auto h-[calc(100vh-6rem)]">
+        <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-8 px-4 md:px-10 py-6 max-w-[1850px] mx-auto w-full overflow-hidden">
 
             {/* Sidebar */}
             <div className="w-full lg:w-64 flex-shrink-0 space-y-6">
                 <div>
                     <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 px-2">Global Settings</h3>
                     <div className="space-y-1">
-                        <SidebarItem
-                            icon={Layout}
-                            label="Platform Settings"
-                            isActive={activeTab === 'platform'}
-                            onClick={() => setActiveTab('platform')}
-                        />
                         <SidebarItem
                             icon={CreditCard}
                             label="Subscription & Plans"
@@ -185,86 +242,27 @@ const SuperAdminSettings = () => {
                 <div className="flex items-center justify-between shrink-0">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-800">
-                            {activeTab === 'platform' && 'Platform Settings'}
                             {activeTab === 'subscription' && 'Subscription & Plans'}
                             {activeTab === 'payment' && 'Payment Gateway'}
                             {activeTab === 'users' && 'User & Role Management'}
                             {activeTab === 'system' && 'System Configuration'}
                             {activeTab === 'notifications' && 'Notification Settings'}
-                            {activeTab === 'security' && 'Security & Audit Logs'}
+                            {activeTab === 'security' && 'Security & Login Activity'}
                         </h1>
                         <p className="text-gray-500 text-sm">
-                            {activeTab === 'platform' && 'Manage global branding and regional configurations'}
                             {activeTab === 'subscription' && 'Configure pricing tiers and plan features'}
                             {activeTab === 'payment' && 'Setup payment providers and API keys'}
                             {activeTab === 'users' && 'Manage administrator access and permissions'}
                             {activeTab === 'system' && 'Configure core system timeouts and limits'}
                             {activeTab === 'notifications' && 'Manage system-wide alerts and triggers'}
-                            {activeTab === 'security' && 'Monitor security protocols and system activity'}
+                            {activeTab === 'security' && 'Live super-admin login visibility: who, when, where, which device'}
                         </p>
                     </div>
-                    <button
-                        onClick={() => toast.success('Settings saved successfully')}
-                        className="bg-black hover:bg-gray-800 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-sm active:scale-95"
-                    >
-                        <Save className="w-4 h-4" />
-                        Save Changes
-                    </button>
+                    <div />
                 </div>
 
                 {/* Content Area - Scrollable */}
                 <div className="flex-1 overflow-y-auto pr-2 pb-6 space-y-6 no-scrollbar">
-
-                    {/* Platform Settings */}
-                    {activeTab === 'platform' && (
-                        <div className="space-y-6">
-                            <SectionCard title="Branding & Identity" icon={Layout}>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <InputGroup label="Platform Name" defaultValue="EatGreet" />
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 mb-2">Platform Logo</label>
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center border border-dashed border-gray-300">
-                                                <Upload className="w-6 h-6 text-gray-400" />
-                                            </div>
-                                            <button className="px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg text-sm font-bold text-gray-600 transition-colors">
-                                                Upload New
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </SectionCard>
-
-                            <SectionCard title="Regional Settings" icon={Clock}>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 mb-2">Default Currency</label>
-                                        <select className="w-full px-4 py-3 rounded-xl bg-gray-50 border-none text-gray-700 text-sm font-bold focus:ring-0 cursor-pointer">
-                                            <option>USD ($)</option>
-                                            <option>EUR (€)</option>
-                                            <option>INR (₹)</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 mb-2">Timezone</label>
-                                        <select className="w-full px-4 py-3 rounded-xl bg-gray-50 border-none text-gray-700 text-sm font-bold focus:ring-0 cursor-pointer">
-                                            <option>UTC (GMT+00:00)</option>
-                                            <option>EST (GMT-05:00)</option>
-                                            <option>IST (GMT+05:30)</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 mb-2">Date Format</label>
-                                        <select className="w-full px-4 py-3 rounded-xl bg-gray-50 border-none text-gray-700 text-sm font-bold focus:ring-0 cursor-pointer">
-                                            <option>DD/MM/YYYY</option>
-                                            <option>MM/DD/YYYY</option>
-                                            <option>YYYY-MM-DD</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </SectionCard>
-                        </div>
-                    )}
 
                     {/* Subscription & Plans */}
                     {activeTab === 'subscription' && (
@@ -366,14 +364,23 @@ const SuperAdminSettings = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                     <div>
                                         <label className="block text-xs font-bold text-gray-400 mb-2">Payment Provider</label>
-                                        <select className="w-full px-4 py-3 rounded-xl bg-gray-50 border-none text-gray-700 text-sm font-bold focus:ring-0 cursor-pointer">
+                                        <select
+                                            value={autoSettings.paymentProvider}
+                                            onChange={(e) => updateSetting('paymentProvider', e.target.value)}
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 border-none text-gray-700 text-sm font-bold focus:ring-0 cursor-pointer"
+                                        >
                                             <option>Stripe</option>
                                             <option>Razorpay</option>
                                             <option>PayPal</option>
                                         </select>
                                     </div>
                                     <div className="flex items-end pb-3">
-                                        <ToggleItem title="Test Mode (Sandbox)" description="Enable for testing payments" />
+                                        <ToggleItem
+                                            title="Test Mode (Sandbox)"
+                                            description="Enable for testing payments"
+                                            enabled={autoSettings.testMode}
+                                            onToggle={(value) => updateSetting('testMode', value)}
+                                        />
                                     </div>
                                 </div>
 
@@ -383,7 +390,8 @@ const SuperAdminSettings = () => {
                                         <div className="relative">
                                             <input
                                                 type={showApiKey ? "text" : "password"}
-                                                defaultValue="pk_test_51Mz..."
+                                                value={autoSettings.apiKey}
+                                                onChange={(e) => updateSetting('apiKey', e.target.value)}
                                                 className="w-full px-4 py-3 rounded-xl bg-gray-50 border-none text-gray-800 text-sm font-bold focus:ring-0"
                                             />
                                             <button
@@ -394,7 +402,11 @@ const SuperAdminSettings = () => {
                                             </button>
                                         </div>
                                     </div>
-                                    <InputGroup label="Webhook Secret" defaultValue="whsec_..." />
+                                    <InputGroup
+                                        label="Webhook Secret"
+                                        value={autoSettings.webhookSecret}
+                                        onChange={(value) => updateSetting('webhookSecret', value)}
+                                    />
                                 </div>
                             </SectionCard>
                         </div>
@@ -432,11 +444,11 @@ const SuperAdminSettings = () => {
                         <div className="space-y-6">
                             <SectionCard title="Timeouts & Limits" icon={Database}>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <InputGroup label="Order Auto-Close (Minutes)" defaultValue="120" />
-                                    <InputGroup label="Cancellation Window (Minutes)" defaultValue="5" />
-                                    <InputGroup label="Session Timeout (Minutes)" defaultValue="30" />
-                                    <InputGroup label="Max Login Attempts" defaultValue="5" />
-                                    <InputGroup label="OTP Expiry (Seconds)" defaultValue="180" />
+                                    <InputGroup label="Order Auto-Close (Minutes)" value={autoSettings.orderAutoClose} onChange={(value) => updateSetting('orderAutoClose', value)} />
+                                    <InputGroup label="Cancellation Window (Minutes)" value={autoSettings.cancelWindow} onChange={(value) => updateSetting('cancelWindow', value)} />
+                                    <InputGroup label="Session Timeout (Minutes)" value={autoSettings.sessionTimeout} onChange={(value) => updateSetting('sessionTimeout', value)} />
+                                    <InputGroup label="Max Login Attempts" value={autoSettings.maxLoginAttempts} onChange={(value) => updateSetting('maxLoginAttempts', value)} />
+                                    <InputGroup label="OTP Expiry (Seconds)" value={autoSettings.otpExpiry} onChange={(value) => updateSetting('otpExpiry', value)} />
                                 </div>
                             </SectionCard>
                         </div>
@@ -447,10 +459,10 @@ const SuperAdminSettings = () => {
                         <div className="space-y-6">
                             <SectionCard title="System Alerts" icon={Bell}>
                                 <div className="space-y-4">
-                                    <ToggleItem title="Email Notifications" description="Send system-wide emails" />
-                                    <ToggleItem title="Payment Alerts" description="Notify on failed transactions" />
-                                    <ToggleItem title="Order Alerts" description="Notify on new incoming orders" />
-                                    <ToggleItem title="System Health Alerts" description="Notify on server downtime" />
+                                    <ToggleItem title="Email Notifications" description="Send system-wide emails" enabled={autoSettings.emailNotifications} onToggle={(value) => updateSetting('emailNotifications', value)} />
+                                    <ToggleItem title="Payment Alerts" description="Notify on failed transactions" enabled={autoSettings.paymentAlerts} onToggle={(value) => updateSetting('paymentAlerts', value)} />
+                                    <ToggleItem title="Order Alerts" description="Notify on new incoming orders" enabled={autoSettings.orderAlerts} onToggle={(value) => updateSetting('orderAlerts', value)} />
+                                    <ToggleItem title="System Health Alerts" description="Notify on server downtime" enabled={autoSettings.systemHealthAlerts} onToggle={(value) => updateSetting('systemHealthAlerts', value)} />
                                 </div>
                             </SectionCard>
                         </div>
@@ -461,37 +473,73 @@ const SuperAdminSettings = () => {
                         <div className="space-y-6">
                             <SectionCard title="Access Control" icon={Shield}>
                                 <div className="space-y-4">
-                                    <ToggleItem title="Force Two-Factor Authentication (2FA)" description="Require 2FA for all admin accounts" />
+                                    <ToggleItem
+                                        title="Force Two-Factor Authentication (2FA)"
+                                        description="Require 2FA for all admin accounts"
+                                        enabled={autoSettings.force2fa}
+                                        onToggle={(value) => updateSetting('force2fa', value)}
+                                    />
                                     <button className="w-full py-3 bg-red-50 text-red-500 font-bold rounded-xl hover:bg-red-100 transition-colors flex items-center justify-center gap-2">
                                         <Lock className="w-4 h-4" /> Force Logout All Users
                                     </button>
                                 </div>
                             </SectionCard>
 
-                            <SectionCard title="Recent Activity Logs" icon={Activity}>
+                            <SectionCard title="Live Super Admin Login Activity" icon={Activity}>
+                                <div className="flex items-center justify-between mb-3">
+                                    <p className="text-xs text-gray-500">Auto-refresh every 15 seconds</p>
+                                    <button
+                                        onClick={fetchLoginActivity}
+                                        className="text-xs font-bold text-[#FD6941] hover:underline"
+                                    >
+                                        Refresh now
+                                    </button>
+                                </div>
+                                {logsError && (
+                                    <div className="mb-4 px-3 py-2 rounded-lg bg-red-50 text-red-500 text-xs font-medium">{logsError}</div>
+                                )}
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm text-left">
                                         <thead className="bg-gray-50 text-gray-500 font-bold">
                                             <tr>
-                                                <th className="px-4 py-3 rounded-l-lg">Time</th>
-                                                <th className="px-4 py-3">User</th>
-                                                <th className="px-4 py-3">Action</th>
-                                                <th className="px-4 py-3 rounded-r-lg">Details</th>
+                                                <th className="px-4 py-3 rounded-l-lg">Who</th>
+                                                <th className="px-4 py-3">When</th>
+                                                <th className="px-4 py-3">Where</th>
+                                                <th className="px-4 py-3">Which Device</th>
+                                                <th className="px-4 py-3 rounded-r-lg">IP</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-50">
-                                            <tr>
-                                                <td className="px-4 py-3 text-gray-500">10:42 AM</td>
-                                                <td className="px-4 py-3 font-bold">superadmin</td>
-                                                <td className="px-4 py-3 text-blue-500">Login</td>
-                                                <td className="px-4 py-3 text-gray-400">Successful login from IP 192.168.1.1</td>
-                                            </tr>
-                                            <tr>
-                                                <td className="px-4 py-3 text-gray-500">09:15 AM</td>
-                                                <td className="px-4 py-3 font-bold">system</td>
-                                                <td className="px-4 py-3 text-green-500">Backup</td>
-                                                <td className="px-4 py-3 text-gray-400">Daily database backup completed</td>
-                                            </tr>
+                                            {isLogLoading && (
+                                                <tr>
+                                                    <td colSpan="5" className="px-4 py-6 text-center text-gray-400 text-sm">Loading activity...</td>
+                                                </tr>
+                                            )}
+                                            {!isLogLoading && loginActivity.length === 0 && (
+                                                <tr>
+                                                    <td colSpan="5" className="px-4 py-6 text-center text-gray-400 text-sm">No super-admin login activity found.</td>
+                                                </tr>
+                                            )}
+                                            {!isLogLoading && loginActivity.map((log, idx) => (
+                                                <tr key={`${log.email}-${log.when}-${idx}`}>
+                                                    <td className="px-4 py-3">
+                                                        <p className="font-bold text-gray-800">{log.who}</p>
+                                                        <p className="text-xs text-gray-400">{log.email}</p>
+                                                    </td>
+                                                    <td className="px-4 py-3 text-gray-500">
+                                                        {log.when ? new Date(log.when).toLocaleString('en-US', {
+                                                            day: '2-digit',
+                                                            month: 'short',
+                                                            year: 'numeric',
+                                                            hour: '2-digit',
+                                                            minute: '2-digit'
+                                                        }) : '—'}
+                                                    </td>
+                                                    <td className="px-4 py-3 text-gray-600">{log.where || 'Unknown'}</td>
+                                                    <td className="px-4 py-3 text-gray-600">{log.which || 'Unknown Device'}</td>
+                                                    <td className="px-4 py-3 text-gray-500">{log.ip || 'Unknown'}</td>
+                                                </tr>
+                                            ))}
                                         </tbody>
                                     </table>
                                 </div>
@@ -559,7 +607,8 @@ const SuperAdminSettings = () => {
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Price (₹)</label>
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Price ({currencySymbol})</label>
+
                                             <input
                                                 type="text"
                                                 className="w-full px-5 py-3.5 bg-gray-50 border border-transparent focus:bg-white focus:border-[#FD6941]/30 rounded-2xl text-sm font-bold outline-none transition-all"
@@ -634,7 +683,7 @@ const SuperAdminSettings = () => {
 
                                 <button
                                     onClick={handleSavePlan}
-                                    className="w-full mt-8 bg-black hover:bg-gray-900 text-white py-4 rounded-2xl font-bold transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                                    className="w-full mt-8 bg-[#FD6941] text-white px-8 py-3.5 rounded-full text-sm font-normal hover:bg-[#FD6941]/90 transition-all shadow-lg flex items-center justify-center gap-2 active:scale-95"
                                 >
                                     <CheckCircle className="w-5 h-5" />
                                     {editingPlan ? 'Update Plan' : 'Create Plan'}
@@ -674,33 +723,31 @@ const SectionCard = ({ title, icon: Icon, children }) => (
     </div>
 );
 
-const InputGroup = ({ label, defaultValue }) => (
+const InputGroup = ({ label, value, onChange }) => (
     <div>
         <label className="block text-xs font-bold text-gray-400 mb-2">{label}</label>
         <input
             type="text"
-            defaultValue={defaultValue}
+            value={value}
+            onChange={(e) => onChange?.(e.target.value)}
             className="w-full px-4 py-3 rounded-xl bg-gray-50 border-none text-gray-800 text-sm font-bold focus:ring-0 focus:bg-white focus:shadow-sm transition-all outline-none placeholder-gray-300"
         />
     </div>
 );
 
-const ToggleItem = ({ title, description }) => {
-    const [enabled, setEnabled] = useState(true);
-    return (
-        <div className="flex items-center justify-between py-2">
-            <div>
-                <h4 className="font-bold text-gray-800 text-sm">{title}</h4>
-                <p className="text-xs text-gray-500">{description}</p>
-            </div>
-            <button
-                onClick={() => setEnabled(!enabled)}
-                className={`w-12 h-6 rounded-full relative transition-colors ${enabled ? 'bg-[#FD6941]' : 'bg-gray-300'}`}
-            >
-                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${enabled ? 'right-1' : 'left-1'}`} />
-            </button>
+const ToggleItem = ({ title, description, enabled, onToggle }) => (
+    <div className="flex items-center justify-between py-2">
+        <div>
+            <h4 className="font-bold text-gray-800 text-sm">{title}</h4>
+            <p className="text-xs text-gray-500">{description}</p>
         </div>
-    );
-};
+        <button
+            onClick={() => onToggle?.(!enabled)}
+            className={`w-12 h-6 rounded-full relative transition-colors ${enabled ? 'bg-[#FD6941]' : 'bg-gray-300'}`}
+        >
+            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${enabled ? 'right-1' : 'left-1'}`} />
+        </button>
+    </div>
+);
 
 export default SuperAdminSettings;

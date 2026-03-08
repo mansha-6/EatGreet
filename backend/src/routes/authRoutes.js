@@ -1,11 +1,23 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, authUser, getUserProfile, updateUserProfile, getUsers } = require('../controllers/authController');
+const {
+    registerUser,
+    authUser,
+    getUserProfile,
+    updateUserProfile,
+    getUsers,
+    getSuperAdminLoginActivity,
+    sendSuperAdminOtp,
+    verifySuperAdminOtp
+} = require('../controllers/authController');
 const { protect, superadmin } = require('../middleware/authMiddleware');
 
 router.post('/register', registerUser);
 router.post('/login', authUser);
+router.post('/superadmin/send-otp', sendSuperAdminOtp);
+router.post('/superadmin/verify-otp', verifySuperAdminOtp);
 router.route('/profile').get(protect, getUserProfile).put(protect, updateUserProfile);
 router.get('/users', protect, superadmin, getUsers);
+router.get('/superadmin/login-activity', protect, superadmin, getSuperAdminLoginActivity);
 
 module.exports = router;

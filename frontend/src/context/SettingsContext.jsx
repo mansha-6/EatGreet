@@ -64,6 +64,30 @@ export const SettingsProvider = ({ children }) => {
         }
     }, []);
 
+    const [impersonatedRestaurant, setImpersonatedRestaurant] = useState(() => {
+        const saved = localStorage.getItem('impersonatedRestaurant');
+        try {
+            return saved ? JSON.parse(saved) : null;
+        } catch (e) {
+            return null;
+        }
+    });
+
+    const impersonate = (restaurant) => {
+        const data = {
+            id: restaurant._id,
+            name: restaurant.restaurantName,
+            slug: restaurant.restaurantName?.toLowerCase()?.replace(/\s+/g, '-')
+        };
+        localStorage.setItem('impersonatedRestaurant', JSON.stringify(data));
+        setImpersonatedRestaurant(data);
+    };
+
+    const stopImpersonating = () => {
+        localStorage.removeItem('impersonatedRestaurant');
+        setImpersonatedRestaurant(null);
+    };
+
     const login = (userData) => {
         localStorage.setItem('user', JSON.stringify(userData));
         localStorage.setItem('isAuthenticated', 'true');
@@ -74,6 +98,7 @@ export const SettingsProvider = ({ children }) => {
     const logout = () => {
         localStorage.clear();
         setUser(null);
+        setImpersonatedRestaurant(null);
     };
 
     const [isLocked, setIsLocked] = useState(false);
@@ -118,7 +143,7 @@ export const SettingsProvider = ({ children }) => {
     }, [user?.subscription?.endDate, user?.subscription?.status, user?.restaurantDetails?.isActive]);
 
     return (
-        <SettingsContext.Provider value={{ user, currency, currencySymbol, updateSettings, login, logout, isLocked }}>
+        <SettingsContext.Provider value={{ user, currency, currencySymbol, updateSettings, login, logout, isLocked, impersonatedRestaurant, impersonate, stopImpersonating }}>
             {children}
             {isLocked && user?.role === 'admin' && (
                 <div className="fixed inset-0 z-[999999] bg-white/60 backdrop-blur-2xl flex items-center justify-center p-6 text-center overflow-hidden">

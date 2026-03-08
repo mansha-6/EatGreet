@@ -318,14 +318,27 @@ const getAllRestaurants = async (req, res) => {
 
             return {
                 _id: user._id,
+                role: user.role,
                 name: user.name, // Owner Name
                 email: user.email,
+                profilePicture: user.profilePicture,
+                isApproved: user.isApproved,
+                isOnboarded: user.isOnboarded,
                 restaurantName: user.restaurantName, // Business Name
                 createdAt: user.restaurantDetails?.joinedAt || user.createdAt,
+                registeredAt: user.createdAt,
+                updatedAt: user.updatedAt,
                 isActive: user.get('restaurantDetails.isActive') ?? true,
                 subscription: user.subscription || { plan: 'None', status: 'None' },
                 phone: user.phone,
-                city: user.city
+                city: user.city,
+                currency: user.currency || 'INR',
+                cuisine: user.restaurantDetails?.cuisineType || '',
+                restaurantDetails: user.restaurantDetails || {},
+                orderPreferences: user.orderPreferences || {},
+                bankDetails: user.bankDetails || {},
+                notificationPreferences: user.notificationPreferences || {},
+                staffCount: Array.isArray(user.staff) ? user.staff.length : 0
             };
         }));
 
@@ -349,7 +362,7 @@ const updateSubscription = async (req, res) => {
         if (isActive !== undefined) {
             if (!user.restaurantDetails) user.restaurantDetails = {};
             user.restaurantDetails.isActive = isActive;
-            
+
             // Helpful UX: If the Super Admin manually reactivates an expired/new restaurant, 
             // give them a 14-day extension (Trial) so it doesn't immediately flip back to false
             const now = new Date();
@@ -391,23 +404,13 @@ const sendSubscriptionReminder = async (req, res) => {
         }
 
         // Real email sending
-        await sendEmail({
-            email: user.email,
-            subject: 'Action Required: Your EatGreet Subscription is Expiring',
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
-                    <h2 style="color: #FD6941;">Subscription Renewal Reminder</h2>
-                    <p>Hi ${user.name},</p>
-                    <p>This is a gentle reminder that your <b>${user.subscription.plan}</b> package for <b>${user.restaurantName || 'your business'}</b> is expiring soon on <b>${new Date(user.subscription.endDate).toLocaleDateString()}</b>.</p>
-                    <p>To avoid any interruption in service, please renew your subscription soon.</p>
-                    <div style="margin: 30px 0; text-align: center;">
-                        <a href="${process.env.FRONTEND_URL}/admin/billing" style="background-color: #FD6941; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">Renew Now</a>
-                    </div>
-                    <p>If you need any help, feel free to contact our support team.</p>
-                    <p>Best regards,<br/><b>The EatGreet Team</b></p>
-                </div>
-            `
-        });
+        const { sendSubscriptionReminder } = require('../utils/emailService');
+        await sendSubscriptionReminder(
+            user.email,
+            user.name,
+            user.subscription.plan,
+            user.subscription.endDate
+        );
 
         user.subscription.lastReminderSent = new Date();
         await user.save();
@@ -471,10 +474,10 @@ const approveRestaurant = async (req, res) => {
 
         // Generate a random default password
         const defaultPassword = Math.random().toString(36).slice(-8).toUpperCase() + '@' + Math.floor(100 + Math.random() * 900);
-        
+
         user.isApproved = true;
         user.password = defaultPassword; // Schema middleware will hash it on .save()
-        
+
         await user.save();
 
         // Send approval email

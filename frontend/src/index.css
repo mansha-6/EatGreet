@@ -12,12 +12,14 @@ body {
     width: 100%;
     margin: 0;
     padding: 0;
+    overscroll-behavior: none;
 }
 
 #root {
     overflow-x: hidden;
     width: 100%;
     position: relative;
+    overscroll-behavior: none;
 }
 
 * {

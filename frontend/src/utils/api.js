@@ -17,13 +17,24 @@ api.interceptors.request.use(
         if (user && user.token) {
           config.headers.Authorization = `Bearer ${user.token}`;
         }
-        // Add restaurantName for tenant resolution, but don't override if already set in params or headers
-        if (user && user.restaurantName) {
+        // Use impersonated restaurant if user is superadmin and impersonation is active
+        const impersonated = localStorage.getItem('impersonatedRestaurant');
+        const isSuperAdmin = user && user.role === 'superadmin';
+
+        let targetRestaurantName = user?.restaurantName;
+        if (isSuperAdmin && impersonated) {
+          try {
+            const impData = JSON.parse(impersonated);
+            if (impData.name) targetRestaurantName = impData.name;
+          } catch (e) { }
+        }
+
+        if (targetRestaurantName) {
           if (!config.headers['x-restaurant-name'] && !config.params?.restaurantName) {
-            config.headers['x-restaurant-name'] = user.restaurantName;
+            config.headers['x-restaurant-name'] = targetRestaurantName;
           }
           if (!config.params?.restaurantName && !config.headers['x-restaurant-name']) {
-            config.params = { ...config.params, restaurantName: user.restaurantName };
+            config.params = { ...config.params, restaurantName: targetRestaurantName };
           }
         }
       } catch (e) {
@@ -65,10 +76,13 @@ api.interceptors.response.use(
 
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
+  sendSuperAdminOtp: (email) => api.post('/auth/superadmin/send-otp', { email }),
+  verifySuperAdminOtp: (email, otp) => api.post('/auth/superadmin/verify-otp', { email, otp }),
   register: (userData) => api.post('/auth/register', userData),
   getProfile: () => api.get('/auth/profile'),
   updateProfile: (userData) => api.put('/auth/profile', userData),
   getUsers: () => api.get('/auth/users'),
+  getSuperAdminLoginActivity: () => api.get('/auth/superadmin/login-activity'),
   updatePassword: () => Promise.resolve({ data: { message: 'Password update not implemented yet' } }), // Pending backend
   getRestaurants: () => api.get('/restaurant/all'),
   getPendingApprovals: () => api.get('/restaurant/pending'),
@@ -76,6 +90,7 @@ export const authAPI = {
   deleteRestaurant: (id) => api.delete(`/restaurant/${id}`),
   updateSubscription: (data) => api.put('/restaurant/subscription', data),
   sendReminder: (data) => api.post('/restaurant/reminder', data),
+  superAdminCreateRestaurant: (data) => api.post('/auth/register', data),
 };
 
 export const statsAPI = {

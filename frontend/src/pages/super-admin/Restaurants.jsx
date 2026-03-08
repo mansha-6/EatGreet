@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     Search, Filter, Plus, MoreVertical, Edit2, Ban,
     X, Check, Calendar, ChevronLeft, ChevronRight, Download,
-    CheckCircle, Trash2, Globe, LayoutDashboard
+    CheckCircle, Trash2, Globe, LayoutDashboard, ExternalLink, Store,
+    User, Mail, Lock, Phone, MapPin, UtensilsCrossed, Loader2, Eye,
+    Clock, CreditCard, Building2, ShieldCheck, ShieldX, EyeOff, RefreshCw
 } from 'lucide-react';
 import { restaurantAPI, authAPI } from '../../utils/api';
+import { useSettings } from '../../context/SettingsContext';
 import toast from 'react-hot-toast';
 
 // --- Custom Single Date Picker Component ---
@@ -61,7 +64,7 @@ const SingleDatePicker = ({ value, onChange, onClose }) => {
                     <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1)); }}
-                        className="p-3 hover:bg-gray-50 rounded-2xl transition-colors border border-gray-100"
+                        className="p-3 hover:bg-gray-50 rounded-full transition-colors border border-gray-100"
                     >
                         <ChevronLeft className="w-5 h-5 text-gray-600" />
                     </button>
@@ -72,7 +75,7 @@ const SingleDatePicker = ({ value, onChange, onClose }) => {
                     <button
                         type="button"
                         onClick={(e) => { e.stopPropagation(); setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1)); }}
-                        className="p-3 hover:bg-gray-50 rounded-2xl transition-colors border border-gray-100"
+                        className="p-3 hover:bg-gray-50 rounded-full transition-colors border border-gray-100"
                     >
                         <ChevronRight className="w-5 h-5 text-gray-600" />
                     </button>
@@ -94,7 +97,7 @@ const SingleDatePicker = ({ value, onChange, onClose }) => {
                                 key={day}
                                 type="button"
                                 onClick={(e) => handleDateClick(e, day)}
-                                className={`h-11 w-11 flex items-center justify-center text-sm rounded-2xl transition-all ${isSelected
+                                className={`h-11 w-11 flex items-center justify-center text-sm rounded-full transition-all ${isSelected
                                     ? 'bg-[#FD6941] text-white shadow-lg shadow-[#FD6941]/30 font-medium'
                                     : 'text-gray-600 hover:bg-gray-50'
                                     }`}
@@ -111,9 +114,12 @@ const SingleDatePicker = ({ value, onChange, onClose }) => {
 
 export default function Restaurants() {
     const navigate = useNavigate();
+    const { impersonate } = useSettings();
     const [restaurants, setRestaurants] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
     const [selectedRestaurant, setSelectedRestaurant] = useState(null);
@@ -123,10 +129,106 @@ export default function Restaurants() {
         endDate: '',
         autoRenew: false
     });
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
+    const [addForm, setAddForm] = useState({
+        name: '',
+        email: '',
+        password: '',
+        restaurantName: '',
+        phone: '',
+        city: '',
+        cuisine: '',
+        plan: 'None',
+    });
+    const [addFormErrors, setAddFormErrors] = useState({});
+    const [previewRestaurant, setPreviewRestaurant] = useState(null);
+    const [citySuggestions, setCitySuggestions] = useState([]);
+    const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const autocompleteService = useRef(null);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        if (window.google?.maps?.places) return;
+        if (document.getElementById('google-maps-script')) return;
+        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+        if (!apiKey) return;
+        const script = document.createElement('script');
+        script.id = 'google-maps-script';
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+    }, []);
+
+    const generatePassword = () => {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#';
+        return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    };
+
+    const openAddModal = () => {
+        const pw = generatePassword();
+        setAddForm({ name: '', email: '', password: pw, restaurantName: '', phone: '', city: '', cuisine: '', plan: 'None' });
+        setAddFormErrors({});
+        setCitySuggestions([]);
+        setShowCitySuggestions(false);
+        setShowPassword(true);
+        setIsAddModalOpen(true);
+    };
+
+    const handleAddFormInput = (field, rawValue) => {
+        let value = rawValue;
+        if (field === 'name') value = rawValue.replace(/[^a-zA-Z\s]/g, '');
+        if (field === 'phone') value = rawValue.replace(/[^0-9]/g, '').slice(0, 10);
+        if (field === 'password') value = rawValue.slice(0, 8);
+
+        setAddForm(prev => ({ ...prev, [field]: value }));
+
+        // Live validation
+        let err = '';
+        if (field === 'name' && value.length > 0 && !/^[a-zA-Z\s]+$/.test(value)) err = 'Only alphabets allowed';
+        if (field === 'email' && value.length > 0 && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) err = 'Invalid email format';
+        if (field === 'phone' && value.length > 0 && value.length !== 10) err = 'Must be exactly 10 digits';
+        setAddFormErrors(prev => ({ ...prev, [field]: err }));
+    };
+
+    const handleAddCityChange = async (value) => {
+        setAddForm(prev => ({ ...prev, city: value }));
+        setAddFormErrors(prev => ({ ...prev, city: '' }));
+        if (value.length > 0 && window.google?.maps?.places) {
+            if (!autocompleteService.current) {
+                autocompleteService.current = new window.google.maps.places.AutocompleteService();
+            }
+            autocompleteService.current.getPlacePredictions(
+                { input: value, componentRestrictions: { country: 'in' } },
+                (predictions) => {
+                    if (predictions) {
+                        setCitySuggestions(predictions.map(p => p.description));
+                        setShowCitySuggestions(true);
+                    } else {
+                        setCitySuggestions([]);
+                        setShowCitySuggestions(false);
+                    }
+                }
+            );
+        } else {
+            setCitySuggestions([]);
+            setShowCitySuggestions(false);
+        }
+    };
+
+    const selectAddCity = (city) => {
+        setAddForm(prev => ({ ...prev, city }));
+        setAddFormErrors(prev => ({ ...prev, city: '' }));
+        setCitySuggestions([]);
+        setShowCitySuggestions(false);
+    };
 
     useEffect(() => {
         fetchRestaurants();
     }, []);
+
 
     const fetchRestaurants = async () => {
         try {
@@ -139,11 +241,22 @@ export default function Restaurants() {
         }
     };
 
-    const filteredRestaurants = restaurants.filter(res =>
-        res.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        res.restaurantName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        res.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredRestaurants = restaurants.filter(res => {
+        const matchesSearch = res.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            res.restaurantName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            res.email.toLowerCase().includes(searchTerm.toLowerCase());
+
+        if (statusFilter === 'all') return matchesSearch;
+
+        switch (statusFilter) {
+            case 'active':
+                return matchesSearch && res.isActive;
+            case 'deactivated':
+                return matchesSearch && !res.isActive;
+            default:
+                return matchesSearch;
+        }
+    });
 
     const getInitials = (res) => {
         const name = res.restaurantName || res.name;
@@ -153,6 +266,12 @@ export default function Restaurants() {
     const getColor = (idx) => {
         const colors = ['bg-blue-100 text-blue-600', 'bg-purple-100 text-purple-600', 'bg-[#FD6941]/10 text-[#FD6941]', 'bg-emerald-100 text-emerald-600'];
         return colors[idx % colors.length];
+    };
+
+    const handleVisitRestaurant = (restaurant) => {
+        impersonate(restaurant);
+        const slug = restaurant.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant';
+        navigate(`/${slug}/admin`);
     };
 
     const handleEditSubscription = (restaurant) => {
@@ -218,6 +337,53 @@ export default function Restaurants() {
         }
     };
 
+    const handleCreateRestaurant = async () => {
+        const errors = {};
+        if (!addForm.name.trim()) errors.name = 'Required field';
+        else if (!/^[a-zA-Z\s]+$/.test(addForm.name.trim())) errors.name = 'Only alphabets allowed';
+        if (!addForm.email.trim()) errors.email = 'Required field';
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addForm.email)) errors.email = 'Invalid email';
+        if (!addForm.password.trim()) errors.password = 'Required field';
+        else if (addForm.password.length < 6) errors.password = 'Min 6 characters';
+        if (!addForm.restaurantName.trim()) errors.restaurantName = 'Required field';
+        if (!addForm.phone.trim()) errors.phone = 'Required field';
+        else if (addForm.phone.length !== 10) errors.phone = 'Must be exactly 10 digits';
+        if (!addForm.city.trim()) errors.city = 'Required field';
+        if (!addForm.cuisine.trim()) errors.cuisine = 'Required field';
+        if (Object.keys(errors).length > 0) {
+            setAddFormErrors(errors);
+            return;
+        }
+        setAddFormErrors({});
+        setIsCreating(true);
+        try {
+            await authAPI.superAdminCreateRestaurant({
+                name: addForm.name,
+                email: addForm.email,
+                password: addForm.password,
+                restaurantName: addForm.restaurantName,
+                phone: addForm.phone,
+                city: addForm.city,
+                cuisine: addForm.cuisine,
+                role: 'admin',
+                subscription: addForm.plan !== 'None' ? {
+                    plan: addForm.plan,
+                    status: 'Active',
+                    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                } : undefined,
+            });
+            toast.success(`${addForm.restaurantName} added successfully!`);
+            setIsAddModalOpen(false);
+            setAddForm({ name: '', email: '', password: '', restaurantName: '', phone: '', city: '', cuisine: '', plan: 'None' });
+            setAddFormErrors({});
+            fetchRestaurants();
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Failed to create restaurant');
+        } finally {
+            setIsCreating(false);
+        }
+    };
+
     const getDaysLeft = (endDate) => {
         if (!endDate) return null;
         const diff = new Date(endDate) - new Date();
@@ -236,18 +402,11 @@ export default function Restaurants() {
     };
 
     return (
-        <div className="h-screen bg-[#F0F2F4] p-4 md:p-6 flex flex-col overflow-hidden">
-            <div className="max-w-[1600px] mx-auto w-full flex-1 flex flex-col space-y-6 min-h-0">
+        <div className="flex-1 min-h-0 w-full bg-[#F0F2F4] px-4 md:px-10 py-6 flex flex-col overflow-hidden">
+            <div className="max-w-[1850px] mx-auto w-full flex-1 flex flex-col space-y-6 min-h-0">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
                     <div className="space-y-1">
                         <div className="flex items-center gap-4">
-                            <button 
-                                onClick={() => navigate('/super-admin')}
-                                className="p-2.5 bg-white hover:bg-gray-50 rounded-2xl shadow-sm border border-gray-100 transition-all text-gray-400 hover:text-black active:scale-95"
-                                title="Back to Dashboard"
-                            >
-                                <LayoutDashboard className="w-5 h-5" />
-                            </button>
                             <h1 className="text-4xl font-normal text-gray-900">Restaurants</h1>
                             <span className="bg-[#FD6941]/10 text-[#FD6941] px-4 py-1 rounded-full text-sm font-normal">
                                 {restaurants.length} Total
@@ -256,33 +415,84 @@ export default function Restaurants() {
                         <p className="text-gray-500 font-normal">Manage Partner restaurants, Monitor performance, Control access.</p>
                     </div>
                     <button
-                        onClick={() => navigate('/signup')}
-                        className="bg-black text-white px-8 py-3.5 rounded-full text-sm font-normal hover:bg-gray-800 transition-all shadow-lg flex items-center gap-2 active:scale-95"
+                        onClick={openAddModal}
+                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-lg text-sm overflow-hidden h-10 w-10 sm:h-[52px] sm:w-[52px] sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2 active:scale-95"
                     >
-                        <Plus className="w-5 h-5" />
-                        Add Restaurant
+                        <Plus className="w-5 h-5 sm:w-5 sm:h-5 shrink-0" />
+                        <span className="max-w-0 opacity-0 group-hover:max-w-[120px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                            Add Restaurant
+                        </span>
                     </button>
                 </div>
 
                 <div className="flex-1 min-h-0 bg-white/60 backdrop-blur-sm rounded-[2.5rem] border border-white/60 shadow-sm flex flex-col overflow-hidden">
-                    <div className="px-4 pt-6 pb-0">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
-                            <h2 className="text-2xl font-normal text-gray-900">Subscription Management</h2>
+                    <div className="px-8 pt-8 pb-0">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-2">
+                            <h2 className="text-xl font-normal text-gray-900 font-['Urbanist'] tracking-tight">Subscription Management</h2>
                             <div className="flex items-center gap-3">
-                                <div className="relative group">
-                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-black transition-colors" />
+                                <div className="relative group flex-1 md:min-w-[300px]">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[#FD6941] transition-colors" />
                                     <input
                                         type="text"
-                                        placeholder="Search by name or email..."
+                                        placeholder="Search applications..."
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="pl-12 pr-6 py-3 bg-gray-100/50 border border-transparent focus:bg-white focus:border-gray-200 rounded-full w-[300px] text-sm font-normal transition-all outline-none"
+                                        className="w-full pl-11 pr-5 py-2.5 bg-gray-100/50 border border-transparent focus:bg-white focus:border-gray-200 rounded-full text-xs font-normal transition-all outline-none"
                                     />
+                                </div>
+
+                                <div className="relative shrink-0">
+                                    <button
+                                        onClick={() => setIsFilterOpen(!isFilterOpen)}
+                                        className={`w-11 h-11 flex items-center justify-center rounded-full transition-all border ${statusFilter !== 'all' ? 'bg-[#FD6941]/5 border-[#FD6941]/30 text-[#FD6941]' : 'bg-gray-100/50 hover:bg-white border-transparent hover:border-gray-200 text-gray-500 hover:text-gray-900 shadow-sm md:shadow-none'}`}
+                                        title="Filter by status"
+                                    >
+                                        <Filter className="w-5 h-5" />
+                                    </button>
+
+                                    <AnimatePresence>
+                                        {isFilterOpen && (
+                                            <>
+                                                <div
+                                                    className="fixed inset-0 z-[110]"
+                                                    onClick={() => setIsFilterOpen(false)}
+                                                />
+                                                <motion.div
+                                                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                    exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                                                    className="absolute right-0 mt-3 w-48 bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden z-[120]"
+                                                >
+                                                    <div className="p-2 space-y-1">
+                                                        {[
+                                                            { id: 'all', label: 'All Statuses' },
+                                                            { id: 'active', label: 'Active' },
+                                                            { id: 'deactivated', label: 'Deactivated' }
+                                                        ].map((item) => (
+                                                            <button
+                                                                key={item.id}
+                                                                onClick={() => {
+                                                                    setStatusFilter(item.id);
+                                                                    setIsFilterOpen(false);
+                                                                }}
+                                                                className={`w-full flex items-center justify-between px-4 py-2.5 rounded-full text-xs font-normal transition-all ${statusFilter === item.id ? 'bg-[#FD6941]/10 text-[#FD6941]' : 'text-gray-600 hover:bg-gray-50'}`}
+                                                            >
+                                                                <span>{item.label}</span>
+                                                                {statusFilter === item.id && (
+                                                                    <Check className="w-3.5 h-3.5" />
+                                                                )}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </motion.div>
+                                            </>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                        <div className="grid grid-cols-12 gap-4 px-6 py-2 mt-4">
                             <div className="col-span-3 text-[10px] font-normal text-gray-400 uppercase tracking-widest">User / Business</div>
                             <div className="col-span-2 text-[10px] font-normal text-gray-400 uppercase tracking-widest">Contact Info</div>
                             <div className="col-span-2 text-[10px] font-normal text-gray-400 uppercase tracking-widest text-center">Plan Type</div>
@@ -292,7 +502,7 @@ export default function Restaurants() {
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto px-4 pb-6 space-y-3 no-scrollbar">
+                    <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-3 no-scrollbar">
                         {isLoading ? (
                             <div className="py-20 flex flex-col items-center justify-center text-gray-400">
                                 <p className="font-normal text-lg animate-pulse">Loading Restaurants...</p>
@@ -340,30 +550,20 @@ export default function Restaurants() {
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    const slug = restaurant.restaurantName?.toLowerCase()?.replace(/\s+/g, '-');
-                                                    navigate(`/${slug}/admin`);
+                                                    setPreviewRestaurant(restaurant);
                                                 }}
-                                                className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors text-gray-400 hover:text-black"
-                                                title="Manage Restaurant"
+                                                className="p-2.5 hover:bg-[#FD6941]/10 rounded-full transition-colors text-gray-400 hover:text-[#FD6941]"
+                                                title="Preview Details"
                                             >
-                                                <LayoutDashboard className="w-4 h-4" />
+                                                <Eye className="w-4 h-4" />
                                             </button>
-                                            <a
-                                                href={`/r/${restaurant._id}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                onClick={(e) => e.stopPropagation()}
-                                                className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors text-gray-400 hover:text-[#FD6941]"
-                                                title="Visit Restaurant"
-                                            >
-                                                <Globe className="w-4 h-4" />
-                                            </a>
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     handleEditSubscription(restaurant);
                                                 }}
-                                                className="p-2.5 hover:bg-gray-100 rounded-xl transition-colors text-gray-400 hover:text-gray-600"
+                                                className="p-2.5 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
+                                                title="Edit Subscription"
                                             >
                                                 <Edit2 className="w-4 h-4" />
                                             </button>
@@ -372,7 +572,7 @@ export default function Restaurants() {
                                                     e.stopPropagation();
                                                     handleToggleStatus(restaurant);
                                                 }}
-                                                className={`p-2.5 hover:bg-gray-100 rounded-xl transition-colors ${restaurant.isActive ? 'text-gray-400 hover:text-rose-500' : 'text-rose-500 hover:text-emerald-500'}`}
+                                                className={`p-2.5 hover:bg-gray-100 rounded-full transition-colors ${restaurant.isActive ? 'text-gray-400 hover:text-rose-500' : 'text-rose-500 hover:text-emerald-500'}`}
                                                 title={restaurant.isActive ? 'Ban Restaurant' : 'Reactivate Restaurant'}
                                             >
                                                 {restaurant.isActive ? <Ban className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
@@ -382,7 +582,7 @@ export default function Restaurants() {
                                                     e.stopPropagation();
                                                     handleDeleteRestaurant(restaurant);
                                                 }}
-                                                className="p-2.5 hover:bg-rose-50 rounded-xl transition-colors text-gray-400 hover:text-rose-600"
+                                                className="p-2.5 hover:bg-rose-50 rounded-full transition-colors text-gray-400 hover:text-rose-600"
                                                 title="Delete Restaurant"
                                             >
                                                 <Trash2 className="w-4 h-4" />
@@ -432,7 +632,7 @@ export default function Restaurants() {
                                             <button
                                                 key={plan}
                                                 onClick={() => setEditForm({ ...editForm, plan })}
-                                                className={`py-3 rounded-2xl text-xs font-normal transition-all border-2 ${editForm.plan === plan
+                                                className={`py-3 rounded-full text-xs font-normal transition-all border-2 ${editForm.plan === plan
                                                     ? 'bg-[#FD6941]/5 border-[#FD6941] text-[#FD6941]'
                                                     : 'bg-gray-50 border-transparent text-gray-500 hover:bg-gray-100'
                                                     }`}
@@ -450,7 +650,7 @@ export default function Restaurants() {
                                             <button
                                                 key={status}
                                                 onClick={() => setEditForm({ ...editForm, status })}
-                                                className={`py-3 rounded-2xl text-sm font-normal transition-all border-2 ${editForm.status === status
+                                                className={`py-3 rounded-full text-sm font-normal transition-all border-2 ${editForm.status === status
                                                     ? 'bg-emerald-50 border-emerald-500 text-emerald-600'
                                                     : 'bg-gray-50 border-transparent text-gray-500 hover:bg-gray-100'
                                                     }`}
@@ -469,7 +669,7 @@ export default function Restaurants() {
                                         className="relative w-full group/date text-left"
                                     >
                                         <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-hover/date:text-[#FD6941] transition-colors" />
-                                        <div className="w-full pl-12 pr-6 py-4 bg-gray-50 border border-transparent hover:bg-white hover:border-[#FD6941]/30 rounded-2xl text-sm font-normal transition-all cursor-pointer shadow-sm">
+                                        <div className="w-full pl-12 pr-6 py-4 bg-gray-50 border border-transparent hover:bg-white hover:border-[#FD6941]/30 rounded-full text-sm font-normal transition-all cursor-pointer shadow-sm">
                                             {editForm.endDate ? new Date(editForm.endDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Select Date'}
                                         </div>
                                     </button>
@@ -499,7 +699,7 @@ export default function Restaurants() {
 
                             <button
                                 onClick={handleUpdateSubscription}
-                                className="w-full mt-8 bg-[#FD6941] hover:bg-[#e15a35] text-white py-4 rounded-2xl font-normal transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                                className="w-full mt-8 bg-[#FD6941] hover:bg-[#FD6941]/90 text-white py-4 rounded-full font-normal transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
                             >
                                 <CheckCircle className="w-5 h-5" />
                                 Update Subscription
@@ -508,6 +708,490 @@ export default function Restaurants() {
                     </motion.div>
                 </div>
             )}
+
+            {/* ─── Restaurant Preview Modal ─── */}
+            <AnimatePresence>
+                {previewRestaurant && (
+                    <div
+                        className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                        onClick={() => setPreviewRestaurant(null)}
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-white w-full max-w-3xl max-h-[90vh] rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden flex flex-col"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            {/* Top Banner */}
+                            <div className="bg-gradient-to-br from-[#FFF5F1] to-[#FFE4D9] px-8 pt-8 pb-10 relative">
+                                <button
+                                    onClick={() => setPreviewRestaurant(null)}
+                                    className="absolute top-5 right-5 p-2 hover:bg-white/60 rounded-full transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-gray-500" />
+                                </button>
+                                <div className="flex items-center gap-5">
+                                    <div className="w-16 h-16 rounded-[1.2rem] bg-white shadow-md flex items-center justify-center text-xl font-normal text-[#FD6941] border border-[#FD6941]/10">
+                                        {previewRestaurant.restaurantDetails?.logo ? (
+                                            <img
+                                                src={previewRestaurant.restaurantDetails.logo}
+                                                alt={previewRestaurant.restaurantName || 'Restaurant Logo'}
+                                                className="w-full h-full object-cover rounded-[1.2rem]"
+                                            />
+                                        ) : (
+                                            getInitials(previewRestaurant)
+                                        )}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-normal text-gray-900">{previewRestaurant.restaurantName || previewRestaurant.name}</h3>
+                                        <p className="text-xs text-gray-500 mt-0.5 font-normal">ID: {previewRestaurant._id.slice(-10)}</p>
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-normal uppercase tracking-wide ${previewRestaurant.isActive ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-500'}`}>
+                                                {previewRestaurant.isActive ? '● Active' : '● Deactivated'}
+                                            </span>
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-normal uppercase tracking-wide ${getSubscriptionStatus(previewRestaurant).color}`}>
+                                                {getSubscriptionStatus(previewRestaurant).label}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Details Body */}
+                            <div className="px-8 py-6 -mt-4 space-y-4 overflow-y-auto">
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    <div className="bg-gray-50 rounded-[1.5rem] p-5 space-y-3.5">
+                                        <p className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Admin User Details</p>
+
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
+                                                <User className="w-4 h-4 text-gray-400" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Owner</p>
+                                                <p className="text-sm text-gray-800 font-normal">{previewRestaurant.name || '—'}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
+                                                <Mail className="w-4 h-4 text-gray-400" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Email</p>
+                                                <p className="text-sm text-gray-800 font-normal">{previewRestaurant.email || '—'}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
+                                                <Phone className="w-4 h-4 text-gray-400" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Phone</p>
+                                                <p className="text-sm text-gray-800 font-normal">{previewRestaurant.phone || '—'}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
+                                                <MapPin className="w-4 h-4 text-gray-400" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">City</p>
+                                                <p className="text-sm text-gray-800 font-normal">{previewRestaurant.city || '—'}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="bg-white rounded-xl px-3 py-2 shadow-sm">
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Role</p>
+                                                <p className="text-sm text-gray-800 font-normal capitalize">{previewRestaurant.role || 'admin'}</p>
+                                            </div>
+                                            <div className="bg-white rounded-xl px-3 py-2 shadow-sm">
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Currency</p>
+                                                <p className="text-sm text-gray-800 font-normal">{previewRestaurant.currency || 'INR'}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="bg-white rounded-xl px-3 py-2 shadow-sm">
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Approved</p>
+                                                <p className={`text-sm font-normal ${previewRestaurant.isApproved ? 'text-emerald-600' : 'text-rose-500'}`}>
+                                                    {previewRestaurant.isApproved ? 'Yes' : 'No'}
+                                                </p>
+                                            </div>
+                                            <div className="bg-white rounded-xl px-3 py-2 shadow-sm">
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Onboarded</p>
+                                                <p className={`text-sm font-normal ${previewRestaurant.isOnboarded ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                                    {previewRestaurant.isOnboarded ? 'Yes' : 'No'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-gray-50 rounded-[1.5rem] p-5 space-y-3.5">
+                                        <p className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Restaurant Details</p>
+
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
+                                                <Building2 className="w-4 h-4 text-gray-400" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Business Name</p>
+                                                <p className="text-sm text-gray-800 font-normal">{previewRestaurant.restaurantName || '—'}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0 mt-0.5">
+                                                <MapPin className="w-4 h-4 text-gray-400" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Address</p>
+                                                <p className="text-sm text-gray-800 font-normal break-words">{previewRestaurant.restaurantDetails?.address || '—'}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="bg-white rounded-xl px-3 py-2 shadow-sm">
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Business Phone</p>
+                                                <p className="text-sm text-gray-800 font-normal">{previewRestaurant.restaurantDetails?.contactNumber || '—'}</p>
+                                            </div>
+                                            <div className="bg-white rounded-xl px-3 py-2 shadow-sm">
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Business Email</p>
+                                                <p className="text-sm text-gray-800 font-normal break-all">{previewRestaurant.restaurantDetails?.businessEmail || '—'}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="bg-white rounded-xl px-3 py-2 shadow-sm">
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Cuisine</p>
+                                                <p className="text-sm text-gray-800 font-normal">{previewRestaurant.restaurantDetails?.cuisineType || previewRestaurant.cuisine || '—'}</p>
+                                            </div>
+                                            <div className="bg-white rounded-xl px-3 py-2 shadow-sm">
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">GST Number</p>
+                                                <p className="text-sm text-gray-800 font-normal">{previewRestaurant.restaurantDetails?.gstNumber || '—'}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="bg-white rounded-xl px-3 py-2 shadow-sm">
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Total Tables</p>
+                                                <p className="text-sm text-gray-800 font-normal">{previewRestaurant.restaurantDetails?.totalTables ?? 0}</p>
+                                            </div>
+                                            <div className="bg-white rounded-xl px-3 py-2 shadow-sm">
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Staff Count</p>
+                                                <p className="text-sm text-gray-800 font-normal">{previewRestaurant.staffCount ?? 0}</p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <div className="bg-white rounded-xl px-3 py-2 shadow-sm">
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Open</p>
+                                                <p className="text-sm text-gray-800 font-normal">{previewRestaurant.restaurantDetails?.operatingHours?.open || '—'}</p>
+                                            </div>
+                                            <div className="bg-white rounded-xl px-3 py-2 shadow-sm">
+                                                <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Close</p>
+                                                <p className="text-sm text-gray-800 font-normal">{previewRestaurant.restaurantDetails?.operatingHours?.close || '—'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Subscription Row */}
+                                <div className="bg-gray-50 rounded-[1.5rem] p-5 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 bg-white rounded-xl flex items-center justify-center shadow-sm">
+                                            <CreditCard className="w-4 h-4 text-gray-400" />
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Plan</p>
+                                            <p className="text-sm text-gray-800 font-normal">{previewRestaurant.subscription?.plan || 'No Plan'}</p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Expires</p>
+                                        <p className="text-sm text-gray-800 font-normal">
+                                            {previewRestaurant.subscription?.endDate
+                                                ? new Date(previewRestaurant.subscription.endDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+                                                : '—'}
+                                        </p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-[10px] text-gray-400 uppercase tracking-wider font-normal">Days Left</p>
+                                        <p className={`text-sm font-normal ${getDaysLeft(previewRestaurant.subscription?.endDate) !== null && getDaysLeft(previewRestaurant.subscription?.endDate) <= 3 ? 'text-rose-500' : 'text-gray-800'}`}>
+                                            {getDaysLeft(previewRestaurant.subscription?.endDate) !== null ? `${getDaysLeft(previewRestaurant.subscription?.endDate)}d` : '—'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div className="flex items-center gap-2 px-1">
+                                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                                        <p className="text-xs text-gray-400 font-normal">
+                                            Restaurant Joined {previewRestaurant.createdAt ? new Date(previewRestaurant.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}
+                                        </p>
+                                    </div>
+                                    <div className="flex items-center gap-2 px-1">
+                                        <Clock className="w-3.5 h-3.5 text-gray-400" />
+                                        <p className="text-xs text-gray-400 font-normal">
+                                            User Registered {previewRestaurant.registeredAt ? new Date(previewRestaurant.registeredAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Footer Actions */}
+                            <div className="px-8 pb-8 flex gap-3">
+                                <button
+                                    onClick={() => { setPreviewRestaurant(null); handleEditSubscription(previewRestaurant); }}
+                                    className="flex-1 py-3 rounded-full border border-gray-200 text-gray-600 font-normal text-sm hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+                                >
+                                    <Edit2 className="w-4 h-4" /> Edit Plan
+                                </button>
+                                <button
+                                    onClick={() => { setPreviewRestaurant(null); handleVisitRestaurant(previewRestaurant); }}
+                                    className="flex-1 py-3 rounded-full bg-[#FD6941] hover:bg-[#FD6941]/90 text-white font-normal text-sm transition-all shadow-lg shadow-[#FD6941]/20 active:scale-95 flex items-center justify-center gap-2"
+                                >
+                                    <LayoutDashboard className="w-4 h-4" /> Visit Dashboard
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* ─── Add Restaurant Modal ─── */}
+            <AnimatePresence>
+                {isAddModalOpen && (
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => { setIsAddModalOpen(false); setShowCitySuggestions(false); }}>
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-2xl border border-gray-100 overflow-hidden"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            {/* Modal Header */}
+                            <div className="px-8 pt-8 pb-6 border-b border-gray-100 flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-2xl font-normal text-gray-900">Add Restaurant</h3>
+                                    <p className="text-sm text-gray-400 font-normal mt-1">Create a new restaurant account manually</p>
+                                </div>
+                                <button onClick={() => { setIsAddModalOpen(false); setShowCitySuggestions(false); }} className="p-2.5 hover:bg-gray-100 rounded-full transition-colors">
+                                    <X className="w-5 h-5 text-gray-400" />
+                                </button>
+                            </div>
+
+                            {/* Modal Body */}
+                            <div className="px-8 py-6 max-h-[70vh] overflow-y-auto no-scrollbar">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+
+                                    {/* Owner Full Name */}
+                                    <div className="md:col-span-2 space-y-2 group">
+                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors flex justify-between h-4 items-center">
+                                            <span>Owner Full Name<span className="text-red-500">*</span></span>
+                                            {addFormErrors.name && <span className="text-[10px] text-red-500 font-bold lowercase tracking-normal italic">{addFormErrors.name}</span>}
+                                        </label>
+                                        <div className="relative">
+                                            <User className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${addFormErrors.name ? 'text-red-400' : 'text-gray-400 group-focus-within:text-[#FD6941]'}`} />
+                                            <input
+                                                type="text"
+                                                placeholder="Only alphabets allowed"
+                                                value={addForm.name}
+                                                onChange={e => handleAddFormInput('name', e.target.value)}
+                                                className={`w-full pl-12 pr-5 h-12 bg-white border ${addFormErrors.name ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-full outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Email */}
+                                    <div className="space-y-2 group">
+                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors flex justify-between h-4 items-center">
+                                            <span>Email Address<span className="text-red-500">*</span></span>
+                                            {addFormErrors.email && <span className="text-[10px] text-red-500 font-bold lowercase tracking-normal italic">{addFormErrors.email}</span>}
+                                        </label>
+                                        <div className="relative">
+                                            <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${addFormErrors.email ? 'text-red-400' : 'text-gray-400 group-focus-within:text-[#FD6941]'}`} />
+                                            <input
+                                                type="email"
+                                                placeholder="you@example.com"
+                                                value={addForm.email}
+                                                onChange={e => handleAddFormInput('email', e.target.value)}
+                                                className={`w-full pl-12 pr-5 h-12 bg-white border ${addFormErrors.email ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-full outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Password */}
+                                    <div className="space-y-2 group">
+                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors flex justify-between h-4 items-center">
+                                            <span>Set Password<span className="text-red-500">*</span></span>
+                                            {addFormErrors.password && <span className="text-[10px] text-red-500 font-bold lowercase tracking-normal italic">{addFormErrors.password}</span>}
+                                        </label>
+                                        <div className="relative">
+                                            <Lock className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${addFormErrors.password ? 'text-red-400' : 'text-gray-400 group-focus-within:text-[#FD6941]'}`} />
+                                            <input
+                                                type={showPassword ? 'text' : 'password'}
+                                                placeholder="Auto-generated (max 8 chars)"
+                                                value={addForm.password}
+                                                maxLength={8}
+                                                onChange={e => handleAddFormInput('password', e.target.value)}
+                                                className={`w-full pl-12 pr-12 h-12 bg-white border ${addFormErrors.password ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-full outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(prev => !prev)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                                                aria-label="Toggle password visibility"
+                                            >
+                                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Phone */}
+                                    <div className="space-y-2 group">
+                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors flex justify-between h-4 items-center">
+                                            <span>Mobile Number<span className="text-red-500">*</span></span>
+                                            {addFormErrors.phone && <span className="text-[10px] text-red-500 font-bold lowercase tracking-normal italic">{addFormErrors.phone}</span>}
+                                        </label>
+                                        <div className="relative">
+                                            <Phone className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${addFormErrors.phone ? 'text-red-400' : 'text-gray-400 group-focus-within:text-[#FD6941]'}`} />
+                                            <input
+                                                type="tel"
+                                                placeholder="10 digits only"
+                                                value={addForm.phone}
+                                                onChange={e => handleAddFormInput('phone', e.target.value)}
+                                                className={`w-full pl-12 pr-5 h-12 bg-white border ${addFormErrors.phone ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-full outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Restaurant Name */}
+                                    <div className="md:col-span-2 space-y-2 group">
+                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors flex justify-between h-4 items-center">
+                                            <span>Restaurant Name<span className="text-red-500">*</span></span>
+                                            {addFormErrors.restaurantName && <span className="text-[10px] text-red-500 font-bold lowercase tracking-normal italic">{addFormErrors.restaurantName}</span>}
+                                        </label>
+                                        <div className="relative">
+                                            <Store className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${addFormErrors.restaurantName ? 'text-red-400' : 'text-gray-400 group-focus-within:text-[#FD6941]'}`} />
+                                            <input
+                                                type="text"
+                                                placeholder="Your restaurant's official name"
+                                                value={addForm.restaurantName}
+                                                onChange={e => { setAddForm({ ...addForm, restaurantName: e.target.value }); setAddFormErrors(p => ({ ...p, restaurantName: '' })); }}
+                                                className={`w-full pl-12 pr-5 h-12 bg-white border ${addFormErrors.restaurantName ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-full outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* City */}
+                                    <div className="space-y-2 group">
+                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors flex justify-between h-4 items-center">
+                                            <span>City<span className="text-red-500">*</span></span>
+                                            {addFormErrors.city && <span className="text-[10px] text-red-500 font-bold lowercase tracking-normal italic">{addFormErrors.city}</span>}
+                                        </label>
+                                        <div className="relative">
+                                            <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${addFormErrors.city ? 'text-red-400' : 'text-gray-400 group-focus-within:text-[#FD6941]'}`} />
+                                            <input
+                                                type="text"
+                                                placeholder="Search your location..."
+                                                value={addForm.city}
+                                                onChange={e => handleAddCityChange(e.target.value)}
+                                                onFocus={() => {
+                                                    if (citySuggestions.length > 0) setShowCitySuggestions(true);
+                                                }}
+                                                className={`w-full pl-12 pr-5 h-12 bg-white border ${addFormErrors.city ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-full outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
+                                            />
+                                            {showCitySuggestions && citySuggestions.length > 0 && (
+                                                <div className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white border border-gray-200 rounded-2xl shadow-xl z-30 max-h-48 overflow-y-auto">
+                                                    {citySuggestions.map((city) => (
+                                                        <button
+                                                            key={city}
+                                                            type="button"
+                                                            onClick={() => selectAddCity(city)}
+                                                            className="w-full text-left px-4 py-2.5 text-xs text-gray-700 hover:bg-[#FD6941]/5 transition-colors"
+                                                        >
+                                                            {city}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Cuisine */}
+                                    <div className="space-y-2 group">
+                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors flex justify-between h-4 items-center">
+                                            <span>Cuisine Type<span className="text-red-500">*</span></span>
+                                            {addFormErrors.cuisine && <span className="text-[10px] text-red-500 font-bold lowercase tracking-normal italic">{addFormErrors.cuisine}</span>}
+                                        </label>
+                                        <div className="relative">
+                                            <UtensilsCrossed className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${addFormErrors.cuisine ? 'text-red-400' : 'text-gray-400 group-focus-within:text-[#FD6941]'}`} />
+                                            <input
+                                                type="text"
+                                                placeholder="e.g. Italian, Indian, Chinese"
+                                                value={addForm.cuisine}
+                                                onChange={e => { setAddForm({ ...addForm, cuisine: e.target.value }); setAddFormErrors(p => ({ ...p, cuisine: '' })); }}
+                                                className={`w-full pl-12 pr-5 h-12 bg-white border ${addFormErrors.cuisine ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-full outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Subscription Plan */}
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider">Subscription Plan</label>
+                                        <div className="grid grid-cols-4 gap-3 pt-1">
+                                            {['None', 'Basic', 'Pro', 'Enterprise'].map(plan => (
+                                                <button
+                                                    key={plan}
+                                                    type="button"
+                                                    onClick={() => setAddForm({ ...addForm, plan })}
+                                                    className={`h-12 rounded-full text-sm font-bold transition-all border shadow-sm ${addForm.plan === plan
+                                                        ? 'bg-[#FD6941] border-[#FD6941] text-white shadow-[#FD6941]/25'
+                                                        : 'bg-white border-gray-200 text-gray-500 hover:border-[#FD6941]/40 hover:text-[#FD6941]'
+                                                        }`}
+                                                >
+                                                    {plan}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        {addForm.plan !== 'None' && (
+                                            <p className="text-xs text-gray-400 pl-1">Active for 30 days from today.</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="px-8 pb-8 pt-4 flex gap-3">
+                                <button
+                                    onClick={() => { setIsAddModalOpen(false); setAddFormErrors({}); setShowCitySuggestions(false); }}
+                                    className="flex-1 py-3.5 rounded-full border border-gray-200 text-gray-600 font-normal text-sm hover:bg-gray-50 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleCreateRestaurant}
+                                    disabled={isCreating}
+                                    className="flex-1 py-3.5 rounded-full bg-[#FD6941] hover:bg-[#FD6941]/90 text-white font-extrabold text-sm transition-all shadow-lg shadow-[#FD6941]/20 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {isCreating ? (
+                                        <><Loader2 className="w-4 h-4 animate-spin" /> Creating...</>
+                                    ) : (
+                                        <><Plus className="w-4 h-4" /> Create Restaurant</>
+                                    )}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

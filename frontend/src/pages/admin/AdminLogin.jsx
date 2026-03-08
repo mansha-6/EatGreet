@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { authAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
+import { shouldRequireOnboarding } from '../../utils/onboarding';
 
 export default function AdminLogin() {
     const { login } = useSettings();
@@ -28,7 +29,7 @@ export default function AdminLogin() {
                 navigate('/super-admin/login');
                 return;
             } else if (userData.role === 'admin') {
-                if (!userData.isOnboarded) {
+                if (shouldRequireOnboarding(userData)) {
                     navigate('/admin/onboarding');
                 } else {
                     const restaurantSlug = userData.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant';
@@ -36,7 +37,7 @@ export default function AdminLogin() {
                 }
             } else {
                 // Fallback for other roles or legacy data
-                if (userData.isOnboarded === false && userData.role === 'admin') {
+                if (shouldRequireOnboarding(userData)) {
                     navigate('/admin/onboarding');
                 } else {
                     const restaurantSlug = userData.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant';

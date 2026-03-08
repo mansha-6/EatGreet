@@ -408,7 +408,7 @@ const AdminMenu = () => {
                             try {
                                 await menuAPI.delete(id);
                                 toast.success('Item deleted successfully');
-                            } catch (error) {
+                            } catch {
                                 toast.error('Failed to delete item');
                                 setMenuItems(previousItems); // Rollback
                             }
@@ -443,7 +443,7 @@ const AdminMenu = () => {
         try {
             await menuAPI.update(id, { isAvailable: newStatus });
             toast.success(`Item is now ${newStatus ? 'Available' : 'Unavailable'}`);
-        } catch (error) {
+        } catch {
             toast.error('Failed to update status');
             setMenuItems(previousItems); // Rollback
         }

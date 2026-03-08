@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-// eslint-disable-next-line no-unused-vars
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     ArrowRight,
     Users,
@@ -26,7 +25,7 @@ import menuIcon from '../../assets/menu-icon.png';
 import logoFull from '../../assets/logo-full.png';
 import contactIllustrationHD from '../../assets/contact-illustration-hd.png';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../../utils/api';
 
@@ -44,16 +43,400 @@ gsap.registerPlugin(ScrollTrigger);
 import FluidCanvas from '../../components/landing/FluidCanvas';
 import Lenis from 'lenis';
 
+const navItems = [
+    { name: "Menu", link: "#menu-showcase" },
+    { name: "Features", link: "#bento-features" },
+    { name: "Pricing", link: "#pricing" },
+    { name: "Waitlist", link: "#contact" },
+];
+
+// Load Google Maps Script
+if (typeof window !== 'undefined' && !window.google && !document.getElementById('google-maps-script')) {
+    const script = document.createElement('script');
+    script.id = 'google-maps-script';
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=places`;
+    script.async = true;
+    script.defer = true;
+    document.head.appendChild(script);
+}
+
+const WaitlistForm = ({ handleRegisterSuccess }) => {
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        phone: '',
+        city: '',
+        businessName: '',
+    });
+    const [fieldErrors, setFieldErrors] = useState({});
+    const [citySuggestions, setCitySuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const autocompleteService = useRef(null);
+
+    const validateField = (name, value) => {
+        let error = '';
+        if (name === 'name') {
+            if (!/^[a-zA-Z\s]*$/.test(value)) error = 'Only alphabets allowed';
+            else if (value.length > 0 && value.length < 3) error = 'Name too short';
+        }
+        if (name === 'email') {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (value.length > 0 && !emailRegex.test(value)) error = 'Invalid email format';
+        }
+        if (name === 'phone') {
+            if (value.length > 0 && value.length !== 10) error = 'Must be exactly 10 digits';
+            else if (value.length === 10 && !/^[6-9]\d{9}$/.test(value)) error = 'Invalid Indian number';
+        }
+        if (name === 'city' && value.length > 0 && value.length < 2) {
+            error = 'Location name too short';
+        }
+        if (name === 'businessName' && value.length > 0 && value.length < 2) {
+            error = 'Business name too short';
+        }
+
+        setFieldErrors(prev => {
+            // Only update if the error actually changed to avoid unnecessary re-renders
+            if (prev[name] === error) return prev;
+            return { ...prev, [name]: error };
+        });
+        return error;
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        let sanitizedValue = value;
+
+        if (name === 'name') {
+            sanitizedValue = value.replace(/[^a-zA-Z\s]/g, '');
+        }
+        if (name === 'phone') {
+            sanitizedValue = value.replace(/[^0-9]/g, '').slice(0, 10);
+        }
+
+        setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
+        validateField(name, sanitizedValue);
+    };
+
+    const handleCityChange = async (e) => {
+        const value = e.target.value;
+        setFormData(prev => ({ ...prev, city: value }));
+        validateField('city', value);
+
+        if (value.length > 0) {
+            // Use Google Places Autocomplete if available
+            if (window.google && window.google.maps && window.google.maps.places) {
+                if (!autocompleteService.current) {
+                    autocompleteService.current = new window.google.maps.places.AutocompleteService();
+                }
+
+                autocompleteService.current.getPlacePredictions(
+                    {
+                        input: value,
+                        // Removed restrictive types to show more options as requested
+                        componentRestrictions: { country: 'in' } // Focus on Indian locations
+                    },
+                    (predictions) => {
+                        if (predictions) {
+                            setCitySuggestions(predictions.map(p => p.description));
+                            setShowSuggestions(true);
+                        } else {
+                            setCitySuggestions([]);
+                            setShowSuggestions(false);
+                        }
+                    }
+                );
+            }
+        } else {
+            setCitySuggestions([]);
+            setShowSuggestions(false);
+        }
+    };
+
+    const handleLocateMe = () => {
+        if (!navigator.geolocation) {
+            toast.error("Geolocation is not supported by your browser");
+            return;
+        }
+
+        const loadToast = toast.loading("Fetching your location...");
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const { latitude, longitude } = position.coords;
+                try {
+                    const response = await fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`);
+                    const data = await response.json();
+                    if (data.results && data.results[0]) {
+                        const address = data.results[0].formatted_address;
+                        setFormData(prev => ({ ...prev, city: address }));
+                        setFieldErrors(prev => ({ ...prev, city: '' }));
+                        toast.success("Location updated!", { id: loadToast });
+                    } else {
+                        toast.error("Could not find address", { id: loadToast });
+                    }
+                } catch (error) {
+                    toast.error("Failed to fetch address", { id: loadToast });
+                }
+            },
+            () => {
+                toast.error("Permission denied or location unavailable", { id: loadToast });
+            }
+        );
+    };
+
+    const selectCity = (city) => {
+        setFormData(prev => ({ ...prev, city: city }));
+        setFieldErrors(prev => ({ ...prev, city: '' }));
+        setCitySuggestions([]);
+        setShowSuggestions(false);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setSuccess('');
+
+        // Final validation check
+        const errors = {};
+        Object.keys(formData).forEach(key => {
+            const err = validateField(key, formData[key]);
+            if (err) errors[key] = err;
+            if (!formData[key]) errors[key] = 'Required field';
+        });
+
+        if (Object.keys(errors).length > 0) {
+            setFieldErrors(errors);
+            setError('Please fix the errors in the form.');
+            return;
+        }
+
+        setIsLoading(true);
+
+        try {
+            const signupData = {
+                ...formData,
+                password: formData.phone,
+                role: 'admin',
+                restaurantName: formData.businessName
+            };
+
+            const response = await authAPI.register(signupData);
+            const userData = response.data;
+
+            if (userData.isApproved === false) {
+                setSuccess('Application submitted! Your account is under review. Please check your email.');
+                setFormData({ name: '', email: '', phone: '', city: '', businessName: '' });
+                setFieldErrors({});
+            } else {
+                setSuccess('Registration successful! Redirecting...');
+                handleRegisterSuccess();
+            }
+        } catch (err) {
+            setError(err.response?.data?.message || 'Registration failed. Please check your details.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <form className="space-y-8" onSubmit={handleSubmit} noValidate>
+            {error && (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-red-50 text-red-700 p-4 rounded-2xl text-sm font-bold border border-red-200"
+                >
+                    {error}
+                </motion.div>
+            )}
+            {success && (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-green-50 text-green-700 p-4 rounded-2xl text-sm font-bold border border-green-200"
+                >
+                    {success}
+                </motion.div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-7">
+                {/* Full Name */}
+                <div className="md:col-span-2 space-y-2 group">
+                    <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors flex justify-between h-4 items-center">
+                        <span>Full Name<span className="text-red-500">*</span></span>
+                        {fieldErrors.name && (
+                            <span className="text-[10px] text-red-500 font-bold lowercase tracking-normal italic animate-in fade-in slide-in-from-right-2 duration-300">
+                                {fieldErrors.name}
+                            </span>
+                        )}
+                    </label>
+                    <div className="relative">
+                        <User className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${fieldErrors.name ? 'text-red-400' : 'text-gray-400 group-focus-within:text-[#FD6941]'}`} />
+                        <input
+                            type="text"
+                            name="name"
+                            required
+                            value={formData.name}
+                            onChange={handleInputChange}
+                            className={`w-full pl-12 pr-5 h-12 bg-white border ${fieldErrors.name ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-2xl outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
+                            placeholder="Only alphabets allowed"
+                        />
+                    </div>
+                </div>
+
+                {/* Email Address */}
+                <div className="space-y-2.5 group">
+                    <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-widest group-focus-within:text-[#FD6941] transition-colors flex justify-between h-4 items-center">
+                        <span>Email Address<span className="text-red-500">*</span></span>
+                        {fieldErrors.email && (
+                            <span className="text-[10px] text-red-500 font-bold lowercase tracking-normal italic animate-in fade-in slide-in-from-right-2 duration-300">
+                                {fieldErrors.email}
+                            </span>
+                        )}
+                    </label>
+                    <div className="relative">
+                        <Mail className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${fieldErrors.email ? 'text-red-400' : 'text-gray-400 group-focus-within:text-[#FD6941]'}`} />
+                        <input
+                            type="email"
+                            name="email"
+                            required
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            className={`w-full pl-12 pr-5 h-12 bg-white border ${fieldErrors.email ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-2xl outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
+                            placeholder="you@example.com"
+                        />
+                    </div>
+                </div>
+
+                {/* Mobile Number */}
+                <div className="space-y-2 group">
+                    <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors flex justify-between h-4 items-center">
+                        <span>Mobile Number<span className="text-red-500">*</span></span>
+                        {fieldErrors.phone && (
+                            <span className="text-[10px] text-red-500 font-bold lowercase tracking-normal italic animate-in fade-in slide-in-from-right-2 duration-300">
+                                {fieldErrors.phone}
+                            </span>
+                        )}
+                    </label>
+                    <div className="relative">
+                        <Phone className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${fieldErrors.phone ? 'text-red-400' : 'text-gray-400 group-focus-within:text-[#FD6941]'}`} />
+                        <input
+                            type="tel"
+                            name="phone"
+                            required
+                            value={formData.phone}
+                            onChange={handleInputChange}
+                            className={`w-full pl-12 pr-5 h-12 bg-white border ${fieldErrors.phone ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-2xl outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
+                            placeholder="10 digits only"
+                        />
+                    </div>
+                </div>
+
+                {/* Location */}
+                <div className="space-y-2 group relative">
+                    <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors flex justify-between h-4 items-center">
+                        <span>Your Location<span className="text-red-500">*</span></span>
+                        {fieldErrors.city && (
+                            <span className="text-[10px] text-red-500 font-bold lowercase tracking-normal italic animate-in fade-in slide-in-from-right-2 duration-300">
+                                {fieldErrors.city}
+                            </span>
+                        )}
+                    </label>
+                    <div className="relative">
+                        <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${fieldErrors.city ? 'text-red-400' : 'text-gray-400 group-focus-within:text-[#FD6941]'}`} />
+                        <input
+                            type="text"
+                            name="city"
+                            required
+                            value={formData.city}
+                            onChange={handleCityChange}
+                            className={`w-full pl-12 pr-12 h-12 bg-white border ${fieldErrors.city ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-2xl outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
+                            placeholder="Search your location..."
+                            autoComplete="off"
+                        />
+                        <button
+                            type="button"
+                            onClick={handleLocateMe}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-[#FD6941] transition-colors"
+                            title="Use my current location"
+                        >
+                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-2.209 0-4 1.791-4 4s1.791 4 4 4 4-1.791 4-4-1.791-4-4-4zm0 0V4m0 16v-4m8-4h-4M4 12h4" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <AnimatePresence>
+                        {showSuggestions && citySuggestions.length > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-xl shadow-xl overflow-hidden max-h-48 overflow-y-auto"
+                            >
+                                {citySuggestions.map((city, idx) => (
+                                    <button
+                                        key={idx}
+                                        type="button"
+                                        onClick={() => selectCity(city)}
+                                        className="w-full text-left px-5 py-3 text-sm text-gray-700 hover:bg-[#FD6941]/5 hover:text-[#FD6941] transition-colors"
+                                    >
+                                        {city}
+                                    </button>
+                                ))}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Business Name */}
+                <div className="space-y-2 group">
+                    <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors flex justify-between h-4 items-center">
+                        <span>Business Name<span className="text-red-500">*</span></span>
+                        {fieldErrors.businessName && (
+                            <span className="text-[10px] text-red-500 font-bold lowercase tracking-normal italic animate-in fade-in slide-in-from-right-2 duration-300">
+                                {fieldErrors.businessName}
+                            </span>
+                        )}
+                    </label>
+                    <div className="relative">
+                        <Building2 className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 transition-colors ${fieldErrors.businessName ? 'text-red-400' : 'text-gray-400 group-focus-within:text-[#FD6941]'}`} />
+                        <input
+                            type="text"
+                            name="businessName"
+                            required
+                            value={formData.businessName}
+                            onChange={handleInputChange}
+                            className={`w-full pl-12 pr-5 h-12 bg-white border ${fieldErrors.businessName ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-2xl outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
+                            placeholder="Restaurant name"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className="pt-4">
+                <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full md:w-fit px-12 py-4 bg-[#FD6941] text-white font-extrabold rounded-xl hover:bg-[#E55A35] hover:shadow-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2.5 text-[17px] group shadow-lg shadow-[#FD6941]/10"
+                >
+                    {isLoading ? 'Creating Account...' : 'Register Now'}
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                </button>
+                <p className="mt-6 text-center lg:text-left text-xs text-gray-500 font-bold flex items-center justify-center lg:justify-start gap-2">
+                    <ShieldCheck className="w-4 h-4 text-green-500" />
+                    Secured with industry-standard encryption.
+                </p>
+            </div>
+        </form>
+    );
+};
+
 export default function LandingPage() {
     const { hash } = useLocation();
     const navigate = useNavigate();
-
-    const navItems = [
-        { name: "Menu", link: "#menu-showcase" },
-        { name: "Features", link: "#bento-features" },
-        { name: "Pricing", link: "#pricing" },
-        { name: "Waitlist", link: "#contact" },
-    ];
 
     // Initialize Lenis Smooth Scroll
     useEffect(() => {
@@ -84,62 +467,10 @@ export default function LandingPage() {
         };
     }, []);
 
-    const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        password: '',
-        phone: '',
-        city: '',
-        businessName: '',
-    });
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-
-
-    const handleRegister = async (e) => {
-        e.preventDefault();
-        setError('');
-        setSuccess('');
-        setIsLoading(true);
-
-        try {
-            // Landing page registration is always for creating a NEW Restaurant (Admin)
-            // The user request explicitly states "create new folder... create dynamically database"
-
-            if (!formData.businessName) {
-                setError('Restaurant/Business Name is required to set up your system.');
-                setIsLoading(false);
-                return;
-            }
-
-            const signupData = {
-                name: formData.name,
-                email: formData.email,
-                password: formData.phone, // Use phone as password since password field is removed
-                phone: formData.phone,
-                city: formData.city,
-                role: 'admin', // Always admin for improved landing page flow
-                restaurantName: formData.businessName
-            };
-
-            const response = await authAPI.register(signupData);
-            const userData = response.data;
-
-            if (userData.isApproved === false) {
-                setSuccess('Application submitted! Your account is under review. Please check your email for updates.');
-                setFormData({ name: '', email: '', password: '', phone: '', city: '', businessName: '' });
-            } else {
-                setSuccess('Registration successful! Redirecting to login...');
-                setTimeout(() => {
-                    navigate('/admin/login');
-                }, 1500);
-            }
-        } catch (err) {
-            setError(err.response?.data?.message || 'Registration failed. Please check your details.');
-        } finally {
-            setIsLoading(false);
-        }
+    const handleRegisterSuccess = () => {
+        setTimeout(() => {
+            navigate('/admin/login');
+        }, 1500);
     };
 
     useEffect(() => {
@@ -167,6 +498,7 @@ export default function LandingPage() {
                     href="#contact"
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5, duration: 1 }} // Slow, single-time entrance
                     className="inline-flex items-center gap-2 px-3 py-1 md:px-4 md:py-1.5 rounded-full border border-gray-200 bg-white shadow-sm text-[9px] md:text-xs font-medium text-gray-700 mb-6 md:mb-8 hover:bg-gray-50 transition-colors"
                 >
                     🎉 Now with AR Menu Generation — <span className="text-[#FD6941] font-medium ml-1">Try it free →</span>
@@ -388,123 +720,7 @@ export default function LandingPage() {
 
                         {/* Right Side: Form - Improved Contrast */}
                         <div className="relative order-1 lg:order-2">
-                            <form className="space-y-8" onSubmit={handleRegister}>
-                                {error && (
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        className="bg-red-50 text-red-700 p-4 rounded-2xl text-sm font-bold border border-red-200"
-                                    >
-                                        {error}
-                                    </motion.div>
-                                )}
-                                {success && (
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        className="bg-green-50 text-green-700 p-4 rounded-2xl text-sm font-bold border border-green-200"
-                                    >
-                                        {success}
-                                    </motion.div>
-                                )}
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-7">
-                                    {/* Full Name - Full Width */}
-                                    <div className="md:col-span-2 space-y-2 group">
-                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors">Full Name<span className="text-red-500">*</span></label>
-                                        <div className="relative">
-                                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#FD6941] transition-colors" />
-                                            <input
-                                                type="text"
-                                                required
-                                                value={formData.name}
-                                                onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                                className="w-full pl-12 pr-5 h-12 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941] outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm"
-                                                placeholder="Enter your full name"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Email Address */}
-                                    <div className="space-y-2.5 group">
-                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-widest group-focus-within:text-[#FD6941] transition-colors">Email Address<span className="text-red-500">*</span></label>
-                                        <div className="relative">
-                                            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#FD6941] transition-colors" />
-                                            <input
-                                                type="email"
-                                                required
-                                                value={formData.email}
-                                                onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                                className="w-full pl-12 pr-5 h-12 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941] outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm"
-                                                placeholder="you@example.com"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Mobile Number */}
-                                    <div className="space-y-2 group">
-                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors">Mobile Number<span className="text-red-500">*</span></label>
-                                        <div className="relative">
-                                            <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#FD6941] transition-colors" />
-                                            <input
-                                                type="tel"
-                                                required
-                                                value={formData.phone}
-                                                onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                                className="w-full pl-12 pr-5 h-12 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941] outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm"
-                                                placeholder="+91..."
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* City */}
-                                    <div className="space-y-2 group">
-                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors">City<span className="text-red-500">*</span></label>
-                                        <div className="relative">
-                                            <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#FD6941] transition-colors" />
-                                            <input
-                                                type="text"
-                                                required
-                                                value={formData.city}
-                                                onChange={e => setFormData({ ...formData, city: e.target.value })}
-                                                className="w-full pl-12 pr-5 h-12 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941] outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm"
-                                                placeholder="Your City"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Business Name */}
-                                    <div className="space-y-2 group">
-                                        <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors">Business Name<span className="text-red-500">*</span></label>
-                                        <div className="relative">
-                                            <Building2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-[#FD6941] transition-colors" />
-                                            <input
-                                                type="text"
-                                                required
-                                                value={formData.businessName}
-                                                onChange={e => setFormData({ ...formData, businessName: e.target.value })}
-                                                className="w-full pl-12 pr-5 h-12 bg-white border border-gray-200 rounded-xl focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941] outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm"
-                                                placeholder="Restaurant name"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="pt-4">
-                                    <button
-                                        type="submit"
-                                        disabled={isLoading}
-                                        className="w-full md:w-fit px-12 py-4 bg-[#FD6941] text-white font-extrabold rounded-xl hover:bg-[#E55A35] hover:shadow-xl transition-all disabled:opacity-70 flex items-center justify-center gap-2.5 text-[17px] group shadow-lg shadow-[#FD6941]/10"
-                                    >
-                                        {isLoading ? 'Creating Account...' : 'Register Now'}
-                                        <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
-                                    </button>
-                                    <p className="mt-6 text-center lg:text-left text-xs text-gray-500 font-bold flex items-center justify-center lg:justify-start gap-2">
-                                        <ShieldCheck className="w-4 h-4 text-green-500" />
-                                        Secured with industry-standard encryption.
-                                    </p>
-                                </div>
-                            </form>
+                            <WaitlistForm handleRegisterSuccess={handleRegisterSuccess} />
                         </div>
                     </div>
                 </div>

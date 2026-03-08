@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
     Settings, Bell, Menu as MenuIcon, X, LogOut, ChevronDown,
-    ShoppingBag, Heart, ChefHat, LayoutDashboard, Utensils, Layers, Table2, TrendingUp, Users, CreditCard, FileText, CheckCircle
+    ShoppingBag, Heart, ChefHat, LayoutDashboard, Utensils, Layers, Table2, TrendingUp, CreditCard, FileText, CheckCircle
 } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
 import { useAdminNotifications } from '../hooks/useAdminNotifications';
@@ -27,9 +27,14 @@ const DynamicNavbar = ({ customerProps }) => {
     const location = useLocation();
     const navigate = useNavigate();
     const { restaurantName: paramRestName } = useParams();
-    const { user, logout } = useSettings();
+    const { user, logout, impersonatedRestaurant, stopImpersonating } = useSettings();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
+    const handleStopManaging = () => {
+        stopImpersonating();
+        navigate('/super-admin/restaurants');
+    };
 
     // Determine Role & View Type
     const role = user?.role || 'customer';
@@ -46,7 +51,7 @@ const DynamicNavbar = ({ customerProps }) => {
     } = useAdminNotifications();
 
     // --- Navigation Items ---
-    const restaurantSlug = user?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || paramRestName || 'restaurant';
+    const restaurantSlug = impersonatedRestaurant?.slug || user?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || paramRestName || 'restaurant';
 
     const getNavItems = () => {
         switch (viewType) {
@@ -54,10 +59,8 @@ const DynamicNavbar = ({ customerProps }) => {
                 return [
                     { label: 'Dashboard', path: '/super-admin', icon: LayoutDashboard },
                     { label: 'Restaurants', path: '/super-admin/restaurants', icon: Utensils },
-                    { label: 'Approvals', path: '/super-admin/approvals', icon: CheckCircle },
                     { label: 'Payment', path: '/super-admin/payments', icon: CreditCard },
                     { label: 'Reports', path: '/super-admin/reports', icon: FileText },
-                    { label: 'Users', path: '/super-admin/users', icon: Users },
                 ];
             case 'ADMIN':
                 return [
@@ -99,33 +102,46 @@ const DynamicNavbar = ({ customerProps }) => {
     if (viewType === 'KITCHEN') {
         const titleName = user?.name || 'Kitchen';
         return (
-            <header className="px-4 sm:px-[30px] py-3 flex justify-between items-center sticky top-0 z-[100] bg-[#F8F9FA]/60 backdrop-blur-xl border-b border-gray-100 transition-all">
-                <Link to="/" className="flex items-center gap-3 transition-transform hover:scale-105 shrink-0">
-                    <img src={logo} alt="EatGreet" className="h-7 sm:h-9 w-auto object-contain" />
-                </Link>
-                <div className="flex items-center gap-6">
-                    <div className="relative group">
-                        <div className="w-9 h-9 sm:w-auto sm:h-auto flex items-center justify-center sm:gap-3 p-0 sm:pl-1.5 sm:pr-4 sm:py-1.5 bg-white rounded-full shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all shrink-0">
-                            <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden sm:border-2 sm:border-gray-50 shrink-0">
-                                {user?.profilePicture ? (
-                                    <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
-                                ) : (
-                                    <img src={`https://ui-avatars.com/api/?name=${titleName}&background=FD6941&color=fff`} alt="Profile" className="w-full h-full object-cover" />
-                                )}
-                            </div>
-                            <div className="hidden md:flex items-center gap-2">
-                                <span className="text-sm font-normal text-gray-800">{titleName}</span>
-                                <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
-                            </div>
+            <>
+                {impersonatedRestaurant && user?.role === 'superadmin' && (
+                    <div className="bg-[#FD6941] text-white px-4 py-2 flex items-center justify-between text-xs font-normal sticky top-0 z-[200]">
+                        <div className="flex items-center gap-2 uppercase tracking-widest">
+                            <ChefHat className="w-4 h-4" />
+                            <span>Managing Restaurant: <b>{impersonatedRestaurant.name}</b></span>
                         </div>
-                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] overflow-hidden">
-                            <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-4 text-sm font-normal text-red-600 hover:bg-red-50 transition-colors">
-                                <LogOut size={18} /> Logout
-                            </button>
+                        <button onClick={handleStopManaging} className="bg-white text-[#FD6941] px-4 py-1 rounded-full font-bold hover:bg-gray-100 transition-all uppercase tracking-tighter shadow-sm">
+                            Stop Management
+                        </button>
+                    </div>
+                )}
+                <header className="px-4 sm:px-[30px] py-3 flex justify-between items-center sticky top-0 z-[100] bg-[#F8F9FA]/60 backdrop-blur-xl border-b border-gray-100 transition-all">
+                    <Link to="/" className="flex items-center gap-3 transition-transform hover:scale-105 shrink-0">
+                        <img src={logo} alt="EatGreet" className="h-7 sm:h-9 w-auto object-contain" />
+                    </Link>
+                    <div className="flex items-center gap-6">
+                        <div className="relative group">
+                            <div className="w-9 h-9 sm:w-auto sm:h-auto flex items-center justify-center sm:gap-3 p-0 sm:pl-1.5 sm:pr-4 sm:py-1.5 bg-white rounded-full shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all shrink-0">
+                                <div className="w-9 h-9 rounded-full bg-gray-200 overflow-hidden sm:border-2 sm:border-gray-50 shrink-0">
+                                    {user?.profilePicture ? (
+                                        <img src={user.profilePicture} alt="Profile" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <img src={`https://ui-avatars.com/api/?name=${titleName}&background=FD6941&color=fff`} alt="Profile" className="w-full h-full object-cover" />
+                                    )}
+                                </div>
+                                <div className="hidden md:flex items-center gap-2">
+                                    <span className="text-sm font-normal text-gray-800">{titleName}</span>
+                                    <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                                </div>
+                            </div>
+                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[110] overflow-hidden">
+                                <button onClick={handleLogout} className="w-full flex items-center gap-3 px-4 py-4 text-sm font-normal text-red-600 hover:bg-red-50 transition-colors">
+                                    <LogOut size={18} /> Logout
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </header >
+                </header>
+            </>
         );
     }
 
@@ -175,6 +191,22 @@ const DynamicNavbar = ({ customerProps }) => {
 
     return (
         <>
+            {impersonatedRestaurant && user?.role === 'superadmin' && (
+                <div className="bg-black text-white px-4 py-3 flex items-center justify-between text-[10px] font-normal sticky top-0 z-[200] border-b border-white/10 shadow-lg">
+                    <div className="flex items-center gap-3 uppercase tracking-[0.2em] font-medium">
+                        <div className="w-6 h-6 bg-[#FD6941] rounded-full flex items-center justify-center animate-pulse">
+                            <ChefHat className="w-3.5 h-3.5 text-white" />
+                        </div>
+                        <span>Super Admin Mode: <b className="text-[#FD6941] ml-1">{impersonatedRestaurant.name}</b></span>
+                    </div>
+                    <button
+                        onClick={handleStopManaging}
+                        className="bg-white/10 hover:bg-white text-white hover:text-black px-5 py-1.5 rounded-full font-bold transition-all uppercase tracking-tighter text-[9px] border border-white/20 hover:border-white active:scale-95"
+                    >
+                        Return to Admin
+                    </button>
+                </div>
+            )}
             {/* Main Header (Pill Style for Desktop, Simple for Mobile) */}
             <header className={`px-4 sm:px-[30px] py-3 flex items-center justify-between sticky top-0 z-[100] ${adminBgClass} backdrop-blur-xl transition-all border-b ${borderColor}`}>
                 {/* Logo Section */}

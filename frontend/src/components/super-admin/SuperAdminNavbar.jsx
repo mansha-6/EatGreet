@@ -19,7 +19,6 @@ export default function SuperAdminNavbar() {
         { name: 'Restaurants', path: '/super-admin/restaurants' },
         { name: 'Payment', path: '/super-admin/payments' },
         { name: 'Reports', path: '/super-admin/reports' },
-        { name: 'Users', path: '/super-admin/users' },
     ];
 
     return (

@@ -48,7 +48,7 @@ const AdminTable = () => {
 
     const [restaurantName, setRestaurantName] = useState('');
     const [activeOrders, setActiveOrders] = useState([]);
-    const [loadingOrders, setLoadingOrders] = useState(true); // intentionally unused, used for possible future loading UI
+    const [_loadingOrders, _setLoadingOrders] = useState(true); // intentionally unused, used for possible future loading UI
     const [selectedTableOrder, setSelectedTableOrder] = useState(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [qrModal, setQrModal] = useState({ isOpen: false, url: '', tableNo: null });
@@ -140,7 +140,7 @@ const AdminTable = () => {
         } catch (error) {
             console.error("Failed to fetch active orders", error);
         } finally {
-            setLoadingOrders(false);
+            _setLoadingOrders(false);
         }
     };
 

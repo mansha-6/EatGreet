@@ -84,7 +84,23 @@ const userSchema = new mongoose.Schema({
         status: { type: String, enum: ['Completed', 'Pending', 'Failed'], default: 'Completed' },
         method: { type: String },
         date: { type: Date, default: Date.now }
-    }]
+    }],
+
+    securityLogs: [{
+        eventType: { type: String, default: 'login' },
+        at: { type: Date, default: Date.now },
+        ipAddress: { type: String, default: 'Unknown' },
+        location: { type: String, default: 'Unknown' },
+        device: { type: String, default: 'Unknown' },
+        userAgent: { type: String, default: '' }
+    }],
+
+    superAdminOtp: {
+        codeHash: { type: String, default: '' },
+        expiresAt: { type: Date, default: null },
+        lastSentAt: { type: Date, default: null },
+        attempts: { type: Number, default: 0 }
+    }
 }, { timestamps: true });
 
 userSchema.pre('save', async function () {

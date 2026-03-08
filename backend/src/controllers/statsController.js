@@ -1,3 +1,41 @@
+const normalizeCityName = (rawCity) => {
+    const value = (rawCity || '').toString().trim();
+    if (!value) return 'Unknown';
+
+    const countryNames = new Set(['india', 'usa', 'united states', 'united kingdom', 'uk']);
+    const addressCueRegex = /\d|\b(road|rd|street|st|lane|ln|avenue|ave|sector|block|phase|building|bldg|floor|fl|near|opp|opposite)\b/i;
+
+    const parts = value
+        .split(',')
+        .map(part => part.replace(/\b\d{5,6}\b/g, '').trim())
+        .filter(Boolean);
+
+    if (parts.length === 0) return 'Unknown';
+    if (parts.length === 1) return parts[0];
+
+    const withoutTrailingCountry = [...parts];
+    const lastPart = withoutTrailingCountry[withoutTrailingCountry.length - 1];
+    if (lastPart && countryNames.has(lastPart.toLowerCase())) {
+        withoutTrailingCountry.pop();
+    }
+
+    if (withoutTrailingCountry.length === 1) return withoutTrailingCountry[0];
+
+    if (withoutTrailingCountry.length === 2) {
+        const [first, second] = withoutTrailingCountry;
+        return addressCueRegex.test(first) ? second : first;
+    }
+
+    // For full addresses like "Street, City, State", choose the city segment.
+    return withoutTrailingCountry[withoutTrailingCountry.length - 2];
+};
+
+const formatCityLabel = (cityName) => cityName
+    .toLowerCase()
+    .split(/\s+/)
+    .map(part => part ? part.charAt(0).toUpperCase() + part.slice(1) : part)
+    .join(' ');
+
 const getAdminStats = async (req, res) => {
     try {
         const { Order, MenuItem } = req.tenantModels;
@@ -243,13 +281,22 @@ const getSuperAdminStats = async (req, res) => {
         }));
 
         // City Distribution
-        const cityDist = await User.aggregate([
-            { $match: { role: 'admin' } },
-            { $group: { _id: "$city", value: { $sum: 1 } } },
-            { $sort: { value: -1 } },
-            { $limit: 5 }
-        ]);
-        const cityDistribution = cityDist.map(c => ({ name: c._id || 'Unknown', value: c.value }));
+        const adminCityRows = await User.find({ role: 'admin' }).select('city').lean();
+        const cityCountMap = adminCityRows.reduce((acc, row) => {
+            const normalizedCity = normalizeCityName(row?.city);
+            const cityKey = normalizedCity.toLowerCase();
+            const existing = acc.get(cityKey);
+            if (existing) {
+                existing.value += 1;
+            } else {
+                acc.set(cityKey, { name: formatCityLabel(normalizedCity), value: 1 });
+            }
+            return acc;
+        }, new Map());
+
+        const cityDistribution = [...cityCountMap.values()]
+            .sort((a, b) => b.value - a.value)
+            .slice(0, 5);
 
         // 4. Growth & Revenue Trends
         const { startDate, endDate } = req.query;

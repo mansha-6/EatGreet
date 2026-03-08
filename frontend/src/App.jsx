@@ -3,6 +3,8 @@ import { useEffect, Suspense, lazy } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { SettingsProvider } from './context/SettingsContext';
 import ErrorBoundary from './components/ErrorBoundary';
+import { useSettings } from './context/SettingsContext';
+import { shouldRequireOnboarding } from './utils/onboarding';
 
 // Lazy loading all pages and layouts for better performance
 const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
@@ -15,11 +17,9 @@ const SuperAdminDashboard = lazy(() => import('./pages/super-admin/SuperAdminDas
 const Restaurants = lazy(() => import('./pages/super-admin/Restaurants'));
 const Payments = lazy(() => import('./pages/super-admin/Payments'));
 const Reports = lazy(() => import('./pages/super-admin/Reports'));
-const Users = lazy(() => import('./pages/super-admin/Users'));
 const SuperAdminProfile = lazy(() => import('./pages/super-admin/SuperAdminProfile'));
 const SuperAdminSettings = lazy(() => import('./pages/super-admin/SuperAdminSettings'));
 const SuperAdminLogin = lazy(() => import('./pages/super-admin/SuperAdminLogin'));
-const PendingApprovals = lazy(() => import('./pages/super-admin/PendingApprovals'));
 
 // Admin Imports
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
@@ -57,21 +57,23 @@ const LoadingSpinner = () => (
 // Protected Route for Store Admins
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  const role = localStorage.getItem('userRole');
-  const user = JSON.parse(localStorage.getItem('user'));
+  const { user: contextUser } = useSettings();
+  const localUser = JSON.parse(localStorage.getItem('user'));
+  const user = contextUser || localUser;
+  const role = localStorage.getItem('userRole') || user?.role;
   const location = useLocation();
 
   if (!isAuthenticated) {
     return <Navigate to="/admin/login" replace />;
   }
 
-  // Redirect to onboarding if not done and it's an admin
-  if (role === 'admin' && !user?.isOnboarded && !location.pathname.includes('/onboarding')) {
+  // Redirect to onboarding only for first-time/new admin setup
+  if (role === 'admin' && shouldRequireOnboarding(user) && !location.pathname.includes('/onboarding')) {
     return <Navigate to="/admin/onboarding" replace />;
   }
 
-  // Prevent accessing onboarding if already onboarded
-  if (role === 'admin' && user?.isOnboarded && location.pathname.includes('/onboarding')) {
+  // Existing/working restaurants should not see onboarding again
+  if (role === 'admin' && !shouldRequireOnboarding(user) && location.pathname.includes('/onboarding')) {
     const restaurantSlug = user?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant';
     return <Navigate to={`/${restaurantSlug}/admin`} replace />;
   }
@@ -159,7 +161,8 @@ function App() {
             <Route path="/admin/login" element={<AdminLogin />} />
 
             {/* Super Admin Auth */}
-            <Route path="/super-admin/login" element={<SuperAdminLogin />} />
+            <Route path="/super-admin/login" element={<Navigate to="/super-admin/secure-login" replace />} />
+            <Route path="/super-admin/secure-login" element={<SuperAdminLogin />} />
 
             <Route path="/admin/onboarding" element={
               <ProtectedRoute>
@@ -195,10 +198,9 @@ function App() {
             }>
               <Route index element={<SuperAdminDashboard />} />
               <Route path="restaurants" element={<Restaurants />} />
-              <Route path="approvals" element={<PendingApprovals />} />
               <Route path="payments" element={<Payments />} />
               <Route path="reports" element={<Reports />} />
-              <Route path="users" element={<Users />} />
+              <Route path="users" element={<Navigate to="/super-admin/restaurants" replace />} />
               <Route path="profile" element={<SuperAdminProfile />} />
               <Route path="settings" element={<SuperAdminSettings />} />
             </Route>

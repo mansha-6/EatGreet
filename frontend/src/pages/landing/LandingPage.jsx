@@ -60,7 +60,7 @@ if (typeof window !== 'undefined' && !window.google && !document.getElementById(
     if (mapsKey) {
         const script = document.createElement('script');
         script.id = 'google-maps-script';
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${mapsKey}&libraries=places`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${mapsKey}&libraries=places&loading=async`;
         script.async = true;
         script.defer = true;
         document.head.appendChild(script);

@@ -17,30 +17,26 @@ const allowedOrigins = [
     process.env.FRONTEND_URL
 ].filter(Boolean);
 
-// Create a robust CORS function
-const corsOriginFunction = (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
-
-    // Check if origin is allowed
-    const isAllowed = allowedOrigins.some(allowed =>
-        origin.startsWith(allowed) || allowed === origin
-    );
-
-    if (isAllowed || process.env.NODE_ENV === 'development') {
-        // Correct origin response (never '*') to allow credentials
-        callback(null, origin);
-    } else {
-        console.warn(`CORS blocked for origin: ${origin}`);
-        callback(new Error('Not allowed by CORS'));
-    }
-};
-
+// Create a robust CORS options object
 const corsOptions = {
-    origin: corsOriginFunction,
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps)
+        if (!origin) return callback(null, true);
+
+        const isAllowed = allowedOrigins.some(allowed =>
+            origin.startsWith(allowed) || allowed === origin
+        );
+
+        if (isAllowed || process.env.NODE_ENV === 'development') {
+            callback(null, true); // Reflect origin
+        } else {
+            console.warn(`CORS blocked for origin: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-restaurant-name']
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-restaurant-name', 'Origin', 'Accept']
 };
 
 app.use(cors(corsOptions));
@@ -56,7 +52,17 @@ app.use((req, res, next) => {
 // Socket.io Setup
 const io = new Server(server, {
     cors: {
-        origin: corsOriginFunction,
+        origin: (origin, callback) => {
+            if (!origin) return callback(null, true);
+            const isAllowed = allowedOrigins.some(allowed =>
+                origin.startsWith(allowed) || allowed === origin
+            );
+            if (isAllowed || process.env.NODE_ENV === 'development') {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true
     },
@@ -197,6 +203,12 @@ app.post('/api/upload/cleanup', protect, async (req, res) => {
 
 app.get('/', (req, res) => {
     res.send('API is running...');
+});
+
+// Catch-all 404 logging
+app.use((req, res, next) => {
+    console.log(`[404] No route matches: ${req.method} ${req.url}`);
+    res.status(404).json({ message: `Path ${req.url} not found` });
 });
 // Database Connection and Server Startup
 const startServer = async () => {

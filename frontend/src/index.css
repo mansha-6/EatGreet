@@ -6,7 +6,8 @@
 
 html {
     scroll-behavior: smooth;
-    height: -webkit-fill-available;
+    overflow-x: hidden;
+    height: 100%;
 }
 
 body {
@@ -14,18 +15,19 @@ body {
     margin: 0;
     padding: 0;
     width: 100%;
-    min-height: 100vh;
-    /* Important for mobile scrolling */
+    min-height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
     position: relative;
+    /* Improves mobile momentum scrolling */
     -webkit-overflow-scrolling: touch;
+    touch-action: manipulation;
 }
 
 #root {
     width: 100%;
     position: relative;
-    overflow-x: hidden;
+    min-height: 100%;
 }
 
 * {
@@ -79,14 +81,9 @@ body {
     }
 }
 
-/* Global scrollbar removal */
-*::-webkit-scrollbar {
-    display: none;
-}
-
+/* Base scroll behavior for elements */
 * {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    scrollbar-width: auto;
 }
 
 

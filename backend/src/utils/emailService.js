@@ -4,20 +4,18 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
     port: parseInt(process.env.EMAIL_PORT) || 587,
-    secure: process.env.EMAIL_PORT == 465, // true for 465, false for other ports
-    pool: true, // Use a pool for multiple messages
-    maxConnections: 5,
-    maxMessages: 100,
-    // Fail fast on bad SMTP/network to avoid long API hangs
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000,
+    secure: process.env.EMAIL_PORT == 465,
+    pool: false, // Disabling pool to avoid stale connection issues in high-latency environments
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
+    // Massive 60s timeouts to handle high latency DNS/handshakes on clouds like Render
+    connectionTimeout: 60000,
+    greetingTimeout: 60000,
+    socketTimeout: 60000,
     tls: {
-        rejectUnauthorized: false // Helps with some restricted environments
+        rejectUnauthorized: false
     }
 });
 
@@ -355,7 +353,7 @@ const sendSuperAdminOtpEmail = async (userEmail, otpCode) => {
             <div style="text-align:center; margin: 28px 0;">
                 <span style="display:inline-block; letter-spacing: 6px; font-size: 32px; font-weight: 800; color: #111827; background: #f3f4f6; padding: 14px 20px; border-radius: 12px; border: 1px dashed #9ca3af;">${otpCode}</span>
             </div>
-            <p style="color: #6b7280; font-size: 13px; margin: 0;">This OTP expires in 60 seconds.</p>
+            <p style="color: #6b7280; font-size: 13px; margin: 0;">This OTP expires in 2 minutes.</p>
             <p style="color: #ef4444; font-size: 13px; margin-top: 10px;">If you did not request this, ignore this email.</p>
             <p style="color: #374151; font-size: 14px; margin-top: 20px;">The EatGreet Security System</p>
         </div>

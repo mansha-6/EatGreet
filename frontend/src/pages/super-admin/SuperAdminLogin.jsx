@@ -95,7 +95,7 @@ export default function SuperAdminLogin() {
         const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
         if (!pasted) return;
         e.preventDefault();
-        const next = ['','','','','',''];
+        const next = ['', '', '', '', '', ''];
         pasted.split('').forEach((ch, idx) => {
             next[idx] = ch;
         });
@@ -161,7 +161,7 @@ export default function SuperAdminLogin() {
                                 />
                             ))}
                         </div>
-                        <p className="text-xs text-gray-400 px-1 mt-2">OTP is valid for 60 seconds</p>
+                        <p className="text-xs text-gray-400 px-1 mt-2">OTP is valid for 2 minutes</p>
                     </div>
 
                     <button

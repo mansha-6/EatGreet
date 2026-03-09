@@ -87,24 +87,32 @@ const registerUser = async (req, res) => {
             const isAdmin = user.role === 'admin';
 
             // 1. Send welcome email to the new user (Under Review if Admin) - async
-            sendWelcomeEmail(
-                user.email,
-                user.name,
-                user.restaurantName,
-                user.phone,
-                user.city,
-                isAdmin // isPending = true if admin
-            ).catch(err => console.error("Welcome email failed:", err));
+            try {
+                await sendWelcomeEmail(
+                    user.email,
+                    user.name,
+                    user.restaurantName,
+                    user.phone,
+                    user.city,
+                    isAdmin // isPending = true if admin
+                );
+            } catch (err) {
+                console.error("❌ Welcome email failed for:", user.email, err.message);
+            }
 
             // 2. Notify the Super Admin about this new registration - async
             if (isAdmin) {
-                sendAdminNotificationEmail({
-                    name: user.name,
-                    email: user.email,
-                    phone: user.phone,
-                    city: user.city,
-                    restaurantName: user.restaurantName
-                }).catch(err => console.error("Admin notification email failed:", err));
+                try {
+                    await sendAdminNotificationEmail({
+                        name: user.name,
+                        email: user.email,
+                        phone: user.phone,
+                        city: user.city,
+                        restaurantName: user.restaurantName
+                    });
+                } catch (err) {
+                    console.error("❌ Admin notification email failed:", err.message);
+                }
             }
 
             // If it's a pending admin, we stop here with a specific message
@@ -187,14 +195,23 @@ const sendSuperAdminOtp = async (req, res) => {
         const { email } = req.body;
         const normalizedEmail = (email || '').toLowerCase().trim();
 
-        if (normalizedEmail !== SUPER_ADMIN_LOGIN_EMAIL) {
-            return res.status(403).json({ message: 'Unauthorized email for Super Admin OTP.' });
-        }
-
         const user = await User.findOne({ role: 'superadmin' });
         if (!user) {
-            return res.status(404).json({ message: 'Super Admin account not found.' });
+            console.error('🚨 SUPERADMIN_AUTH_ERROR: No user with role [superadmin] found in database!');
+            return res.status(404).json({ message: 'Super Admin account not found in database.' });
         }
+
+        // Determine authorized email: Priority 1: Env Var | Priority 2: Database Email
+        const authorizedEmail = (process.env.SUPERADMIN_LOGIN_EMAIL || user.email).toLowerCase().trim();
+
+        if (normalizedEmail !== authorizedEmail) {
+            console.warn(`🚨 SUPERADMIN_AUTH_FAILURE: Received [${normalizedEmail}] but expected [${authorizedEmail}]`);
+            return res.status(403).json({ 
+                message: 'Unauthorized email for Super Admin access.',
+                debug: process.env.NODE_ENV === 'development' ? `Expected ${authorizedEmail}` : undefined
+            });
+        }
+
         const now = new Date();
         const lastSent = user.superAdminOtp?.lastSentAt ? new Date(user.superAdminOtp.lastSentAt) : null;
         if (lastSent && now.getTime() - lastSent.getTime() < 60 * 1000) {
@@ -217,17 +234,20 @@ const sendSuperAdminOtp = async (req, res) => {
         };
         await user.save();
 
-        // Send email in background so API stays fast even if SMTP is slow.
-        sendSuperAdminOtpEmail(normalizedEmail, otpCode).catch(async (error) => {
-            console.error('❌ Background Super Admin OTP email failed:', error);
+        // Send email and WAIT for it so Render/Vercel doesn't kill the process
+        try {
+            console.log(`📡 Sending Super Admin OTP to: ${normalizedEmail}`);
+            await sendSuperAdminOtpEmail(normalizedEmail, otpCode);
+            res.status(202).json({ message: 'OTP sent! It should arrive in your inbox shortly.' });
+        } catch (error) {
+            console.error('❌ Super Admin OTP email delivery failed:', error);
             // Invalidate OTP if email was not delivered to avoid dead OTP state.
             await User.updateOne(
                 { _id: user._id },
                 { $set: { superAdminOtp: { codeHash: '', expiresAt: null, lastSentAt: new Date(), attempts: 0 } } }
             );
-        });
-
-        res.status(202).json({ message: 'OTP request accepted. It should arrive shortly.' });
+            return res.status(502).json({ message: 'Email provider rejected the OTP. Check server logs.' });
+        }
     } catch (error) {
         console.error('❌ Super Admin OTP Error:', error);
         if (error.code === 'EAUTH') {
@@ -250,17 +270,27 @@ const verifySuperAdminOtp = async (req, res) => {
         const normalizedEmail = (email || '').toLowerCase().trim();
         const enteredOtp = (otp || '').toString().trim();
 
-        if (normalizedEmail !== SUPER_ADMIN_LOGIN_EMAIL) {
-            return res.status(403).json({ message: 'Unauthorized email for Super Admin OTP.' });
-        }
         if (!/^\d{6}$/.test(enteredOtp)) {
             return res.status(400).json({ message: 'Enter valid 6-digit OTP.' });
         }
 
         const user = await User.findOne({ role: 'superadmin' })
             .select('name email role phone city restaurantName currency profilePicture restaurantDetails subscription isOnboarded isApproved superAdminOtp securityLogs');
+        
         if (!user) {
+            console.error('🚨 SUPERADMIN_AUTH_ERROR_VERIFY: No user with role [superadmin] found in database!');
             return res.status(404).json({ message: 'Super Admin account not found.' });
+        }
+
+        // Determine authorized email: Priority 1: Env Var | Priority 2: Database Email
+        const authorizedEmail = (process.env.SUPERADMIN_LOGIN_EMAIL || user.email).toLowerCase().trim();
+
+        if (normalizedEmail !== authorizedEmail) {
+            console.warn(`🚨 SUPERADMIN_AUTH_FAILURE_VERIFY: Received [${normalizedEmail}] but expected [${authorizedEmail}]`);
+            return res.status(403).json({ 
+                message: 'Unauthorized email for Super Admin verification.',
+                debug: process.env.NODE_ENV === 'development' ? `Expected ${authorizedEmail}` : undefined
+            });
         }
         if (!user.superAdminOtp?.codeHash || !user.superAdminOtp?.expiresAt) {
             return res.status(400).json({ message: 'Please request OTP first.' });

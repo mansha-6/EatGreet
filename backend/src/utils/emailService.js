@@ -132,13 +132,19 @@ const sendWelcomeEmail = async (userEmail, userName, restaurantName, phone, city
                                 <p class="text" style="font-weight: 600; color: #0f172a;">Hi ${userName},</p>
                                 <p class="text">Thank you for registering <b>${restaurantName || 'your business'}</b> with EatGreet. ${isPending ? 'We verify each registration to maintain the highest quality standards for our community.' : 'Your account is now active and ready. You can log in to access your command center and start managing your restaurant.'}</p>
                                 
-                                ${isPending ? `
                                 <div class="box">
-                                    <p class="box-title">Next Steps</p>
-                                    <ul style="margin: 0; padding-left: 20px; color: #475569; font-size: 15px; line-height: 1.8;">
+                                    <p class="box-title">Login Credentials</p>
+                                    <p style="margin: 0; font-size: 14px; color: #475569;"><b>Login ID:</b> ${userEmail}</p>
+                                    <p style="margin: 4px 0 0; font-size: 14px; color: #475569;"><b>Password:</b> ${phone || 'Your registered phone number'}</p>
+                                </div>
+
+                                ${isPending ? `
+                                <div class="box" style="background-color: #fffbeb; border-color: #fef3c7;">
+                                    <p class="box-title" style="color: #92400e;">Status: Pending Review</p>
+                                    <ul style="margin: 0; padding-left: 20px; color: #92400e; font-size: 15px; line-height: 1.8;">
                                         <li>Account verification (usually within 24 hours)</li>
-                                        <li>Approval notification with your secure credentials</li>
-                                        <li>Profile setup and restaurant launch</li>
+                                        <li>You will receive an approval confirmation soon</li>
+                                        <li>Dashboard access is locked until verified</li>
                                     </ul>
                                 </div>
                                 ` : `
@@ -298,6 +304,10 @@ const sendAdminNotificationEmail = async ({ name, email, phone, city, restaurant
                 <tr style="background: #fdfdfd; border-bottom: 1px solid #f0f0f0;">
                     <td style="padding: 12px; font-weight: 600; color: #666;">Location</td>
                     <td style="padding: 12px; color: #111;">${city || '—'}</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #f0f0f0;">
+                    <td style="padding: 12px; font-weight: 600; color: #666;">Set Password</td>
+                    <td style="padding: 12px; color: #4f46e5; font-weight: 700;">${phone} (Phone)</td>
                 </tr>
                 <tr>
                     <td style="padding: 12px; font-weight: 600; color: #666;">Restaurant</td>

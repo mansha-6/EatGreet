@@ -83,7 +83,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    const autocompleteService = useRef(null);
+    const suggestionSession = useRef(null);
 
     const validateField = (name, value) => {
         let error = '';
@@ -135,29 +135,51 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
         validateField('city', value);
 
         if (value.length > 0) {
-            // Use Google Places Autocomplete if available
-            if (window.google && window.google.maps && window.google.maps.places) {
-                if (!autocompleteService.current) {
-                    autocompleteService.current = new window.google.maps.places.AutocompleteService();
-                }
-
-                autocompleteService.current.getPlacePredictions(
-                    {
-                        input: value,
-                        // Focus on cities in India
-                        types: ['(cities)'],
-                        componentRestrictions: { country: 'in' } // Focus on Indian locations
-                    },
-                    (predictions) => {
-                        if (predictions) {
-                            setCitySuggestions(predictions.map(p => p.description));
-                            setShowSuggestions(true);
-                        } else {
-                            setCitySuggestions([]);
-                            setShowSuggestions(false);
-                        }
+            // Use Google Places Autocomplete (New v2 API)
+            if (window.google && window.google.maps) {
+                try {
+                    // Load the places library
+                    const { AutocompleteSuggestion, AutocompleteSessionToken } = await window.google.maps.importLibrary("places");
+                    
+                    if (!suggestionSession.current) {
+                        suggestionSession.current = new AutocompleteSessionToken();
                     }
-                );
+
+                    const request = {
+                        input: value,
+                        includedRegionCodes: ['in'],
+                        sessionToken: suggestionSession.current,
+                    };
+
+                    const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+                    
+                    if (suggestions) {
+                        setCitySuggestions(suggestions.map(s => s.placePrediction.text.text));
+                        setShowSuggestions(true);
+                    } else {
+                        setCitySuggestions([]);
+                        setShowSuggestions(false);
+                    }
+                } catch (err) {
+                    console.error("Autocomplete Error:", err);
+                    // Fallback to legacy if v2 fails or is not available
+                    if (window.google.maps.places && window.google.maps.places.AutocompleteService) {
+                        const legacyService = new window.google.maps.places.AutocompleteService();
+                        legacyService.getPlacePredictions(
+                            {
+                                input: value,
+                                types: ['(cities)'],
+                                componentRestrictions: { country: 'in' }
+                            },
+                            (predictions) => {
+                                if (predictions) {
+                                    setCitySuggestions(predictions.map(p => p.description));
+                                    setShowSuggestions(true);
+                                }
+                            }
+                        );
+                    }
+                }
             }
         } else {
             setCitySuggestions([]);
@@ -252,7 +274,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
             const userData = response.data;
 
             if (userData.isApproved === false) {
-                setSuccess('Application submitted! Your account is under review. Please check your email.');
+                setSuccess('Application submitted! Your account is under review. Once approved, you will receive an email with your secure login credentials.');
                 setFormData({ name: '', email: '', phone: '', city: '', businessName: '' });
                 setFieldErrors({});
             } else {

@@ -27,6 +27,7 @@ export default function SuperAdminLogin() {
         if (isLoading) return;
         setIsLoading(true);
         try {
+            console.log("🔐 Requesting Super Admin OTP for:", SUPER_ADMIN_EMAIL);
             await authAPI.sendSuperAdminOtp(SUPER_ADMIN_EMAIL);
             setOtpSent(true);
             setResendIn(60);

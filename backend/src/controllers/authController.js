@@ -217,9 +217,17 @@ const sendSuperAdminOtp = async (req, res) => {
         };
         await user.save();
 
-        await sendSuperAdminOtpEmail(normalizedEmail, otpCode);
+        // Send email in background so API stays fast even if SMTP is slow.
+        sendSuperAdminOtpEmail(normalizedEmail, otpCode).catch(async (error) => {
+            console.error('❌ Background Super Admin OTP email failed:', error);
+            // Invalidate OTP if email was not delivered to avoid dead OTP state.
+            await User.updateOne(
+                { _id: user._id },
+                { $set: { superAdminOtp: { codeHash: '', expiresAt: null, lastSentAt: new Date(), attempts: 0 } } }
+            );
+        });
 
-        res.status(201).json({ message: 'OTP sent to Super Admin email.' });
+        res.status(202).json({ message: 'OTP request accepted. It should arrive shortly.' });
     } catch (error) {
         console.error('❌ Super Admin OTP Error:', error);
         if (error.code === 'EAUTH') {

@@ -307,7 +307,7 @@ const getAllRestaurants = async (req, res) => {
     try {
         // Find users who are admins or superadmins with a restaurant name
         const users = await User.find({
-            role: { $in: ['admin', 'superadmin'] },
+            role: 'admin',
             restaurantName: { $exists: true, $ne: '' }
         }).select('-password');
         const now = new Date();

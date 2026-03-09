@@ -1,6 +1,5 @@
 const nodemailer = require('nodemailer');
 const dns = require('dns');
-const RESEND_API_URL = 'https://api.resend.com/emails';
 
 // Force Node.js to prioritize IPv4 over IPv6. 
 // This fixes ENETUNREACH errors on cloud platforms like Render/Railway that have issues routing IPv6.
@@ -8,43 +7,30 @@ if (dns.setDefaultResultOrder) {
     dns.setDefaultResultOrder('ipv4first');
 }
 
-const smtpHost = process.env.EMAIL_HOST || 'smtp.gmail.com';
-const smtpPort = parseInt(process.env.EMAIL_PORT, 10) || 587;
-const smtpSecure = process.env.EMAIL_SECURE
-    ? process.env.EMAIL_SECURE === 'true'
-    : smtpPort === 465;
-
-const buildTransporter = (override = {}) => nodemailer.createTransport({
-    host: override.host || smtpHost,
-    port: override.port || smtpPort,
-    secure: typeof override.secure === 'boolean' ? override.secure : smtpSecure,
-    pool: false, // Avoid stale pool sockets on hosted platforms
+// 1. Create a transporter
+const transporter = nodemailer.createTransport({
+    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.EMAIL_PORT) || 587,
+    secure: process.env.EMAIL_PORT == 465,
+    pool: false, // Disabling pool to avoid stale connection issues in high-latency environments
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
-    // Keep timeouts tight so API doesn't hang
-    connectionTimeout: 12000,
-    greetingTimeout: 12000,
-    socketTimeout: 15000,
-    requireTLS: !override.secure,
+    // Balanced timeouts to handle slow DNS or server responses
+    connectionTimeout: 30000, // 30s
+    greetingTimeout: 30000,   // 30s
+    socketTimeout: 30000,     // 30s
     tls: {
-        servername: override.host || smtpHost,
         rejectUnauthorized: false
     }
 });
-
-const transporter = buildTransporter();
 
 /**
  * Verify SMTP Connection on initialization
  */
 const verifySMTP = async () => {
     try {
-        if (process.env.RESEND_API_KEY) {
-            console.log('ℹ️ RESEND_API_KEY detected, skipping SMTP verify.');
-            return true;
-        }
         await transporter.verify();
         console.log('✅ SMTP Connection verified successfully');
         return true;
@@ -63,38 +49,10 @@ verifySMTP();
  */
 const sendEmail = async (options) => {
     try {
-        // Prefer API-based delivery when configured (avoids SMTP connection timeouts on Render).
-        if (process.env.RESEND_API_KEY) {
-            const fromAddress = process.env.EMAIL_FROM || process.env.EMAIL_USER || 'onboarding@resend.dev';
-            const response = await fetch(RESEND_API_URL, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    from: `"EatGreet" <${fromAddress}>`,
-                    to: [options.email],
-                    subject: options.subject,
-                    html: options.html || undefined,
-                    text: options.message || 'EatGreet Notification'
-                })
-            });
-
-            if (!response.ok) {
-                const details = await response.text();
-                throw new Error(`Resend send failed (${response.status}): ${details}`);
-            }
-
-            const data = await response.json();
-            console.log(`✉️ Email sent via Resend to ${options.email} | ID: ${data.id || 'n/a'}`);
-            return data;
-        }
-
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            const msg = 'CRITICAL: Missing EMAIL_USER/EMAIL_PASS. Or set RESEND_API_KEY for API delivery.';
+            const msg = 'CRITICAL: Missing EMAIL_USER or EMAIL_PASS in environment.';
             console.error(msg);
-            throw new Error(msg); // Throw instead of returning null to trigger .catch blocks
+            throw new Error(msg);
         }
 
         const mailOptions = {
@@ -105,24 +63,9 @@ const sendEmail = async (options) => {
             html: options.html,
         };
 
-        try {
-            const info = await transporter.sendMail(mailOptions);
-            console.log(`✉️ Email successfully sent to ${options.email} | ID: ${info.messageId}`);
-            return info;
-        } catch (error) {
-            const shouldRetryOn465 =
-                error &&
-                ['ETIMEDOUT', 'ESOCKET', 'ECONNECTION'].includes(error.code) &&
-                Number(smtpPort) !== 465;
-
-            if (!shouldRetryOn465) throw error;
-
-            // Gmail often works better on 465 from hosted environments
-            const fallbackTransporter = buildTransporter({ host: 'smtp.gmail.com', port: 465, secure: true });
-            const info = await fallbackTransporter.sendMail(mailOptions);
-            console.log(`✉️ Email sent via fallback SMTP 465 to ${options.email} | ID: ${info.messageId}`);
-            return info;
-        }
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`✉️ Email successfully sent to ${options.email} | ID: ${info.messageId}`);
+        return info;
     } catch (error) {
         console.error(`❌ Mail delivery failed to ${options.email}:`, error.message);
         if (error.code === 'EAUTH') {
@@ -133,8 +76,8 @@ const sendEmail = async (options) => {
 };
 
 /**
-     * WELCOME EMAIL (Initial registration)
-     */
+ * WELCOME EMAIL (Initial registration)
+ */
 const sendWelcomeEmail = async (userEmail, userName, restaurantName, phone, city, isPending = false) => {
     const html = `
     <!DOCTYPE html>

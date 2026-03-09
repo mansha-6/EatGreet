@@ -19,6 +19,7 @@ const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:5000',
     'https://eat-greet.vercel.app',
+    'https://eatgreet.vercel.app',
     process.env.FRONTEND_URL,
     ...(process.env.FRONTEND_URLS || '').split(',').map((s) => s.trim())
 ].filter(Boolean).map(normalizeOrigin);
@@ -41,7 +42,7 @@ const corsOriginHandler = (origin, callback) => {
     }
 
     console.warn(`CORS blocked for origin: ${origin}`);
-    callback(new Error('Not allowed by CORS'));
+    callback(null, false);
 };
 
 const corsOptions = {

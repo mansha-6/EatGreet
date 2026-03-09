@@ -43,34 +43,34 @@ verifySMTP();
 const sendEmail = async (options) => {
     try {
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.error('Missing EMAIL credentials in .env');
-            return null;
+            const msg = 'CRITICAL: Missing EMAIL_USER or EMAIL_PASS in environment.';
+            console.error(msg);
+            throw new Error(msg); // Throw instead of returning null to trigger .catch blocks
         }
 
         const mailOptions = {
-            from: `"EatGreet Team" <${process.env.EMAIL_USER}>`,
+            from: `"EatGreet" <${process.env.EMAIL_USER}>`,
             to: options.email,
             subject: options.subject,
-            text: options.message || "Message content is empty.",
+            text: options.message || "EatGreet Notification",
             html: options.html,
         };
 
         const info = await transporter.sendMail(mailOptions);
-        console.log(`✉️ Email sent to ${options.email} | ID: ${info.messageId}`);
+        console.log(`✉️ Email successfully sent to ${options.email} | ID: ${info.messageId}`);
         return info;
     } catch (error) {
         console.error(`❌ Mail delivery failed to ${options.email}:`, error.message);
         if (error.code === 'EAUTH') {
-            console.error('CRITICAL: SMTP Authentication failed. Verify EMAIL_USER and EMAIL_PASS.');
+            console.error('CRITICAL: SMTP Authentication failed. Verify that you have set the correct APP PASSWORD in Render Dashboard.');
         }
         throw error;
     }
-
 };
 
 /**
- * WELCOME EMAIL (Initial registration)
- */
+     * WELCOME EMAIL (Initial registration)
+     */
 const sendWelcomeEmail = async (userEmail, userName, restaurantName, phone, city, isPending = false) => {
     const html = `
     <!DOCTYPE html>

@@ -129,6 +129,7 @@ export default function Restaurants() {
         endDate: '',
         autoRenew: false
     });
+    const [isApproving, setIsApproving] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
     const [addForm, setAddForm] = useState({
@@ -146,7 +147,7 @@ export default function Restaurants() {
     const [citySuggestions, setCitySuggestions] = useState([]);
     const [showCitySuggestions, setShowCitySuggestions] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const autocompleteService = useRef(null);
+    const suggestionSession = useRef(null);
 
     useEffect(() => {
         if (typeof window === 'undefined') return;
@@ -196,22 +197,47 @@ export default function Restaurants() {
     const handleAddCityChange = async (value) => {
         setAddForm(prev => ({ ...prev, city: value }));
         setAddFormErrors(prev => ({ ...prev, city: '' }));
-        if (value.length > 0 && window.google?.maps?.places) {
-            if (!autocompleteService.current) {
-                autocompleteService.current = new window.google.maps.places.AutocompleteService();
-            }
-            autocompleteService.current.getPlacePredictions(
-                { input: value, componentRestrictions: { country: 'in' } },
-                (predictions) => {
-                    if (predictions) {
-                        setCitySuggestions(predictions.map(p => p.description));
-                        setShowCitySuggestions(true);
-                    } else {
-                        setCitySuggestions([]);
-                        setShowCitySuggestions(false);
-                    }
+
+        if (value.length > 0 && window.google?.maps) {
+            try {
+                // Load the places library
+                const { AutocompleteSuggestion, AutocompleteSessionToken } = await window.google.maps.importLibrary("places");
+
+                if (!suggestionSession.current) {
+                    suggestionSession.current = new AutocompleteSessionToken();
                 }
-            );
+
+                const request = {
+                    input: value,
+                    includedRegionCodes: ['in'],
+                    sessionToken: suggestionSession.current,
+                };
+
+                const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
+
+                if (suggestions) {
+                    setCitySuggestions(suggestions.map(s => s.placePrediction.text.text));
+                    setShowCitySuggestions(true);
+                } else {
+                    setCitySuggestions([]);
+                    setShowCitySuggestions(false);
+                }
+            } catch (err) {
+                console.error("Autocomplete Error:", err);
+                // Fallback to legacy
+                if (window.google.maps.places && window.google.maps.places.AutocompleteService) {
+                    const legacyService = new window.google.maps.places.AutocompleteService();
+                    legacyService.getPlacePredictions(
+                        { input: value, componentRestrictions: { country: 'in' } },
+                        (predictions) => {
+                            if (predictions) {
+                                setCitySuggestions(predictions.map(p => p.description));
+                                setShowCitySuggestions(true);
+                            }
+                        }
+                    );
+                }
+            }
         } else {
             setCitySuggestions([]);
             setShowCitySuggestions(false);
@@ -253,6 +279,8 @@ export default function Restaurants() {
                 return matchesSearch && res.isActive;
             case 'deactivated':
                 return matchesSearch && !res.isActive;
+            case 'pending':
+                return matchesSearch && !res.isApproved;
             default:
                 return matchesSearch;
         }
@@ -319,6 +347,22 @@ export default function Restaurants() {
         } catch (error) {
             console.error('Error toggling restaurant status:', error);
             toast.error('Failed to update restaurant status');
+        }
+    };
+
+    const handleApproveRestaurant = async (restaurant) => {
+        if (!window.confirm(`Approve ${restaurant.restaurantName || restaurant.name}? This will generate random credentials and email them to ${restaurant.email}.`)) return;
+
+        setIsApproving(true);
+        try {
+            await authAPI.approveRestaurant(restaurant._id);
+            toast.success('Restaurant approved and credentials sent!');
+            fetchRestaurants();
+        } catch (error) {
+            console.error('Error approving restaurant:', error);
+            toast.error(error.response?.data?.message || 'Failed to approve restaurant');
+        } finally {
+            setIsApproving(false);
         }
     };
 
@@ -467,7 +511,8 @@ export default function Restaurants() {
                                                         {[
                                                             { id: 'all', label: 'All Statuses' },
                                                             { id: 'active', label: 'Active' },
-                                                            { id: 'deactivated', label: 'Deactivated' }
+                                                            { id: 'deactivated', label: 'Deactivated' },
+                                                            { id: 'pending', label: 'Pending Approval' }
                                                         ].map((item) => (
                                                             <button
                                                                 key={item.id}
@@ -541,7 +586,12 @@ export default function Restaurants() {
                                         <div className="col-span-1 text-center font-normal text-sm text-gray-800">
                                             {daysLeft !== null ? `${daysLeft}d` : '-'}
                                         </div>
-                                        <div className="col-span-2 flex justify-center">
+                                        <div className="col-span-2 flex justify-center gap-2">
+                                            {!restaurant.isApproved && (
+                                                <span className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-tight bg-amber-50 text-amber-600 border border-amber-100 flex items-center gap-1">
+                                                    <Loader2 className="w-3 h-3 animate-spin" /> Pending
+                                                </span>
+                                            )}
                                             <span className={`px-4 py-1.5 rounded-full text-[10px] font-normal uppercase tracking-tight ${restaurant.isActive ? 'bg-[#E7F9F0] text-[#10B981]' : 'bg-rose-50 text-rose-500'}`}>
                                                 {restaurant.isActive ? 'Active' : 'Deactivated'}
                                             </span>
@@ -567,6 +617,19 @@ export default function Restaurants() {
                                             >
                                                 <Edit2 className="w-4 h-4" />
                                             </button>
+                                            {!restaurant.isApproved && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleApproveRestaurant(restaurant);
+                                                    }}
+                                                    className="p-2.5 hover:bg-emerald-50 rounded-full transition-colors text-emerald-500 hover:text-emerald-600"
+                                                    title="Approve & Send Credentials"
+                                                    disabled={isApproving}
+                                                >
+                                                    <Check className="w-4 h-4" />
+                                                </button>
+                                            )}
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
@@ -959,6 +1022,16 @@ export default function Restaurants() {
                                     <LayoutDashboard className="w-4 h-4" /> Visit Dashboard
                                 </button>
                             </div>
+                            {!previewRestaurant.isApproved && (
+                                <div className="px-8 pb-8 pt-0">
+                                    <button
+                                        onClick={() => { setPreviewRestaurant(null); handleApproveRestaurant(previewRestaurant); }}
+                                        className="w-full py-4 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-2"
+                                    >
+                                        <CheckCircle className="w-5 h-5" /> Approve & Send Welcome Email
+                                    </button>
+                                </div>
+                            )}
                         </motion.div>
                     </div>
                 )}

@@ -1,4 +1,11 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns');
+
+// Force Node.js to prioritize IPv4 over IPv6. 
+// This fixes ENETUNREACH errors on cloud platforms like Render/Railway that have issues routing IPv6.
+if (dns.setDefaultResultOrder) {
+    dns.setDefaultResultOrder('ipv4first');
+}
 
 // 1. Create a persistent transporter pool for better performance
 const transporter = nodemailer.createTransport({

@@ -41,14 +41,18 @@ export const SocketProvider = ({ children }) => {
             socketUrl = 'http://localhost:5001';
         }
 
+        const isLocalDev = typeof window !== 'undefined'
+            && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+        const transports = isLocalDev ? ['polling'] : ['polling', 'websocket'];
+
         console.log('Attempting Socket Connection to:', socketUrl);
 
         const newSocket = io(socketUrl, {
             // Socket auth uses app tokens, not browser cookies.
             // Keep this false to avoid CORS wildcard + credentials conflicts.
             withCredentials: false,
-            // Polling first avoids continuous websocket-only handshake failures on some hosts/proxies.
-            transports: ['polling', 'websocket'],
+            // In local dev behind Vite proxy, polling avoids noisy ws ECONNRESET proxy logs.
+            transports,
             path: '/socket.io',
             reconnectionAttempts: 10,
             reconnectionDelay: 5000,

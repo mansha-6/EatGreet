@@ -7,23 +7,43 @@ if (dns.setDefaultResultOrder) {
     dns.setDefaultResultOrder('ipv4first');
 }
 
-// 1. Create a transporter
-const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.EMAIL_PORT) || 587,
-    secure: process.env.EMAIL_PORT == 465,
-    pool: false, // Disabling pool to avoid stale connection issues in high-latency environments
+const createTransporter = ({ host, port, secure }) => nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    requireTLS: !secure,
+    pool: false,
+    // Force IPv4 to avoid IPv6 ENETUNREACH on some cloud runtimes.
+    family: 4,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
-    // Balanced timeouts to handle slow DNS or server responses
-    connectionTimeout: 30000, // 30s
-    greetingTimeout: 30000,   // 30s
-    socketTimeout: 30000,     // 30s
+    connectionTimeout: 20000,
+    greetingTimeout: 20000,
+    socketTimeout: 20000,
+    dnsTimeout: 10000,
     tls: {
+        servername: host,
         rejectUnauthorized: false
     }
+});
+
+const smtpHost = process.env.EMAIL_HOST || 'smtp.gmail.com';
+const smtpPort = parseInt(process.env.EMAIL_PORT, 10) || 587;
+const smtpSecure = smtpPort === 465;
+
+const primaryTransporter = createTransporter({
+    host: smtpHost,
+    port: smtpPort,
+    secure: smtpSecure
+});
+
+// Fallback: Gmail STARTTLS (587) is often more reliable on Render than implicit TLS (465).
+const fallbackTransporter = createTransporter({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false
 });
 
 /**
@@ -31,11 +51,11 @@ const transporter = nodemailer.createTransport({
  */
 const verifySMTP = async () => {
     try {
-        await transporter.verify();
+        await primaryTransporter.verify();
         console.log('✅ SMTP Connection verified successfully');
         return true;
     } catch (error) {
-        console.warn('❌ SMTP Verification failed. Check EMAIL_USER and EMAIL_PASS in .env');
+        console.warn('❌ SMTP Verification failed. Primary SMTP is unreachable or misconfigured.');
         console.error(error);
         return false;
     }
@@ -63,9 +83,19 @@ const sendEmail = async (options) => {
             html: options.html,
         };
 
-        const info = await transporter.sendMail(mailOptions);
-        console.log(`✉️ Email successfully sent to ${options.email} | ID: ${info.messageId}`);
-        return info;
+        try {
+            const info = await primaryTransporter.sendMail(mailOptions);
+            console.log(`✉️ Email successfully sent to ${options.email} | ID: ${info.messageId}`);
+            return info;
+        } catch (primaryError) {
+            const retryable = ['ETIMEDOUT', 'ESOCKET', 'ECONNECTION'].includes(primaryError.code);
+            if (!retryable) throw primaryError;
+
+            console.warn(`⚠️ Primary SMTP failed (${primaryError.code}). Retrying with Gmail fallback:587...`);
+            const info = await fallbackTransporter.sendMail(mailOptions);
+            console.log(`✉️ Email sent via fallback SMTP to ${options.email} | ID: ${info.messageId}`);
+            return info;
+        }
     } catch (error) {
         console.error(`❌ Mail delivery failed to ${options.email}:`, error.message);
         if (error.code === 'EAUTH') {

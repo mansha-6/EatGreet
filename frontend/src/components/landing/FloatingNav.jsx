@@ -96,8 +96,8 @@ export const FloatingNav = ({
                 className={cn(
                     "fixed top-0 left-0 right-0 mx-auto z-[5000] flex items-center transition-all duration-500",
                     scrolled
-                        ? "rounded-full bg-white/0.5 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] border border-white/50 h-14 md:h-16 mt-4"
-                        : "h-16 md:h-20 bg-white/100 border-b border-black/[0.05]",
+                        ? "rounded-full bg-white/80 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] border border-white/50 h-14 md:h-16 mt-4"
+                        : "h-16 md:h-20 bg-white border-b border-black/[0.05]",
                     className
                 )}
             >
@@ -125,7 +125,7 @@ export const FloatingNav = ({
                                             <motion.div
                                                 layoutId="nav-pill"
                                                 initial={false} // ✅ Prevents the awkward corner jump when it first appears
-                                                className="absolute inset-0 bg-[#FD6941]/10 border border-[#FD6941]/20 rounded-full z-[-1]"
+                                                className="absolute inset-0 bg-[#FD6941]/30 border border-[#FD6941]/40 rounded-full z-[-1]"
                                                 transition={{
                                                     type: "spring",
                                                     stiffness: 380,

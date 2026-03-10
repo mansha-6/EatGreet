@@ -2,7 +2,7 @@ const User = require('../models/User');
 
 const seedSuperAdmin = async () => {
     try {
-        const email = 'superadmin@eatgreet.com';
+        const email = process.env.SUPERADMIN_LOGIN_EMAIL || 'superadmin@eatgreet.com';
         const exists = await User.findOne({ email });
 
         if (!exists) {

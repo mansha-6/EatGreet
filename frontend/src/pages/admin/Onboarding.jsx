@@ -10,18 +10,18 @@ import LocationPickerMap from '../../components/LocationPickerMap';
 
 const Onboarding = () => {
     const navigate = useNavigate();
-    const { updateSettings } = useSettings();
+    const { user, updateSettings } = useSettings();
     const [loading, setLoading] = useState(false);
     const [uploadingLogo, setUploadingLogo] = useState(false);
 
     const [formData, setFormData] = useState({
-        restaurantName: '',
+        restaurantName: user?.restaurantName || '',
         description: '',
         address: '',
-        contactNumber: '',
+        contactNumber: user?.phone || '',
         gstNumber: '',
         cuisineType: '',
-        businessEmail: '',
+        businessEmail: user?.email || '',
         logo: '',
         location: { lat: 23.0225, lng: 72.5714 },
         operatingHours: { open: '09:00', close: '23:00' }
@@ -90,7 +90,7 @@ const Onboarding = () => {
         const loadToast = toast.loading('Setting up your restaurant...');
         try {
             const res = await restaurantAPI.completeOnboarding(formData);
-            
+
             // Update context and local storage
             updateSettings({
                 isOnboarded: true,
@@ -99,7 +99,7 @@ const Onboarding = () => {
             });
 
             toast.success('Restaurant setup complete!', { id: loadToast });
-            
+
             // Short delay to ensure state updates before navigation
             setTimeout(() => {
                 const slug = formData.restaurantName.toLowerCase().replace(/\s+/g, '-');
@@ -116,7 +116,7 @@ const Onboarding = () => {
         <div className="min-h-screen bg-[#FDFCFB] flex items-center justify-center p-4 sm:p-6 lg:p-8">
             <div className="max-w-4xl w-full bg-white rounded-[2.5rem] shadow-xl shadow-orange-100/50 border border-gray-100 overflow-hidden">
                 <div className="grid grid-cols-1 lg:grid-cols-5 h-full">
-                    
+
                     {/* Left Panel - Info */}
                     <div className="lg:col-span-2 bg-gradient-to-br from-[#FD6941] to-[#FF8C6B] p-8 lg:p-12 text-white flex flex-col justify-between shrink-0">
                         <div>
@@ -130,7 +130,7 @@ const Onboarding = () => {
                                 Let's get your restaurant set up. This information will be used for your public menu, invoices, and analytics.
                             </p>
                         </div>
-                        
+
                         <div className="space-y-6 mt-12 lg:mt-0">
                             <div className="flex items-center gap-4">
                                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">

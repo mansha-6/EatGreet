@@ -250,4 +250,5 @@ app.use((err, req, res, next) => {
     });
 });
 
+// Server instance export for potential testing or future use
 module.exports = app;

@@ -15,6 +15,7 @@ class ErrorBoundary extends React.Component {
     componentDidCatch(error, errorInfo) {
         // You can also log the error to an error reporting service
         console.error("Uncaught error in application:", error, errorInfo);
+        this.setState({ errorInfo });
     }
 
     handleReset = () => {
@@ -60,13 +61,13 @@ class ErrorBoundary extends React.Component {
                             Clear Session & Logout
                         </button>
 
-                        {process.env.NODE_ENV === 'development' && (
-                            <div className="mt-8 p-4 bg-gray-50 rounded-2xl text-left overflow-auto max-h-40">
-                                <p className="text-[10px] font-mono text-red-500 break-all">
-                                    {this.state.error?.toString()}
-                                </p>
-                            </div>
-                        )}
+                        <div className="mt-8 p-4 bg-gray-50 rounded-2xl text-left overflow-auto max-h-40">
+                            <p className="text-[10px] font-mono text-red-500 break-all">
+                                {this.state.error?.toString()}
+                                <br />
+                                {this.state.errorInfo?.componentStack}
+                            </p>
+                        </div>
                     </div>
                 </div>
             );

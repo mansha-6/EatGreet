@@ -226,12 +226,18 @@ function App() {
 
             </Route>
 
-            {/* New Table Specific Route */}
+            {/* New Safe Table Specific Route */}
+            <Route path="/menu/:restaurantName/:tableNo" element={<CustomerLayout />}>
+              <Route index element={<Menu />} />
+              <Route path="menu" element={<Menu />} />
+              <Route path="profile" element={<CustomerProfile />} />
+            </Route>
+
+            {/* Legacy Table Specific Route */}
             <Route path="/:restaurantName/table/:tableNo" element={<CustomerLayout />}>
               <Route index element={<Menu />} />
               <Route path="menu" element={<Menu />} />
               <Route path="profile" element={<CustomerProfile />} />
-
             </Route>
 
 

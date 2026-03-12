@@ -68,13 +68,17 @@ api.interceptors.response.use(
       const isAuthError = error.response.status === 401;
       const isLoginRequest = error.config.url.includes('/auth/login');
 
-      // Only redirect for Auth errors that AREN'T login attempts. 
+      // Only redirect for Auth errors that AREN'T login attempts.
       // 401 during login means "Invalid Credentials", not "Session Expired".
       if (isAuthError && !isLoginRequest) {
-        console.warn("Session expired. Redirecting to login...", error.response.data);
+        console.warn("Session expired. Clearing session info...", error.response.data);
         localStorage.clear();
-        // Redirect to login if not already there
-        if (!window.location.pathname.includes('/login')) {
+        
+        // Only redirect if the user is in the admin or super-admin area
+        const path = window.location.pathname;
+        const isAdminArea = path.includes('/admin') || path.includes('/super-admin') || path.includes('/kitchen');
+        
+        if (isAdminArea && !path.includes('/login')) {
           window.location.href = '/admin/login';
         }
       }

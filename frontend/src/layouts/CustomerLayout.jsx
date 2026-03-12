@@ -127,7 +127,7 @@ const CustomerLayout = () => {
     const totalItems = Object.values(cart).reduce((acc, item) => acc + item.qty, 0);
 
     const getBaseUrl = () => {
-        if (restaurantName && paramTableNo) return `/${restaurantName}/table/${paramTableNo}`;
+        if (restaurantName && paramTableNo) return `/menu/${restaurantName}/${paramTableNo}`;
         return resolvedRestaurantId ? `/r/${resolvedRestaurantId}` : '/customer';
     };
 

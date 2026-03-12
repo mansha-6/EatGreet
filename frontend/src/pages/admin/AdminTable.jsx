@@ -166,7 +166,7 @@ const AdminTable = () => {
         // For now assume user knows or simple replace. 
         // Ideally backend enforces slug. Let's do simple encoding or replacement.
         const slug = restaurantName.toLowerCase().trim().replace(/\s+/g, '-');
-        return `${window.location.origin}/${slug}/table/${tableNo}`;
+        return `${window.location.origin}/menu/${slug}/${tableNo}`;
     };
 
     const handlePrint = (order) => {

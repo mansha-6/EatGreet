@@ -79,7 +79,7 @@ export default function Login() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="w-full px-6 py-3.5 rounded-full bg-[#EAEFEF] border border-gray-200 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-gray-400 transition-all shadow-inner text-sm"
-                            placeholder="Password (e.g. admin)*"
+                            placeholder="Password (Initially your Mobile No.)*"
                         />
                     </div>
 

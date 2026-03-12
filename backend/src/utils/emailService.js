@@ -7,22 +7,23 @@ if (dns.setDefaultResultOrder) {
     dns.setDefaultResultOrder('ipv4first');
 }
 
+const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
+
 const createTransporter = ({ host, port, secure }) => nodemailer.createTransport({
     host,
     port,
     secure,
     requireTLS: !secure,
-    pool: false,
-    // Force IPv4 to avoid IPv6 ENETUNREACH on some cloud runtimes.
+    pool: false, // Disabling pooling temporarily to fix Render stability issues
     family: 4,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
-    connectionTimeout: 20000,
-    greetingTimeout: 20000,
-    socketTimeout: 20000,
-    dnsTimeout: 10000,
+    connectionTimeout: 8000, // Fast fail (8s)
+    greetingTimeout: 8000,
+    socketTimeout: 10000,
+    dnsTimeout: 5000,
     tls: {
         servername: host,
         rejectUnauthorized: false
@@ -62,7 +63,7 @@ const verifySMTP = async () => {
 };
 
 // Start verification immediately (fire and forget)
-verifySMTP();
+// verifySMTP(); // Disabled for Vercel to prevent slow cold starts/timeouts
 
 /**
  * Core internal send function
@@ -84,17 +85,30 @@ const sendEmail = async (options) => {
         };
 
         try {
-            const info = await primaryTransporter.sendMail(mailOptions);
+            // Add a hard timeout to the sendMail promise to prevent Vercel 502
+            const sendPromise = primaryTransporter.sendMail(mailOptions);
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('SMTP_TIMEOUT')), 12000)
+            );
+
+            const info = await Promise.race([sendPromise, timeoutPromise]);
             console.log(`✉️ Email successfully sent to ${options.email} | ID: ${info.messageId}`);
             return info;
         } catch (primaryError) {
-            const retryable = ['ETIMEDOUT', 'ESOCKET', 'ECONNECTION'].includes(primaryError.code);
-            if (!retryable) throw primaryError;
-
-            console.warn(`⚠️ Primary SMTP failed (${primaryError.code}). Retrying with Gmail fallback:587...`);
-            const info = await fallbackTransporter.sendMail(mailOptions);
-            console.log(`✉️ Email sent via fallback SMTP to ${options.email} | ID: ${info.messageId}`);
-            return info;
+            if (primaryError.message === 'SMTP_TIMEOUT') {
+                console.error(`❌ SMTP Timeout for ${options.email}. Serverless function might be too slow.`);
+            }
+            // Only retry if fallback is actually different or if primary really failed
+            const isGmailPrimary = smtpHost.includes('gmail.com');
+            const retryable = ['ETIMEDOUT', 'ESOCKET', 'ECONNECTION'].includes(primaryError.code) || primaryError.message === 'SMTP_TIMEOUT';
+            
+            if (retryable && !isGmailPrimary) {
+                console.warn(`⚠️ Primary SMTP failed/timed out. Retrying with Gmail fallback:587...`);
+                const info = await fallbackTransporter.sendMail(mailOptions);
+                console.log(`✉️ Email sent via fallback SMTP to ${options.email} | ID: ${info.messageId}`);
+                return info;
+            }
+            throw primaryError;
         }
     } catch (error) {
         console.error(`❌ Mail delivery failed to ${options.email}:`, error.message);
@@ -162,24 +176,31 @@ const sendWelcomeEmail = async (userEmail, userName, restaurantName, phone, city
                                 <p class="text" style="font-weight: 600; color: #0f172a;">Hi ${userName},</p>
                                 <p class="text">Thank you for registering <b>${restaurantName || 'your business'}</b> with EatGreet. ${isPending ? 'We verify each registration to maintain the highest quality standards for our community.' : 'Your account is now active and ready. You can log in to access your command center and start managing your restaurant.'}</p>
                                 
-                                <div class="box">
-                                    <p class="box-title">Login Credentials</p>
-                                    <p style="margin: 0; font-size: 14px; color: #475569;"><b>Login ID:</b> ${userEmail}</p>
-                                    <p style="margin: 4px 0 0; font-size: 14px; color: #475569;"><b>Password:</b> ${phone || 'Your registered phone number'}</p>
+                                 <div class="box">
+                                    <p class="box-title">Access Credentials</p>
+                                    <div style="margin-bottom: 16px;">
+                                        <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;">Login ID</p>
+                                        <p style="margin: 4px 0 0; font-size: 15px; color: #0f172a; font-weight: 600;">${userEmail}</p>
+                                    </div>
+                                    <div>
+                                        <p style="margin: 0; font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 700; letter-spacing: 0.5px;">Phone Number</p>
+                                        <p style="margin: 4px 0 0; font-size: 15px; color: #0f172a; font-weight: 600;">${phone || 'Your registered phone number'}</p>
+                                        <p style="margin: 6px 0 0; font-size: 12px; color: #64748b; font-style: italic;">Your registered phone number is your initial password.</p>
+                                    </div>
                                 </div>
 
                                 ${isPending ? `
-                                <div class="box" style="background-color: #fffbeb; border-color: #fef3c7;">
-                                    <p class="box-title" style="color: #92400e;">Status: Pending Review</p>
-                                    <ul style="margin: 0; padding-left: 20px; color: #92400e; font-size: 15px; line-height: 1.8;">
-                                        <li>Account verification (usually within 24 hours)</li>
-                                        <li>You will receive an approval confirmation soon</li>
-                                        <li>Dashboard access is locked until verified</li>
+                                <div class="box" style="background-color: #fffbeb; border-color: #fef3c7; border-left: 4px solid #f59e0b;">
+                                    <p class="box-title" style="color: #92400e;">Security Status: Pending Review</p>
+                                    <ul style="margin: 0; padding-left: 20px; color: #92400e; font-size: 14px; line-height: 1.8;">
+                                        <li>Our team will verify your business details (within 24 hours)</li>
+                                        <li>Dashboard access is temporarily restricted until approval</li>
+                                        <li>You'll receive a confirmation email once your portal is ready</li>
                                     </ul>
                                 </div>
                                 ` : `
                                 <div class="btn-wrap">
-                                    <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/login" class="btn" style="background-color: #4f46e5;">Get Started</a>
+                                    <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/login" class="btn" style="background-color: #4f46e5;">Access Dashboard</a>
                                 </div>
                                 `}
                             </td>
@@ -268,21 +289,24 @@ const sendApprovalEmail = async (userEmail, userName, defaultPassword, restauran
                                 <p class="text" style="font-weight: 600; color: #0f172a;">Hi ${userName},</p>
                                 <p class="text">We are thrilled to inform you that <b>${restaurantName}</b> has been approved for the EatGreet platform. Your personalized command center is now ready for access.</p>
                                 
-                                <div class="box">
+                                 <div class="box">
                                     <p class="box-title">Secure Access Credentials</p>
                                     
                                     <p class="cred-label">USER ID</p>
                                     <p class="cred-val">${userEmail}</p>
                                     
-                                    <p class="cred-label">TEMPORARY PASSWORD</p>
-                                    <p class="pass-val">${defaultPassword}</p>
+                                    <p class="cred-label">PHONE NUMBER</p>
+                                    <div style="background: #ffffff; padding: 16px 24px; border-radius: 12px; font-family: 'SF Mono', Consolas, monospace; font-weight: 700; font-size: 20px; border: 2px dashed #cbd5e1; color: #4f46e5; display: inline-block; letter-spacing: 2px;">
+                                        ${defaultPassword}
+                                    </div>
+                                    <p style="margin: 12px 0 0; font-size: 12px; color: #64748b;">(Sign in using this number as your password)</p>
                                 </div>
                                 <div class="alert">
-                                    Please change your password immediately upon first login.
+                                    <b>Action Required:</b> For your security, please change this password immediately after your first successful login.
                                 </div>
                                 
                                 <div class="btn-wrap">
-                                    <a href="${loginUrl}" class="btn">Sign In to Dashboard</a>
+                                    <a href="${loginUrl}" class="btn" style="background-color: #4f46e5;">Launch Your Dashboard</a>
                                 </div>
                             </td>
                         </tr>
@@ -335,10 +359,7 @@ const sendAdminNotificationEmail = async ({ name, email, phone, city, restaurant
                     <td style="padding: 12px; font-weight: 600; color: #666;">Location</td>
                     <td style="padding: 12px; color: #111;">${city || '—'}</td>
                 </tr>
-                <tr style="border-bottom: 1px solid #f0f0f0;">
-                    <td style="padding: 12px; font-weight: 600; color: #666;">Set Password</td>
-                    <td style="padding: 12px; color: #4f46e5; font-weight: 700;">${phone} (Phone)</td>
-                </tr>
+
                 <tr>
                     <td style="padding: 12px; font-weight: 600; color: #666;">Restaurant</td>
                     <td style="padding: 12px; color: #FD6941; font-weight: 800; font-size: 16px;">${restaurantName || '—'}</td>

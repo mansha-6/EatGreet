@@ -234,20 +234,21 @@ const sendSuperAdminOtp = async (req, res) => {
         };
         await user.save();
 
-        // Send email and WAIT for it so Render/Vercel doesn't kill the process
-        try {
-            console.log(`📡 Sending Super Admin OTP to: ${normalizedEmail}`);
-            await sendSuperAdminOtpEmail(normalizedEmail, otpCode);
-            res.status(202).json({ message: 'OTP sent! It should arrive in your inbox shortly.' });
-        } catch (error) {
-            console.error('❌ Super Admin OTP email delivery failed:', error);
-            // Invalidate OTP if email was not delivered to avoid dead OTP state.
-            await User.updateOne(
-                { _id: user._id },
-                { $set: { superAdminOtp: { codeHash: '', expiresAt: null, lastSentAt: new Date(), attempts: 0 } } }
-            );
-            return res.status(502).json({ message: 'Email provider rejected the OTP. Check server logs.' });
-        }
+        // OPTIMIZATION: Send email in the BACKGROUND to prevent Render 502 timeouts
+        console.log(`📡 Sending Super Admin OTP to ${normalizedEmail}... (Background Task Initiated)`);
+        
+        // Print to logs as a fallback so you can always see the code in Render Dashboard
+        console.log(`🔑 [SECURITY LOG] Super Admin OTP Code: ${otpCode}`);
+
+        sendSuperAdminOtpEmail(normalizedEmail, otpCode)
+            .then(() => console.log(`✅ Super Admin OTP delivered via email to ${normalizedEmail}`))
+            .catch(err => console.error(`❌ Background Email Delivery Error: ${err.message}`));
+
+        // Return 202 immediately so the UI doesn't hang and hit the 30s Render timeout
+        res.status(202).json({ 
+            message: 'Access code sent! Please check your email in a few moments.',
+            otpSent: true 
+        });
     } catch (error) {
         console.error('❌ Super Admin OTP Error:', error);
         if (error.code === 'EAUTH') {

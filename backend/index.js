@@ -9,6 +9,38 @@ const seedSuperAdmin = require('./src/utils/seedSuperAdmin');
 const app = express();
 const server = http.createServer(app);
 
+// Database Connection State Management
+let isDBConnected = false;
+let dbConnectionPromise = null;
+
+const initDB = async () => {
+    if (isDBConnected) return true;
+    if (dbConnectionPromise) return dbConnectionPromise;
+
+    dbConnectionPromise = (async () => {
+        try {
+            console.log('⏳ Connecting to MongoDB...');
+            await connectDB();
+            isDBConnected = true;
+            console.log('✅ MongoDB Connected');
+            
+            // Seed in background
+            seedSuperAdmin().catch(err => console.error('❌ Super Admin Seed Error:', err));
+            return true;
+        } catch (err) {
+            console.error('❌ MongoDB Connection Failed:', err.message);
+            isDBConnected = false;
+            dbConnectionPromise = null;
+            return false;
+        }
+    })();
+
+    return dbConnectionPromise;
+};
+
+// Immediate init (Background)
+initDB();
+
 // Enhanced CORS configuration
 const normalizeOrigin = (value) => {
     if (!value) return '';
@@ -118,18 +150,37 @@ const { resolveTenant } = require('./src/middleware/tenantMiddleware');
 // Express 5 wildcard syntax (replaces '*' used in Express 4)
 app.options('/{*any}', cors(corsOptions));
 
-app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date(), env: process.env.NODE_ENV });
+// Health check
+app.get('/api/health', async (req, res) => {
+    const dbStatus = isDBConnected ? 'Connected' : 'Disconnected';
+    res.json({ 
+        status: 'ok', 
+        db: dbStatus,
+        timestamp: new Date(), 
+        env: process.env.NODE_ENV,
+        ver: '1.2.0'
+    });
 });
 
-app.use('/api/auth', authRoutes);
-app.use('/api/restaurant', restaurantRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/menu', menuRoutes);
-app.use('/api/orders', resolveTenant, orderRoutes);
-app.use('/api/stats', statsRoutes);
-app.use('/api/payments', resolveTenant, paymentRoutes);
-app.use('/api/offers', resolveTenant, offerRoutes); // Added offerRoutes usage
+// Middleware to ensure DB is connected for critical routes
+const ensureDB = async (req, res, next) => {
+    if (isDBConnected) return next();
+    const success = await initDB();
+    if (success) {
+        next();
+    } else {
+        res.status(503).json({ message: 'Database connecting, please retry in a second.' });
+    }
+};
+
+app.use('/api/auth', ensureDB, authRoutes);
+app.use('/api/restaurant', ensureDB, restaurantRoutes);
+app.use('/api/categories', ensureDB, categoryRoutes);
+app.use('/api/menu', ensureDB, menuRoutes);
+app.use('/api/orders', ensureDB, resolveTenant, orderRoutes);
+app.use('/api/stats', ensureDB, statsRoutes);
+app.use('/api/payments', ensureDB, resolveTenant, paymentRoutes);
+app.use('/api/offers', ensureDB, resolveTenant, offerRoutes); 
 
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
@@ -214,31 +265,13 @@ app.use((req, res, next) => {
     console.log(`[404] No route matches: ${req.method} ${req.url}`);
     res.status(404).json({ message: `Path ${req.url} not found` });
 });
-// Database Connection and Server Startup
-const startServer = async () => {
-    try {
-        console.log('Connecting to MongoDB...');
-        await connectDB();
-
-        const PORT = process.env.PORT || 5001;
-        server.listen(PORT, () => {
-            console.log(`🚀 Server running on port ${PORT}`);
-            console.log(`🔗 API Base URL: http://localhost:${PORT}/api`);
-        });
-
-        console.log('Seeding Super Admin if needed...');
-        await seedSuperAdmin();
-        console.log('✅ Startup complete');
-    } catch (error) {
-        console.error('❌ Fatal Startup Error:', error);
-        // On serverless environments, we don't want to exit immediately
-        if (process.env.NODE_ENV !== 'production') process.exit(1);
-    }
-};
-
-// Start server if run directly
+// Start server if run directly (Local Dev)
 if (require.main === module) {
-    startServer();
+    const PORT = process.env.PORT || 5001;
+    server.listen(PORT, () => {
+        console.log(`🚀 Server running on port ${PORT} (Local Mode)`);
+        console.log(`🔗 API Base URL: http://localhost:${PORT}/api`);
+    });
 }
 
 // Global Error Handler

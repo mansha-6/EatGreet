@@ -9,10 +9,8 @@ const connectDB = async () => {
         console.log('MongoDB Connected');
     } catch (error) {
         console.error('MongoDB Connection Error:', error.message);
-        // Do not exit process immediately in dev so we can see the error? 
-        // Actually exiting is fine if we can see output, but we can't.
-        // Let's Log and Retrow so startup fails but we might see it in a log file if we had one.
-        process.exit(1);
+        // Throw error instead of exiting so we don't cause 502 loops on Render/Vercel
+        throw error;
     }
 };
 

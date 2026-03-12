@@ -274,7 +274,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
             const userData = response.data;
 
             if (userData.isApproved === false) {
-                setSuccess('Application submitted! Your account is under review. Once approved, you will receive an email with your secure login credentials.');
+                setSuccess('Application submitted! Your account is under review. Once approved, your registered mobile number will be your initial login password. Check your email for details.');
                 setFormData({ name: '', email: '', phone: '', city: '', businessName: '' });
                 setFieldErrors({});
             } else {

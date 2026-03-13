@@ -57,34 +57,37 @@ const allowedOrigins = [
 ].filter(Boolean).map(normalizeOrigin);
 
 const isOriginAllowed = (origin) => {
-    if (!origin) return true;
+    if (!origin) return true; // Allow non-browser requests (like Postman)
     if (process.env.NODE_ENV === 'development') return true;
+    
     const normalizedOrigin = normalizeOrigin(origin);
-
-    if (allowedOrigins.includes(normalizedOrigin)) return true;
-    if (normalizedOrigin.endsWith('.vercel.app')) return true;
-
-    return false;
-};
-
-const corsOriginHandler = (origin, callback) => {
-    if (isOriginAllowed(origin)) {
-        callback(null, true);
-        return;
-    }
-
-    console.warn(`CORS blocked for origin: ${origin}`);
-    callback(null, false);
+    const isAllowed = allowedOrigins.includes(normalizedOrigin) || normalizedOrigin.endsWith('.vercel.app');
+    
+    console.log(`📡 CORS check: origin=[${origin}] normalized=[${normalizedOrigin}] allowed=[${isAllowed}]`);
+    return isAllowed;
 };
 
 const corsOptions = {
-    origin: corsOriginHandler,
+    origin: (origin, callback) => {
+        if (isOriginAllowed(origin)) {
+            callback(null, true);
+        } else {
+            console.warn(`CORS blocked for origin: ${origin}`);
+            callback(null, false);
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-restaurant-name', 'Origin', 'Accept']
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-restaurant-name', 'Origin', 'Accept', 'x-requested-with'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204 // Some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
+// Apply CORS globally
 app.use(cors(corsOptions));
+// Handle explicit preflight for all routes to be safe with Express 5
+app.options('*', cors(corsOptions));
+
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ limit: '20mb', extended: true }));
 
@@ -147,9 +150,6 @@ const paymentRoutes = require('./src/routes/paymentRoutes');
 const offerRoutes = require('./src/routes/offerRoutes'); // Added offerRoutes
 const { resolveTenant } = require('./src/middleware/tenantMiddleware');
 
-// Express 5 wildcard syntax (replaces '*' used in Express 4)
-app.options('/{*any}', cors(corsOptions));
-
 // Health check
 app.get('/api/health', async (req, res) => {
     const dbStatus = isDBConnected ? 'Connected' : 'Disconnected';
@@ -164,6 +164,9 @@ app.get('/api/health', async (req, res) => {
 
 // Middleware to ensure DB is connected for critical routes
 const ensureDB = async (req, res, next) => {
+    // Skip DB check for preflight requests
+    if (req.method === 'OPTIONS') return next();
+    
     if (isDBConnected) return next();
     const success = await initDB();
     if (success) {

@@ -6,7 +6,8 @@ import {
     X, Check, Calendar, ChevronLeft, ChevronRight, Download,
     CheckCircle, Trash2, Globe, LayoutDashboard, ExternalLink, Store,
     User, Mail, Lock, Phone, MapPin, UtensilsCrossed, Loader2, Eye,
-    Clock, CreditCard, Building2, ShieldCheck, ShieldX, EyeOff, RefreshCw
+    Clock, CreditCard, Building2, ShieldCheck, ShieldX, EyeOff, RefreshCw,
+    MessageSquare
 } from 'lucide-react';
 import { restaurantAPI, authAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
@@ -570,7 +571,12 @@ export default function Restaurants() {
                                                 {getInitials(restaurant)}
                                             </div>
                                             <div>
-                                                <h3 className="font-normal text-gray-900">{restaurant.restaurantName || restaurant.name}</h3>
+                                                <div className="flex items-center gap-1.5">
+                                                    <h3 className="font-normal text-gray-900">{restaurant.restaurantName || restaurant.name}</h3>
+                                                    {restaurant.registrationNote && (
+                                                        <MessageSquare className="w-3 h-3 text-[#FD6941] shrink-0" title="Has registration note" />
+                                                    )}
+                                                </div>
                                                 <p className="text-xs text-gray-400 font-normal">ID {restaurant._id.slice(-6)}</p>
                                             </div>
                                         </div>
@@ -990,6 +996,18 @@ export default function Restaurants() {
                                         </p>
                                     </div>
                                 </div>
+
+                                {previewRestaurant.registrationNote && (
+                                    <div className="bg-[#FFF5F1] rounded-[1.5rem] p-5 border border-[#FD6941]/10">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <MessageSquare className="w-4 h-4 text-[#FD6941]" />
+                                            <p className="text-[10px] text-[#FD6941] uppercase tracking-wider font-bold">Registration Note / Requirements</p>
+                                        </div>
+                                        <p className="text-sm text-gray-700 font-normal italic leading-relaxed">
+                                            "{previewRestaurant.registrationNote}"
+                                        </p>
+                                    </div>
+                                )}
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div className="flex items-center gap-2 px-1">

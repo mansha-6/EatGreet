@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
     currency: { type: String, default: 'INR' },
     profilePicture: { type: String },
     isOnboarded: { type: Boolean, default: false },
+    registrationNote: { type: String },
     isApproved: { type: Boolean, default: true },
 
     // Embed Restaurant Details (Merged 'resto_names' into Users)
@@ -104,7 +105,11 @@ const userSchema = new mongoose.Schema({
     
     // Account Setup (Post-Approval)
     setupToken: { type: String, default: null },
-    setupTokenExpires: { type: Date, default: null }
+    setupTokenExpires: { type: Date, default: null },
+
+    // Password Reset
+    resetPasswordToken: { type: String, default: null },
+    resetPasswordExpires: { type: Date, default: null }
 }, { timestamps: true });
 
 userSchema.pre('save', async function () {

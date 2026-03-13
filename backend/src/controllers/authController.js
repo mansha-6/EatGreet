@@ -1,7 +1,7 @@
+const crypto = require('crypto');
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const { sendWelcomeEmail, sendAdminNotificationEmail, sendSuperAdminOtpEmail } = require('../utils/emailService');
+const { sendWelcomeEmail, sendAdminNotificationEmail, sendSuperAdminOtpEmail, sendForgotPasswordEmail } = require('../utils/emailService');
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -53,7 +53,7 @@ const hashOtp = (otpCode) => crypto.createHash('sha256').update(otpCode).digest(
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = async (req, res) => {
-    const { name, email, password, role, phone, city, restaurantName, currency } = req.body;
+    const { name, email, password, role, phone, city, restaurantName, currency, registrationNote } = req.body;
 
     try {
         const userExists = await User.findOne({ email });
@@ -79,6 +79,7 @@ const registerUser = async (req, res) => {
             city,
             restaurantName,
             currency: currency || 'INR',
+            registrationNote,
             subscription,
             isApproved: role === 'admin' ? false : true
         });
@@ -86,57 +87,54 @@ const registerUser = async (req, res) => {
         if (user) {
             const isAdmin = user.role === 'admin';
 
-            // 1. Send welcome email to the new user (Under Review if Admin) - async
-            try {
-                await sendWelcomeEmail(
+            // If it's a pending admin, respond immediately
+            if (isAdmin && !user.isApproved) {
+                res.status(201).json({
+                    message: 'Registration successful! Your application is pending approval from our Super Admin team. You will receive an email with your credentials once verified.',
+                    isApproved: false,
+                    email: user.email
+                });
+            } else {
+                res.status(201).json({
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    restaurantName: user.restaurantName,
+                    currency: user.currency,
+                    profilePicture: user.profilePicture,
+                    subscription: user.subscription,
+                    isOnboarded: user.isOnboarded,
+                    isApproved: user.isApproved,
+                    token: generateToken(user._id),
+                });
+            }
+
+            // 3. Dispatch emails in background AFTER response
+            if (isAdmin) {
+                // 1. Send welcome email to the new restaurant admin (Under Review)
+                sendWelcomeEmail(
                     user.email,
                     user.name,
                     user.restaurantName,
                     user.phone,
                     user.city,
-                    isAdmin // isPending = true if admin
-                );
-            } catch (err) {
-                console.error("❌ Welcome email failed for:", user.email, err.message);
+                    true, // isPending = true
+                    user.registrationNote
+                ).catch(err => console.error("❌ Background Welcome email failed:", err.message));
+
+                // 2. Notify the Super Admin about this new registration
+                sendAdminNotificationEmail({
+                    name: user.name,
+                    email: user.email,
+                    phone: user.phone,
+                    city: user.city,
+                    restaurantName: user.restaurantName,
+                    registrationNote: user.registrationNote
+                }).catch(err => console.error("❌ Background Admin notification failed:", err.message));
             }
 
-            // 2. Notify the Super Admin about this new registration - async
-            if (isAdmin) {
-                try {
-                    await sendAdminNotificationEmail({
-                        name: user.name,
-                        email: user.email,
-                        phone: user.phone,
-                        city: user.city,
-                        restaurantName: user.restaurantName
-                    });
-                } catch (err) {
-                    console.error("❌ Admin notification email failed:", err.message);
-                }
-            }
-
-            // If it's a pending admin, we stop here with a specific message
-            if (isAdmin && !user.isApproved) {
-                return res.status(201).json({
-                    message: 'Registration successful! Your application is pending approval from our Super Admin team. You will receive an email with your credentials once verified.',
-                    isApproved: false,
-                    email: user.email
-                });
-            }
-
-            res.status(201).json({
-                _id: user._id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                restaurantName: user.restaurantName,
-                currency: user.currency,
-                profilePicture: user.profilePicture,
-                subscription: user.subscription,
-                isOnboarded: user.isOnboarded,
-                isApproved: user.isApproved,
-                token: generateToken(user._id),
-            });
+            return; // Exit function after response and async dispatch
         } else {
             res.status(400).json({ message: 'Invalid user data' });
         }
@@ -157,6 +155,12 @@ const authUser = async (req, res) => {
         if (user && (await user.matchPassword(password))) {
             if (!user.isApproved) {
                 return res.status(401).json({ message: 'Your account is pending approval. Please check your email for confirmation.' });
+            }
+
+            // For restaurant admins, ensure they have completed onboarding OR have existing details before allowing login
+            const hasBasicDetails = user.restaurantDetails?.address?.trim() && user.restaurantDetails?.cuisineType?.trim();
+            if (user.role === 'admin' && !user.isOnboarded && !hasBasicDetails) {
+                return res.status(401).json({ message: 'Please complete your restaurant setup using the link sent to your email before logging in.' });
             }
 
             if (user.role === 'superadmin') {
@@ -207,7 +211,7 @@ const sendSuperAdminOtp = async (req, res) => {
 
         if (normalizedEmail !== authorizedEmail) {
             console.warn(`🚨 SUPERADMIN_AUTH_FAILURE: Received [${normalizedEmail}] but expected [${authorizedEmail}]`);
-            return res.status(403).json({ 
+            return res.status(403).json({
                 message: 'Unauthorized email for Super Admin access.',
                 debug: process.env.NODE_ENV === 'development' ? `Expected ${authorizedEmail}` : undefined
             });
@@ -235,33 +239,22 @@ const sendSuperAdminOtp = async (req, res) => {
         };
         await user.save();
 
-        // On Vercel, we MUST await the email sending, otherwise the serverless function 
-        // will terminate before the background task completes, and the user won't get the OTP.
-        console.log(`📡 Sending Super Admin OTP to ${normalizedEmail}...`);
-        
-        // Print to logs as a fallback so you can always see the code in Render/Vercel Dashboard
+        // 1. Respond immediately to the user to avoid 502/504 timeouts from slow SMTP servers
+        res.status(200).json({
+            message: 'Access code sent! Please check your email.',
+            otpSent: true
+        });
+
+        // 2. Dispatch email in background
+        console.log(`📡 Dispatching Super Admin OTP to ${normalizedEmail}...`);
         console.log(`🔑 [SECURITY LOG] Super Admin OTP Code: ${otpCode}`);
         if (process.env.SUPERADMIN_OTP_BYPASS) {
             console.log(`🔒 [SECURITY LOG] Bypass Code is active: ${process.env.SUPERADMIN_OTP_BYPASS}`);
         }
 
-        try {
-            await sendSuperAdminOtpEmail(normalizedEmail, otpCode);
-            console.log(`✅ Super Admin OTP delivered via email to ${normalizedEmail}`);
-
-            res.status(200).json({ 
-                message: 'Access code sent! Please check your email.',
-                otpSent: true 
-            });
-        } catch (emailError) {
-            console.error(`❌ Email Delivery Failed: ${emailError.message}`);
-            // If email fails, we still returned the code in logs (above), 
-            // but we should tell the user there was a delivery issue.
-            return res.status(502).json({ 
-                message: 'Failed to deliver OTP email. Please check server logs or try again.',
-                error: emailError.message
-            });
-        }
+        sendSuperAdminOtpEmail(normalizedEmail, otpCode).catch(emailError => {
+            console.error(`❌ Background Email Delivery Failed: ${emailError.message}`);
+        });
     } catch (error) {
         console.error('❌ Super Admin OTP Error:', error);
         if (error.code === 'EAUTH') {
@@ -290,7 +283,7 @@ const verifySuperAdminOtp = async (req, res) => {
 
         const user = await User.findOne({ role: 'superadmin' })
             .select('name email role phone city restaurantName currency profilePicture restaurantDetails subscription isOnboarded isApproved superAdminOtp securityLogs');
-        
+
         if (!user) {
             console.error('🚨 SUPERADMIN_AUTH_ERROR_VERIFY: No user with role [superadmin] found in database!');
             return res.status(404).json({ message: 'Super Admin account not found.' });
@@ -301,7 +294,7 @@ const verifySuperAdminOtp = async (req, res) => {
 
         if (normalizedEmail !== authorizedEmail) {
             console.warn(`🚨 SUPERADMIN_AUTH_FAILURE_VERIFY: Received [${normalizedEmail}] but expected [${authorizedEmail}]`);
-            return res.status(403).json({ 
+            return res.status(403).json({
                 message: 'Unauthorized email for Super Admin verification.',
                 debug: process.env.NODE_ENV === 'development' ? `Expected ${authorizedEmail}` : undefined
             });
@@ -487,7 +480,7 @@ const setupPassword = async (req, res) => {
             return res.status(400).json({ message: 'Token and Password are required' });
         }
 
-        const user = await User.findOne({ 
+        const user = await User.findOne({
             setupToken: token,
             setupTokenExpires: { $gt: Date.now() }
         });
@@ -500,7 +493,7 @@ const setupPassword = async (req, res) => {
         user.password = password;
         user.setupToken = null;
         user.setupTokenExpires = null;
-        
+
         await user.save();
 
         res.json({
@@ -518,6 +511,67 @@ const setupPassword = async (req, res) => {
     }
 };
 
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ message: 'Please provide an email address' });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: 'No account found with that email address' });
+        }
+
+        // Generate reset token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        user.resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+        user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+
+        await user.save();
+
+        const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
+
+        try {
+            await sendForgotPasswordEmail(user.email, user.name, resetUrl);
+            res.status(200).json({ message: 'Password reset link sent to your email' });
+        } catch (error) {
+            user.resetPasswordToken = undefined;
+            user.resetPasswordExpires = undefined;
+            await user.save();
+            return res.status(500).json({ message: 'Email could not be sent' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const resetPassword = async (req, res) => {
+    try {
+        const resetPasswordToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
+
+        const user = await User.findOne({
+            resetPasswordToken,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid or expired reset token' });
+        }
+
+        // Set new password
+        user.password = req.body.password;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+
+        await user.save();
+
+        res.status(200).json({ message: 'Password updated successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     registerUser,
     authUser,
@@ -527,5 +581,7 @@ module.exports = {
     getSuperAdminLoginActivity,
     sendSuperAdminOtp,
     verifySuperAdminOtp,
-    setupPassword
+    setupPassword,
+    forgotPassword,
+    resetPassword
 };

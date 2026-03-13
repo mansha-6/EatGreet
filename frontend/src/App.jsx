@@ -34,6 +34,8 @@ const AdminProfile = lazy(() => import('./pages/admin/AdminProfile'));
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
 const AdminSales = lazy(() => import('./pages/admin/AdminSales'));
 const Onboarding = lazy(() => import('./pages/admin/Onboarding'));
+const ForgotPassword = lazy(() => import('./pages/admin/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/admin/ResetPassword'));
 
 // Kitchen Imports
 const KitchenLayout = lazy(() => import('./layouts/KitchenLayout'));
@@ -60,17 +62,11 @@ const ProtectedRoute = ({ children }) => {
   const { user: contextUser } = useSettings();
   const localUser = JSON.parse(localStorage.getItem('user'));
   const user = contextUser || localUser;
-  const role = localStorage.getItem('userRole') || user?.role;
-  const location = useLocation();
-
   if (!isAuthenticated) {
     return <Navigate to="/admin/login" replace />;
   }
 
-  // Redirect to onboarding only for first-time/new admin setup
-  if (role === 'admin' && shouldRequireOnboarding(user) && !location.pathname.includes('/onboarding')) {
-    return <Navigate to="/admin/onboarding" replace />;
-  }
+  return children;
 
   /* 
     // Temporarily disabled for testing - Existing/working restaurants should not see onboarding again
@@ -97,6 +93,13 @@ const SuperAdminRoute = ({ children }) => {
 // Helper component for redirecting /admin/subpath
 const AdminSubpathRedirect = () => {
   const { "*": splat } = useParams();
+  const location = useLocation();
+  
+  // Do NOT redirect onboarding paths
+  if (location.pathname.includes('/onboarding')) {
+    return <Onboarding />;
+  }
+
   const user = JSON.parse(localStorage.getItem('user'));
   const restaurantSlug = user?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant';
   return <Navigate to={`/${restaurantSlug}/admin/${splat}`} replace />;
@@ -157,6 +160,14 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/setup-password" element={<SetupPassword />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+            {/* Personalized Onboarding - Public via Token */}
+            <Route path="/:restaurantName/onboarding" element={<Onboarding />} />
+
+            {/* Legacy/Fallback Onboarding */}
+            <Route path="/admin/onboarding" element={<Onboarding />} />
 
             {/* Admin Auth */}
             <Route path="/admin/login" element={<AdminLogin />} />
@@ -165,13 +176,7 @@ function App() {
             <Route path="/super-admin/login" element={<Navigate to="/super-admin/secure-login" replace />} />
             <Route path="/super-admin/secure-login" element={<SuperAdminLogin />} />
 
-            <Route path="/admin/onboarding" element={
-              <ProtectedRoute>
-                <Onboarding />
-              </ProtectedRoute>
-            } />
-
-            {/* Protected Admin Routes */}
+            {/* Protected Admin Routes Catch-all */}
             <Route path="/admin" element={<Navigate to={`/${JSON.parse(localStorage.getItem('user'))?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant'}/admin`} replace />} />
             <Route path="/admin/*" element={<AdminSubpathRedirect />} />
 

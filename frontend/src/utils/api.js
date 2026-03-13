@@ -98,6 +98,8 @@ export const authAPI = {
   getUsers: () => api.get('/auth/users'),
   getSuperAdminLoginActivity: () => api.get('/auth/superadmin/login-activity'),
   updatePassword: () => Promise.resolve({ data: { message: 'Password update not implemented yet' } }), // Pending backend
+  forgotPassword: (email) => api.post('/auth/forgot-password', { email }),
+  resetPassword: (token, password) => api.post(`/auth/reset-password/${token}`, { password }),
   getRestaurants: () => api.get('/restaurant/all'),
   getPendingApprovals: () => api.get('/restaurant/pending'),
   approveRestaurant: (id) => api.put(`/restaurant/approve/${id}`),
@@ -167,6 +169,7 @@ export const restaurantAPI = {
   getDetails: () => api.get('/restaurant'),
   updateDetails: (details) => api.put('/restaurant', details),
   completeOnboarding: (details) => api.post('/restaurant/onboard', details),
+  getSetupDetails: (token) => api.get(`/restaurant/setup-details/${token}`),
   getBySlug: (slug) => api.get(`/restaurant/slug/${slug}`),
   getPublicDetails: (id) => api.get(`/restaurant/${id}`),
 };

@@ -418,10 +418,10 @@ export default function SuperAdminDashboard() {
                                     </div>
                                 </div>
 
-                                {selectedUser.message && (
+                                {selectedUser.registrationNote && (
                                     <div className="flex flex-col items-center text-center bg-gray-50/50 p-5 rounded-3xl border border-gray-100/50">
-                                        <p className="text-[10px] text-gray-400 uppercase tracking-widest font-normal mb-2">Additional Message</p>
-                                        <p className="text-gray-600 text-sm font-normal leading-relaxed italic">"{selectedUser.message}"</p>
+                                        <p className="text-[10px] text-gray-400 uppercase tracking-widest font-normal mb-2">Registration Note / Requirements</p>
+                                        <p className="text-gray-600 text-sm font-normal leading-relaxed italic">"{selectedUser.registrationNote}"</p>
                                     </div>
                                 )}
                             </div>

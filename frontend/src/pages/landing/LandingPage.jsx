@@ -76,6 +76,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
         phone: '',
         city: '',
         businessName: '',
+        registrationNote: '',
     });
     const [fieldErrors, setFieldErrors] = useState({});
     const [citySuggestions, setCitySuggestions] = useState([]);
@@ -251,7 +252,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
         Object.keys(formData).forEach(key => {
             const err = validateField(key, formData[key]);
             if (err) errors[key] = err;
-            if (!formData[key]) errors[key] = 'Required field';
+            if (key !== 'registrationNote' && !formData[key]) errors[key] = 'Required field';
         });
 
         if (Object.keys(errors).length > 0) {
@@ -274,8 +275,8 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
             const userData = response.data;
 
             if (userData.isApproved === false) {
-                setSuccess('Application submitted! Your account is under review. Once approved, your registered mobile number will be your initial login password. Check your email for details.');
-                setFormData({ name: '', email: '', phone: '', city: '', businessName: '' });
+                setSuccess('Application submitted! Your account is under review. Once accepted, you will receive an email with a secure link to set up your restaurant and your password.');
+                setFormData({ name: '', email: '', phone: '', city: '', businessName: '', registrationNote: '' });
                 setFieldErrors({});
             } else {
                 setSuccess('Registration successful! Redirecting...');
@@ -462,6 +463,23 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                             onChange={handleInputChange}
                             className={`w-full pl-12 pr-5 h-12 bg-white border ${fieldErrors.businessName ? 'border-red-300 ring-2 ring-red-50' : 'border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941]'} rounded-full outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm`}
                             placeholder="Restaurant name"
+                        />
+                    </div>
+                </div>
+
+                {/* Additional Notes */}
+                <div className="md:col-span-2 space-y-2 group">
+                    <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors flex justify-between h-4 items-center">
+                        <span>Requirements / Notes (Optional)</span>
+                    </label>
+                    <div className="relative">
+                        <textarea
+                            name="registrationNote"
+                            value={formData.registrationNote}
+                            onChange={handleInputChange}
+                            rows="3"
+                            className="w-full px-6 py-4 bg-white border border-gray-200 focus:ring-4 focus:ring-[#FD6941]/5 focus:border-[#FD6941] rounded-3xl outline-none transition-all placeholder-gray-400 font-medium text-sm text-gray-900 shadow-sm resize-none"
+                            placeholder="Tell us any specific requirements or notes..."
                         />
                     </div>
                 </div>

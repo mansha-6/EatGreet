@@ -1,6 +1,19 @@
-// @desc    Create new order
-// @route   POST /api/orders
-// @access  Private (Customer) or Public?
+const User = require('../models/User');
+const { sendEmail, sendNewOrderNotificationEmail } = require('../utils/emailService');
+
+// Helper to notify restaurant admin of new orders
+const notifyAdminOfOrder = async (restaurantName, orderData) => {
+    try {
+        // Find the admin user for this restaurant
+        const admin = await User.findOne({ restaurantName: restaurantName, role: 'admin' });
+        if (admin && admin.email) {
+            await sendNewOrderNotificationEmail(admin.email, restaurantName, orderData);
+            console.log(`✉️ Order notification sent to admin: ${admin.email}`);
+        }
+    } catch (err) {
+        console.error("❌ Failed to send order notification email:", err.message);
+    }
+};
 const createOrder = async (req, res) => {
     try {
         const { Order, Customer } = req.tenantModels;
@@ -112,6 +125,9 @@ const createOrder = async (req, res) => {
                 io.to(req.tenantDbName).emit('orderUpdated', { action: 'update', data: updatedOrder });
             }
 
+            // Sync: Notify admin via email (fire and forget)
+            notifyAdminOfOrder(req.restaurantName, updatedOrder);
+
             return res.status(200).json(updatedOrder);
         }
 
@@ -141,6 +157,9 @@ const createOrder = async (req, res) => {
         if (io && req.tenantDbName) {
             io.to(req.tenantDbName).emit('orderUpdated', { action: 'create', data: createdOrder });
         }
+
+        // Sync: Notify admin via email (fire and forget)
+        notifyAdminOfOrder(req.restaurantName, createdOrder);
 
         res.status(201).json(createdOrder);
     } catch (error) {

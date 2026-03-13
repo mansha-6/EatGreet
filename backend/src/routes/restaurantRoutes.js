@@ -11,8 +11,10 @@ const {
     sendSubscriptionReminder,
     deleteRestaurant,
     completeOnboarding,
+    getSetupDetails,
     getPendingApprovals,
-    approveRestaurant
+    approveRestaurant,
+    rejectRestaurant
 } = require('../controllers/restaurantController');
 const { protect, admin, superadmin } = require('../middleware/authMiddleware');
 
@@ -21,12 +23,14 @@ router.route('/')
     .put(protect, admin, updateRestaurantDetails)
     .post(protect, admin, createRestaurant);
 
-router.post('/onboard', protect, admin, completeOnboarding);
+router.post('/onboard', completeOnboarding);
+router.get('/setup-details/:token', getSetupDetails);
 
 router.get('/all', protect, superadmin, getAllRestaurants);
 
 router.get('/pending', protect, superadmin, getPendingApprovals);
 router.put('/approve/:id', protect, superadmin, approveRestaurant);
+router.delete('/reject/:id', protect, superadmin, rejectRestaurant);
 
 router.put('/subscription', protect, updateSubscription);
 router.post('/reminder', protect, sendSubscriptionReminder);

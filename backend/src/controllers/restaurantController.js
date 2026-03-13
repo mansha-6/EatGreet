@@ -1,5 +1,10 @@
 const User = require('../models/User');
+const jwt = require('jsonwebtoken');
 const { sendEmail } = require('../utils/emailService');
+
+const generateToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+};
 
 // @desc    Get restaurant details
 // @route   GET /api/restaurant
@@ -162,15 +167,12 @@ const createRestaurant = async (req, res) => {
 
 // @desc    Complete restaurant onboarding
 // @route   POST /api/restaurant/onboard
-// @access  Private (Admin)
+// @access  Public (Token) / Private (Admin)
 const completeOnboarding = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
         const {
+            token,
+            password,
             restaurantName,
             description,
             address,
@@ -182,11 +184,44 @@ const completeOnboarding = async (req, res) => {
             operatingHours
         } = req.body;
 
-        // Mandatory fields check (as a backup to frontend validation)
+        let user;
+
+        // 1. Find User (either by current auth or by setup token)
+        if (token) {
+            user = await User.findOne({
+                setupToken: token,
+                setupTokenExpires: { $gt: Date.now() }
+            });
+            if (!user) {
+                return res.status(404).json({ message: 'Invalid or expired setup token' });
+            }
+        } else if (req.user) {
+            user = await User.findById(req.user._id);
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+        } else {
+            return res.status(401).json({ message: 'Authentication required' });
+        }
+
+        // 2. Update Password if provided
+        if (password) {
+            if (password.length < 6) {
+                return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+            }
+            user.password = password;
+            // Clear setup token after use
+            user.setupToken = undefined;
+            user.setupTokenExpires = undefined;
+            user.isApproved = true; // Ensure they are marked approved
+        }
+
+        // Mandatory fields check
         if (!restaurantName || !address || !contactNumber || !gstNumber || !cuisineType || !businessEmail) {
             return res.status(400).json({ message: 'Please fill all mandatory fields' });
         }
 
+        // 3. Update Restaurant Details
         user.restaurantName = restaurantName;
         user.restaurantDetails = {
             ...user.restaurantDetails,
@@ -205,6 +240,19 @@ const completeOnboarding = async (req, res) => {
         user.isOnboarded = true;
 
         const updatedUser = await user.save();
+
+        // Send Success Email in background
+        const { sendOnboardingSuccessEmail } = require('../utils/emailService');
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const slug = restaurantName.toLowerCase().replace(/\s+/g, '-');
+        const dashboardUrl = `${frontendUrl}/${slug}/admin`;
+
+        sendOnboardingSuccessEmail(
+            updatedUser.email,
+            updatedUser.restaurantName,
+            dashboardUrl
+        ).catch(err => console.error('❌ Background Onboarding success email failed:', err.message));
+
         res.json({
             message: 'Onboarding completed successfully',
             user: {
@@ -214,7 +262,8 @@ const completeOnboarding = async (req, res) => {
                 role: updatedUser.role,
                 restaurantName: updatedUser.restaurantName,
                 isOnboarded: updatedUser.isOnboarded,
-                restaurantDetails: updatedUser.restaurantDetails
+                restaurantDetails: updatedUser.restaurantDetails,
+                token: generateToken(updatedUser._id)
             }
         });
     } catch (error) {
@@ -222,7 +271,30 @@ const completeOnboarding = async (req, res) => {
     }
 };
 
-// @desc Get public restaurant info by ID (Mapped from User)
+const getSetupDetails = async (req, res) => {
+    try {
+        const { token } = req.params;
+        const user = await User.findOne({
+            setupToken: token,
+            setupTokenExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: 'Invalid or expired setup token' });
+        }
+
+        res.json({
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            restaurantName: user.restaurantName
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Get all pending restaurant registrations (Super Admin)c Get public restaurant info by ID (Mapped from User)
 const getRestaurantPublic = async (req, res) => {
     try {
         const user = await User.findById(req.params.id).select('-password');
@@ -483,22 +555,48 @@ const approveRestaurant = async (req, res) => {
         await user.save();
 
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-        const setupUrl = `${frontendUrl}/setup-password?token=${setupToken}`;
+        const restaurantSlug = user.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant';
+        const setupUrl = `${frontendUrl}/${restaurantSlug}/onboarding?token=${setupToken}`;
 
         const { sendApprovalEmail } = require('../utils/emailService');
-        try {
-            await sendApprovalEmail(
-                user.email,
-                user.name,
-                setupUrl,
-                user.restaurantName || 'your restaurant'
-            );
-            console.log(`✅ Approval & Setup email sent to ${user.email}`);
-        } catch (err) {
-            console.error('❌ Approval email delivery failed:', err.message);
-        }
+        // Send approval email in background
+        sendApprovalEmail(
+            user.email,
+            user.name,
+            setupUrl,
+            user.restaurantName || 'your restaurant'
+        ).catch(err => console.error('❌ Background Approval email failed:', err.message));
 
         res.json({ message: 'Restaurant approved and onboarding link sent.' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Reject a restaurant registration (Super Admin)
+const rejectRestaurant = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (user.isApproved) {
+            return res.status(400).json({ message: 'User is already approved and cannot be rejected' });
+        }
+
+        const { sendRejectionEmail } = require('../utils/emailService');
+        // Send rejection email in background
+        sendRejectionEmail(
+            user.email,
+            user.restaurantName || 'your restaurant'
+        ).catch(err => console.error('❌ Background Rejection email failed:', err.message));
+
+        // Delete the user account after rejection
+        await User.deleteOne({ _id: req.params.id });
+
+        res.json({ message: 'Restaurant registration rejected and user account removed.' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -515,6 +613,8 @@ module.exports = {
     sendSubscriptionReminder,
     deleteRestaurant,
     completeOnboarding,
+    getSetupDetails,
     getPendingApprovals,
-    approveRestaurant
+    approveRestaurant,
+    rejectRestaurant
 };

@@ -390,23 +390,16 @@ const Menu = () => {
             item.description.toLowerCase().includes(searchQuery.toLowerCase());
         return matchesCategory && matchesSearch;
     }).map(item => {
-        // Calculate discounted price if applicable
-        let finalPrice = item.price;
-        let originalPrice = null;
-        if (selectedOffer && selectedOffer.discountPercentage > 0) {
-            if (!selectedOffer.applicableItems || selectedOffer.applicableItems.length === 0 || selectedOffer.applicableItems.includes(item._id)) {
-                finalPrice = item.price - (item.price * (selectedOffer.discountPercentage / 100));
-                originalPrice = item.price;
-            }
-        }
-
+        // Use backend original price if it exists, otherwise use current price
+        const hasBackendDiscount = item.originalPrice !== undefined && item.originalPrice !== null;
+        
         return {
             ...item,
             time: item.time || "15-20 min",
             calories: item.calories || "450 kcal",
             isVeg: item.isVeg !== undefined ? item.isVeg : true,
-            displayPrice: finalPrice,
-            originalPrice: originalPrice
+            displayPrice: item.price,
+            originalPrice: hasBackendDiscount ? item.originalPrice : null
         };
     });
 

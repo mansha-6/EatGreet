@@ -20,10 +20,10 @@ const createTransporter = ({ host, port, secure }) => nodemailer.createTransport
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
-    connectionTimeout: 8000, // Fast fail (8s)
-    greetingTimeout: 8000,
-    socketTimeout: 10000,
-    dnsTimeout: 5000,
+    connectionTimeout: 4000, // Faster fail (4s) for Vercel/Render
+    greetingTimeout: 4000,
+    socketTimeout: 6000,
+    dnsTimeout: 3000,
     tls: {
         servername: host,
         rejectUnauthorized: false
@@ -85,10 +85,10 @@ const sendEmail = async (options) => {
         };
 
         try {
-            // Add a hard timeout to the sendMail promise to prevent Vercel 502
+            // Add a hard timeout to the sendMail promise to prevent Vercel 502/504
             const sendPromise = primaryTransporter.sendMail(mailOptions);
             const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('SMTP_TIMEOUT')), 12000)
+                setTimeout(() => reject(new Error('SMTP_TIMEOUT')), 8000)
             );
 
             const info = await Promise.race([sendPromise, timeoutPromise]);

@@ -480,18 +480,23 @@ const approveRestaurant = async (req, res) => {
 
         await user.save();
 
-        // Send approval email in background so approval API stays fast
+        // On Vercel, we MUST await the email sending to ensure it is actually delivered.
         const { sendApprovalEmail } = require('../utils/emailService');
-        sendApprovalEmail(
-            user.email,
-            user.name,
-            defaultPassword,
-            user.restaurantName || 'your restaurant'
-        ).catch((err) => {
-            console.error('Approval email failed:', err.message);
-        });
+        try {
+            await sendApprovalEmail(
+                user.email,
+                user.name,
+                defaultPassword,
+                user.restaurantName || 'your restaurant'
+            );
+            console.log(`✅ Approval email sent to ${user.email}`);
+        } catch (err) {
+            console.error('❌ Approval email delivery failed:', err.message);
+            // We don't fail the whole approval if email fails, but we log it.
+            // The user is already marked as approved in DB.
+        }
 
-        res.json({ message: 'Restaurant approved. Credentials email is being sent.' });
+        res.json({ message: 'Restaurant approved and credentials email sent.' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

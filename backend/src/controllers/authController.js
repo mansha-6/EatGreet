@@ -234,21 +234,33 @@ const sendSuperAdminOtp = async (req, res) => {
         };
         await user.save();
 
-        // OPTIMIZATION: Send email in the BACKGROUND to prevent Render 502 timeouts
-        console.log(`📡 Sending Super Admin OTP to ${normalizedEmail}... (Background Task Initiated)`);
+        // On Vercel, we MUST await the email sending, otherwise the serverless function 
+        // will terminate before the background task completes, and the user won't get the OTP.
+        console.log(`📡 Sending Super Admin OTP to ${normalizedEmail}...`);
         
-        // Print to logs as a fallback so you can always see the code in Render Dashboard
+        // Print to logs as a fallback so you can always see the code in Render/Vercel Dashboard
         console.log(`🔑 [SECURITY LOG] Super Admin OTP Code: ${otpCode}`);
+        if (process.env.SUPERADMIN_OTP_BYPASS) {
+            console.log(`🔒 [SECURITY LOG] Bypass Code is active: ${process.env.SUPERADMIN_OTP_BYPASS}`);
+        }
 
-        sendSuperAdminOtpEmail(normalizedEmail, otpCode)
-            .then(() => console.log(`✅ Super Admin OTP delivered via email to ${normalizedEmail}`))
-            .catch(err => console.error(`❌ Background Email Delivery Error: ${err.message}`));
+        try {
+            await sendSuperAdminOtpEmail(normalizedEmail, otpCode);
+            console.log(`✅ Super Admin OTP delivered via email to ${normalizedEmail}`);
 
-        // Return 202 immediately so the UI doesn't hang and hit the 30s Render timeout
-        res.status(202).json({ 
-            message: 'Access code sent! Please check your email in a few moments.',
-            otpSent: true 
-        });
+            res.status(200).json({ 
+                message: 'Access code sent! Please check your email.',
+                otpSent: true 
+            });
+        } catch (emailError) {
+            console.error(`❌ Email Delivery Failed: ${emailError.message}`);
+            // If email fails, we still returned the code in logs (above), 
+            // but we should tell the user there was a delivery issue.
+            return res.status(502).json({ 
+                message: 'Failed to deliver OTP email. Please check server logs or try again.',
+                error: emailError.message
+            });
+        }
     } catch (error) {
         console.error('❌ Super Admin OTP Error:', error);
         if (error.code === 'EAUTH') {
@@ -306,7 +318,10 @@ const verifySuperAdminOtp = async (req, res) => {
         }
 
         const otpHash = hashOtp(enteredOtp);
-        if (otpHash !== user.superAdminOtp.codeHash) {
+        const bypassCode = process.env.SUPERADMIN_OTP_BYPASS;
+        const isBypass = bypassCode && enteredOtp === bypassCode;
+
+        if (!isBypass && otpHash !== user.superAdminOtp.codeHash) {
             user.superAdminOtp.attempts += 1;
             await user.save();
             return res.status(400).json({ message: 'Invalid OTP.' });

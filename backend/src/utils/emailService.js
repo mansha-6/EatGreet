@@ -23,17 +23,15 @@ const createTransporter = ({ host, port, secure }) => nodemailer.createTransport
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
-    connectionTimeout: 10000, 
-    greetingTimeout: 10000,
+    // Standard connection settings
+    pool: true,
+    maxConnections: 5,
+    maxMessages: 100,
+    connectionTimeout: 15000, 
+    greetingTimeout: 15000,
     socketTimeout: 30000,
-    // Strictly force IPv4 using custom lookup
-    lookup: (hostname, options, callback) => {
-        dns.lookup(hostname, { family: 4 }, (err, address, family) => {
-            callback(err, address, family);
-        });
-    },
     tls: {
-        servername: host,
+        // Essential for working with varied hosting environments
         rejectUnauthorized: false
     }
 });

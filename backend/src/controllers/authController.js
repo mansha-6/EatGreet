@@ -191,6 +191,7 @@ const authUser = async (req, res) => {
 // @route   POST /api/auth/superadmin/send-otp
 // @access  Public
 const sendSuperAdminOtp = async (req, res) => {
+    console.log('📬 NEW OTP REQUEST RECEIVED:', req.body);
     try {
         const { email } = req.body;
         const normalizedEmail = (email || '').toLowerCase().trim();

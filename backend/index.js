@@ -85,9 +85,6 @@ const corsOptions = {
 
 // Apply CORS globally
 app.use(cors(corsOptions));
-// Handle explicit preflight for all routes to be safe with Express 5
-app.options(/.*/, cors(corsOptions));
-
 
 
 app.use(express.json({ limit: '20mb' }));
@@ -270,23 +267,21 @@ app.use((req, res, next) => {
     console.log(`[404] No route matches: ${req.method} ${req.url}`);
     res.status(404).json({ message: `Path ${req.url} not found` });
 });
-// Start server if run directly (Local Dev)
-if (require.main === module) {
-    const PORT = process.env.PORT || 5001;
-    server.listen(PORT, () => {
-        console.log(`🚀 Server running on port ${PORT} (Local Mode)`);
-        console.log(`🔗 API Base URL: http://localhost:${PORT}/api`);
-    });
-}
+// Start server
+const PORT = process.env.PORT || 5001;
+server.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`🔗 Mode: ${process.env.NODE_ENV || 'development'}`);
+});
 
 // Global Error Handler
 app.use((err, req, res, next) => {
-    console.error(err.stack);
+    console.error('🔥 Server Error:', err.stack);
     res.status(500).json({
         message: 'Internal Server Error',
         error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
 });
 
-// Server instance export for potential testing or future use
+// Server instance export for Vercel
 module.exports = app;

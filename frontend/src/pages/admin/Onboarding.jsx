@@ -387,6 +387,22 @@ const Onboarding = () => {
                                     </div>
 
                                     <div>
+                                        <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1">Business Email</label>
+                                        <div className="relative">
+                                            <input
+                                                type="email"
+                                                name="businessEmail"
+                                                value={formData.businessEmail}
+                                                onChange={handleChange}
+                                                placeholder="hello@restaurant.com"
+                                                className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
+                                                required
+                                            />
+                                            <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                                        </div>
+                                    </div>
+
+                                    <div>
                                         <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1">Contact Number</label>
                                         <div className="relative">
                                             <input
@@ -445,22 +461,6 @@ const Onboarding = () => {
                                             </div>
                                         </>
                                     )}
-
-                                    <div>
-                                        <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1">Business Email</label>
-                                        <div className="relative">
-                                            <input
-                                                type="email"
-                                                name="businessEmail"
-                                                value={formData.businessEmail}
-                                                onChange={handleChange}
-                                                placeholder="hello@restaurant.com"
-                                                className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
-                                                required
-                                            />
-                                            <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                                        </div>
-                                    </div>
 
                                     <div className="md:col-span-2">
                                         <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1">Full Address</label>

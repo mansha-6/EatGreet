@@ -86,7 +86,9 @@ const corsOptions = {
 // Apply CORS globally
 app.use(cors(corsOptions));
 // Handle explicit preflight for all routes to be safe with Express 5
-app.options('*', cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
+
+
 
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ limit: '20mb', extended: true }));
@@ -100,7 +102,7 @@ app.use((req, res, next) => {
 // Socket.io Setup
 const io = new Server(server, {
     cors: {
-        origin: corsOriginHandler,
+        origin: corsOptions.origin,
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true
     },

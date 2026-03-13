@@ -89,6 +89,7 @@ api.interceptors.response.use(
 
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
+  setupPassword: (data) => api.post('/auth/setup-password', data),
   sendSuperAdminOtp: (email) => api.post('/auth/superadmin/send-otp', { email }),
   verifySuperAdminOtp: (email, otp) => api.post('/auth/superadmin/verify-otp', { email, otp }),
   register: (userData) => api.post('/auth/register', userData),

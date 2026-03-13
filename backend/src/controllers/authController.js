@@ -476,6 +476,48 @@ const getUsers = async (req, res) => {
     }
 };
 
+// @desc    Setup account password with token
+// @route   POST /api/auth/setup-password
+// @access  Public
+const setupPassword = async (req, res) => {
+    try {
+        const { token, password } = req.body;
+
+        if (!token || !password) {
+            return res.status(400).json({ message: 'Token and Password are required' });
+        }
+
+        const user = await User.findOne({ 
+            setupToken: token,
+            setupTokenExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid or expired setup token' });
+        }
+
+        // Update password and clear setup token
+        user.password = password;
+        user.setupToken = null;
+        user.setupTokenExpires = null;
+        
+        await user.save();
+
+        res.json({
+            message: 'Password set successfully. You can now log in.',
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                token: generateToken(user._id)
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     registerUser,
     authUser,
@@ -484,5 +526,6 @@ module.exports = {
     getUsers,
     getSuperAdminLoginActivity,
     sendSuperAdminOtp,
-    verifySuperAdminOtp
+    verifySuperAdminOtp,
+    setupPassword
 };

@@ -229,8 +229,7 @@ const sendWelcomeEmail = async (userEmail, userName, restaurantName, phone, city
 /**
  * APPROVAL EMAIL (When admin approves registration)
  */
-const sendApprovalEmail = async (userEmail, userName, defaultPassword, restaurantName) => {
-    const loginUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/login`;
+const sendApprovalEmail = async (userEmail, userName, setupUrl, restaurantName) => {
     const html = `
     <!DOCTYPE html>
     <html lang="en">
@@ -252,19 +251,15 @@ const sendApprovalEmail = async (userEmail, userName, defaultPassword, restauran
             .text { font-size: 16px; color: #475569; line-height: 1.6; margin: 0 0 20px; }
             .box { background-color: #f8fafc; border-radius: 16px; padding: 32px; margin: 30px 0; border: 1px solid #e2e8f0; text-align: center; }
             .box-title { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: 700; margin: 0 0 24px; }
-            .cred-label { font-size: 12px; color: #94a3b8; font-weight: 600; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-            .cred-val { font-size: 16px; color: #0f172a; font-weight: 500; margin: 0 0 24px; }
-            .pass-val { background: #ffffff; padding: 12px 24px; border-radius: 12px; font-family: 'SF Mono', Consolas, monospace; font-weight: 700; font-size: 24px; border: 2px dashed #cbd5e1; color: #4f46e5; display: inline-block; letter-spacing: 4px; margin: 0; }
             .btn-wrap { text-align: center; margin: 40px 0 20px; }
-            .btn { display: inline-block; background-color: #4f46e5; color: #ffffff !important; padding: 18px 48px; border-radius: 14px; font-weight: 600; font-size: 16px; text-decoration: none; box-shadow: 0 6px 20px rgba(79,70,229,0.3); }
-            .alert { background-color: #fef2f2; border: 1px solid #fee2e2; border-radius: 12px; padding: 16px; color: #ef4444; font-size: 14px; text-align: center; font-weight: 500; margin-top: 24px; }
+            .btn { display: inline-block; background-color: #FD6941; color: #ffffff !important; padding: 18px 48px; border-radius: 14px; font-weight: 600; font-size: 16px; text-decoration: none; box-shadow: 0 6px 20px rgba(253,105,65,0.3); }
+            .alert { background-color: #f0fdf4; border: 1px solid #dcfce7; border-radius: 12px; padding: 16px; color: #166534; font-size: 14px; text-align: center; font-weight: 500; margin-top: 24px; }
             .footer { background-color: #f8fafc; padding: 40px 30px; text-align: center; border-top: 1px solid #e2e8f0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; }
             @media only screen and (max-width: 600px) {
                 .wrapper { padding: 20px 10px; }
                 .header-top, .hero, .content { padding-left: 20px; padding-right: 20px; }
                 .hero-title { font-size: 32px; }
                 .box { padding: 20px; }
-                .pass-val { font-size: 20px; padding: 10px 16px; letter-spacing: 2px; }
             }
         </style>
     </head>
@@ -287,26 +282,16 @@ const sendApprovalEmail = async (userEmail, userName, defaultPassword, restauran
                         <tr>
                             <td class="content">
                                 <p class="text" style="font-weight: 600; color: #0f172a;">Hi ${userName},</p>
-                                <p class="text">We are thrilled to inform you that <b>${restaurantName}</b> has been approved for the EatGreet platform. Your personalized command center is now ready for access.</p>
+                                <p class="text">We are thrilled to inform you that <b>${restaurantName}</b> has been approved for the EatGreet platform. Your personalized command center is ready.</p>
                                 
-                                 <div class="box">
-                                    <p class="box-title">Secure Access Credentials</p>
-                                    
-                                    <p class="cred-label">USER ID</p>
-                                    <p class="cred-val">${userEmail}</p>
-                                    
-                                    <p class="cred-label">PHONE NUMBER</p>
-                                    <div style="background: #ffffff; padding: 16px 24px; border-radius: 12px; font-family: 'SF Mono', Consolas, monospace; font-weight: 700; font-size: 20px; border: 2px dashed #cbd5e1; color: #4f46e5; display: inline-block; letter-spacing: 2px;">
-                                        ${defaultPassword}
-                                    </div>
-                                    <p style="margin: 12px 0 0; font-size: 12px; color: #64748b;">(Sign in using this number as your password)</p>
-                                </div>
-                                <div class="alert">
-                                    <b>Action Required:</b> For your security, please change this password immediately after your first successful login.
-                                </div>
+                                <p class="text">Before you can access your dashboard, you need to set your permanent password and complete your restaurant profile.</p>
                                 
                                 <div class="btn-wrap">
-                                    <a href="${loginUrl}" class="btn" style="background-color: #4f46e5;">Launch Your Dashboard</a>
+                                    <a href="${setupUrl}" class="btn">Complete Account Setup</a>
+                                </div>
+
+                                <div class="alert">
+                                    <b>Security Note:</b> This link is unique to your email and will expire in 7 days.
                                 </div>
                             </td>
                         </tr>
@@ -326,7 +311,7 @@ const sendApprovalEmail = async (userEmail, userName, defaultPassword, restauran
 
     return sendEmail({
         email: userEmail,
-        subject: '✅ Approved: Log in to your EatGreet Dashboard',
+        subject: '✅ Approved: Complete your EatGreet Setup',
         html: html
     });
 };

@@ -9,6 +9,7 @@ import { shouldRequireOnboarding } from './utils/onboarding';
 // Lazy loading all pages and layouts for better performance
 const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
 const Signup = lazy(() => import('./pages/auth/Signup'));
+const SetupPassword = lazy(() => import('./pages/auth/SetupPassword'));
 
 // Super Admin Imports
 const SuperAdminLayout = lazy(() => import('./layouts/SuperAdminLayout'));
@@ -155,6 +156,7 @@ function App() {
             {/* ... public routes ... */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/setup-password" element={<SetupPassword />} />
 
             {/* Admin Auth */}
             <Route path="/admin/login" element={<AdminLogin />} />

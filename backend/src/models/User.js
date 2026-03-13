@@ -100,7 +100,11 @@ const userSchema = new mongoose.Schema({
         expiresAt: { type: Date, default: null },
         lastSentAt: { type: Date, default: null },
         attempts: { type: Number, default: 0 }
-    }
+    },
+    
+    // Account Setup (Post-Approval)
+    setupToken: { type: String, default: null },
+    setupTokenExpires: { type: Date, default: null }
 }, { timestamps: true });
 
 userSchema.pre('save', async function () {

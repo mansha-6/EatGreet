@@ -462,6 +462,7 @@ const getPendingApprovals = async (req, res) => {
 // @desc    Approve a restaurant registration (Super Admin)
 const approveRestaurant = async (req, res) => {
     try {
+        const crypto = require('crypto');
         const user = await User.findById(req.params.id);
 
         if (!user) {
@@ -472,31 +473,32 @@ const approveRestaurant = async (req, res) => {
             return res.status(400).json({ message: 'User is already approved' });
         }
 
-        // Use the user's phone number as the temporary password for consistency
-        const defaultPassword = user.phone || 'YourMobileNumber';
-
+        // Generate a secure setup token (valid for 7 days)
+        const setupToken = crypto.randomBytes(32).toString('hex');
+        
         user.isApproved = true;
-        user.password = defaultPassword; // Schema middleware will hash it on .save()
+        user.setupToken = setupToken;
+        user.setupTokenExpires = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
 
         await user.save();
 
-        // On Vercel, we MUST await the email sending to ensure it is actually delivered.
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const setupUrl = `${frontendUrl}/setup-password?token=${setupToken}`;
+
         const { sendApprovalEmail } = require('../utils/emailService');
         try {
             await sendApprovalEmail(
                 user.email,
                 user.name,
-                defaultPassword,
+                setupUrl,
                 user.restaurantName || 'your restaurant'
             );
-            console.log(`✅ Approval email sent to ${user.email}`);
+            console.log(`✅ Approval & Setup email sent to ${user.email}`);
         } catch (err) {
             console.error('❌ Approval email delivery failed:', err.message);
-            // We don't fail the whole approval if email fails, but we log it.
-            // The user is already marked as approved in DB.
         }
 
-        res.json({ message: 'Restaurant approved and credentials email sent.' });
+        res.json({ message: 'Restaurant approved and onboarding link sent.' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

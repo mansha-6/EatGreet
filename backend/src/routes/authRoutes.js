@@ -8,12 +8,14 @@ const {
     getUsers,
     getSuperAdminLoginActivity,
     sendSuperAdminOtp,
-    verifySuperAdminOtp
+    verifySuperAdminOtp,
+    setupPassword
 } = require('../controllers/authController');
 const { protect, superadmin } = require('../middleware/authMiddleware');
 
 router.post('/register', registerUser);
 router.post('/login', authUser);
+router.post('/setup-password', setupPassword);
 router.post('/superadmin/send-otp', sendSuperAdminOtp);
 router.post('/superadmin/verify-otp', verifySuperAdminOtp);
 router.route('/profile').get(protect, getUserProfile).put(protect, updateUserProfile);

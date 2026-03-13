@@ -26,7 +26,9 @@ const createTransporter = ({ host, port, secure }) => nodemailer.createTransport
     connectionTimeout: 10000, // 10s
     greetingTimeout: 10000,
     socketTimeout: 30000, // 30s
+    family: 4, // Force IPv4 (Fixes Render/Railway connectivity issues)
     tls: {
+                servername: host, // Explicit servername for cloud handshakes
         rejectUnauthorized: false
     }
 });

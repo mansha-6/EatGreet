@@ -224,6 +224,7 @@ const sendSuperAdminOtp = async (req, res) => {
         }
 
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+            console.error(`🚨 EMAIL_SERVICE_ERROR: EMAIL_USER is ${process.env.EMAIL_USER ? 'PRESENT' : 'MISSING'}, EMAIL_PASS is ${process.env.EMAIL_PASS ? 'PRESENT' : 'MISSING'}.`);
             return res.status(503).json({
                 message: 'Email service is not configured on server. Please set EMAIL_USER and EMAIL_PASS.'
             });

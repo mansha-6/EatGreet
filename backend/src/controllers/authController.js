@@ -231,29 +231,36 @@ const sendSuperAdminOtp = async (req, res) => {
         }
 
         const otpCode = createOtpCode();
-
-        user.superAdminOtp = {
+        const newOtpData = {
             codeHash: hashOtp(otpCode),
-            expiresAt: new Date(now.getTime() + 2 * 60 * 1000),
+            expiresAt: new Date(now.getTime() + 5 * 60 * 1000), // Extended to 5 mins for better UX
             lastSentAt: now,
             attempts: 0
         };
-        await user.save();
 
-        // 2. Send email and wait for it
+        // 2. Send email first. If it fails, we don't update the user's OTP in DB.
         console.log(`📡 Dispatching Super Admin OTP to ${normalizedEmail}...`);
-        console.log(`🔑 [SECURITY LOG] Super Admin OTP Code: ${otpCode}`);
+        if (process.env.NODE_ENV === 'development' || process.env.DEBUG_OTP === 'true') {
+            console.log(`🔑 [SECURITY LOG] Super Admin OTP Code: ${otpCode}`);
+        }
         
         try {
             await sendSuperAdminOtpEmail(normalizedEmail, otpCode);
-            // 3. Respond after successful send
+            
+            // 3. Only save to DB if email sent successfully
+            user.superAdminOtp = newOtpData;
+            await user.save();
+
             res.status(200).json({
                 message: 'Access code sent! Please check your email.',
                 otpSent: true
             });
         } catch (emailError) {
             console.error(`❌ Email Delivery Failed: ${emailError.message}`);
-            res.status(500).json({ message: 'Failed to deliver OTP email. Please check your SMTP configuration or Spam folder.' });
+            res.status(500).json({ 
+                message: `Failed to deliver OTP email: ${emailError.message}`,
+                debug: process.env.NODE_ENV === 'development' ? emailError.stack : undefined
+            });
         }
     } catch (error) {
         console.error('❌ Super Admin OTP Error:', error);

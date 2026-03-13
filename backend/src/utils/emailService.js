@@ -4,37 +4,29 @@ const fs = require('fs');
 const path = require('path');
 
 // Force Node.js to prioritize IPv4 over IPv6. 
-// This fixes ENETUNREACH errors on cloud platforms like Render/Railway that have issues routing IPv6.
 if (dns.setDefaultResultOrder) {
     dns.setDefaultResultOrder('ipv4first');
 }
 
-const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
 const FRONTEND_URL = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
-// Use CID for embedded logo to ensure visibility in all clients
 const LOGO_CID = 'eatgreet-logo-full';
 const LOGO_URL = `cid:${LOGO_CID}`;
 
 // Path to local logo for embedding
-const LOCAL_LOGO_PATH = '/Users/bhattmanav/Documents/GitHub/EatGreet/frontend/public/logo-full.png';
+const LOCAL_LOGO_PATH = path.join(__dirname, '../../../frontend/public/logo-full.png');
 
 const createTransporter = ({ host, port, secure }) => nodemailer.createTransport({
     host,
     port,
     secure,
-    requireTLS: !secure,
-    pool: false, // Disabling pooling temporarily to fix Render stability issues
-    family: 4,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
-    connectionTimeout: 4000, // Faster fail (4s) for Vercel/Render
-    greetingTimeout: 4000,
-    socketTimeout: 6000,
-    dnsTimeout: 3000,
+    connectionTimeout: 10000, // 10s
+    greetingTimeout: 10000,
+    socketTimeout: 30000, // 30s
     tls: {
-        servername: host,
         rejectUnauthorized: false
     }
 });
@@ -49,15 +41,8 @@ const primaryTransporter = createTransporter({
     secure: smtpSecure
 });
 
-// Fallback: Gmail STARTTLS (587) is often more reliable on Render than implicit TLS (465).
-const fallbackTransporter = createTransporter({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false
-});
-
 /**
- * Verify SMTP Connection on initialization
+ * Verify SMTP Connection
  */
 const verifySMTP = async () => {
     try {
@@ -65,14 +50,10 @@ const verifySMTP = async () => {
         console.log('✅ SMTP Connection verified successfully');
         return true;
     } catch (error) {
-        console.warn('❌ SMTP Verification failed. Primary SMTP is unreachable or misconfigured.');
-        console.error(error);
+        console.error('❌ SMTP Verification failed:', error.message);
         return false;
     }
 };
-
-// Start verification immediately (fire and forget)
-// verifySMTP(); // Disabled for Vercel to prevent slow cold starts/timeouts
 
 /**
  * Core internal send function
@@ -80,9 +61,8 @@ const verifySMTP = async () => {
 const sendEmail = async (options) => {
     try {
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            const msg = 'CRITICAL: Missing EMAIL_USER or EMAIL_PASS in environment.';
-            console.error(msg);
-            throw new Error(msg);
+            console.error('CRITICAL: Missing EMAIL_USER or EMAIL_PASS in environment.');
+            return;
         }
 
         const mailOptions = {
@@ -94,46 +74,24 @@ const sendEmail = async (options) => {
             attachments: options.attachments || []
         };
 
-        // Automatically attach logo if used and file exists locally
-        if (options.html.includes(`cid:${LOGO_CID}`) && fs.existsSync(LOCAL_LOGO_PATH)) {
-            mailOptions.attachments.push({
-                filename: 'logo-full.png',
-                path: LOCAL_LOGO_PATH,
-                cid: LOGO_CID
-            });
+        // Automatically attach logo if used and file exists
+        if (options.html.includes(`cid:${LOGO_CID}`)) {
+            if (fs.existsSync(LOCAL_LOGO_PATH)) {
+                mailOptions.attachments.push({
+                    filename: 'logo-full.png',
+                    path: LOCAL_LOGO_PATH,
+                    cid: LOGO_CID
+                });
+            } else {
+                console.warn(`⚠️ Logo not found at ${LOCAL_LOGO_PATH}, skipping attachment.`);
+            }
         }
 
-        try {
-            // Add a hard timeout to the sendMail promise to prevent Vercel 502/504
-            const sendPromise = primaryTransporter.sendMail(mailOptions);
-            const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('SMTP_TIMEOUT')), 8000)
-            );
-
-            const info = await Promise.race([sendPromise, timeoutPromise]);
-            console.log(`✉️ Email successfully sent to ${options.email} | ID: ${info.messageId}`);
-            return info;
-        } catch (primaryError) {
-            if (primaryError.message === 'SMTP_TIMEOUT') {
-                console.error(`❌ SMTP Timeout for ${options.email}. Serverless function might be too slow.`);
-            }
-            // Only retry if fallback is actually different or if primary really failed
-            const isGmailPrimary = smtpHost.includes('gmail.com');
-            const retryable = ['ETIMEDOUT', 'ESOCKET', 'ECONNECTION'].includes(primaryError.code) || primaryError.message === 'SMTP_TIMEOUT';
-            
-            if (retryable && !isGmailPrimary) {
-                console.warn(`⚠️ Primary SMTP failed/timed out. Retrying with Gmail fallback:587...`);
-                const info = await fallbackTransporter.sendMail(mailOptions);
-                console.log(`✉️ Email sent via fallback SMTP to ${options.email} | ID: ${info.messageId}`);
-                return info;
-            }
-            throw primaryError;
-        }
+        const info = await primaryTransporter.sendMail(mailOptions);
+        console.log(`✉️ Email successfully sent to ${options.email} | ID: ${info.messageId}`);
+        return info;
     } catch (error) {
         console.error(`❌ Mail delivery failed to ${options.email}:`, error.message);
-        if (error.code === 'EAUTH') {
-            console.error('CRITICAL: SMTP Authentication failed. Verify that you have set the correct APP PASSWORD in Render Dashboard.');
-        }
         throw error;
     }
 };

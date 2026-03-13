@@ -239,22 +239,21 @@ const sendSuperAdminOtp = async (req, res) => {
         };
         await user.save();
 
-        // 1. Respond immediately to the user to avoid 502/504 timeouts from slow SMTP servers
-        res.status(200).json({
-            message: 'Access code sent! Please check your email.',
-            otpSent: true
-        });
-
-        // 2. Dispatch email in background
+        // 2. Send email and wait for it
         console.log(`📡 Dispatching Super Admin OTP to ${normalizedEmail}...`);
         console.log(`🔑 [SECURITY LOG] Super Admin OTP Code: ${otpCode}`);
-        if (process.env.SUPERADMIN_OTP_BYPASS) {
-            console.log(`🔒 [SECURITY LOG] Bypass Code is active: ${process.env.SUPERADMIN_OTP_BYPASS}`);
+        
+        try {
+            await sendSuperAdminOtpEmail(normalizedEmail, otpCode);
+            // 3. Respond after successful send
+            res.status(200).json({
+                message: 'Access code sent! Please check your email.',
+                otpSent: true
+            });
+        } catch (emailError) {
+            console.error(`❌ Email Delivery Failed: ${emailError.message}`);
+            res.status(500).json({ message: 'Failed to deliver OTP email. Please check your SMTP configuration or Spam folder.' });
         }
-
-        sendSuperAdminOtpEmail(normalizedEmail, otpCode).catch(emailError => {
-            console.error(`❌ Background Email Delivery Failed: ${emailError.message}`);
-        });
     } catch (error) {
         console.error('❌ Super Admin OTP Error:', error);
         if (error.code === 'EAUTH') {
@@ -312,10 +311,8 @@ const verifySuperAdminOtp = async (req, res) => {
         }
 
         const otpHash = hashOtp(enteredOtp);
-        const bypassCode = process.env.SUPERADMIN_OTP_BYPASS;
-        const isBypass = bypassCode && enteredOtp === bypassCode;
 
-        if (!isBypass && otpHash !== user.superAdminOtp.codeHash) {
+        if (otpHash !== user.superAdminOtp.codeHash) {
             user.superAdminOtp.attempts += 1;
             await user.save();
             return res.status(400).json({ message: 'Invalid OTP.' });

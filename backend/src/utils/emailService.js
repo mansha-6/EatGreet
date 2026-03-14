@@ -422,7 +422,7 @@ const sendOnboardingSuccessEmail = async (userEmail, restaurantName, dashboardUr
                                 <p class="text">You can now access your restaurant dashboard to manage your menu, track live orders, and view sales analytics.</p>
 
                                 <div class="btn-wrap">
-                                    <a href="${FRONTEND_URL}/admin/login" class="btn">Login to Your Dashboard</a>
+                                    <a href="${dashboardUrl}" class="btn">Login to Your Dashboard</a>
                                 </div>
                             </td>
                         </tr>

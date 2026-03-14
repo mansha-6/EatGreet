@@ -134,6 +134,11 @@ const Onboarding = () => {
                 setLoading(true);
                 try {
                     const res = await restaurantAPI.getSetupDetails(token);
+                    if (res.data.alreadyOnboarded) {
+                        setIsSuccess(true);
+                        setLoading(false);
+                        return;
+                    }
                     const { email, phone, restaurantName } = res.data;
                     setFormData(prev => ({
                         ...prev,
@@ -258,7 +263,7 @@ const Onboarding = () => {
                             <div>
                                 <h3 className="font-semibold text-gray-800 mb-1">Check Your Inbox</h3>
                                 <p className="text-sm text-gray-500 leading-relaxed font-light">
-                                    You will receive a confirmation email shortly with your **unique restaurant dashboard link**. Use that link to access your personalized management area.
+                                    The login details to access the dashboard have been sent to your email. Please check your inbox for your **unique restaurant dashboard link** to log in securely.
                                 </p>
                             </div>
                         </div>

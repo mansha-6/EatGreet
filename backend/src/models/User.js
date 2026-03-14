@@ -106,6 +106,7 @@ const userSchema = new mongoose.Schema({
     // Account Setup (Post-Approval)
     setupToken: { type: String, default: null },
     setupTokenExpires: { type: Date, default: null },
+    usedSetupTokens: [{ type: String }],
 
     // Password Reset
     resetPasswordToken: { type: String, default: null },

@@ -130,20 +130,28 @@ const verifyAccountForPayment = async (req, res) => {
 // @access  Public (But requires verified userId)
 const createOrder = async (req, res) => {
     try {
-        // Can be req.user (if logged in) or userId from body (if public verification)
         const { amount, planType, userId } = req.body; 
         const targetUserId = req.user?._id || userId;
 
+        console.log("💳 Creating Payment Order:", { amount, planType, userId: targetUserId });
+
         if (!targetUserId) {
-            return res.status(400).json({ message: "Authentication required" });
+            return res.status(400).json({ message: "Authentication required (User ID missing)" });
         }
 
         if (!amount || !planType) {
             return res.status(400).json({ message: "Amount and Plan Type are required" });
         }
 
+        // Razorpay expects amount in paise (integer)
+        const amountInPaise = Math.round(Number(amount) * 100);
+
+        if (isNaN(amountInPaise)) {
+            return res.status(400).json({ message: "Invalid amount provided" });
+        }
+
         const options = {
-            amount: amount * 100, // Razorpay works in paise
+            amount: amountInPaise,
             currency: "INR",
             receipt: `receipt_${Date.now()}`,
             notes: {
@@ -152,12 +160,21 @@ const createOrder = async (req, res) => {
             }
         };
 
+        console.log("📦 Razorpay Options:", options);
+
         const rzp = getRazorpay();
         const order = await rzp.orders.create(options);
+        
+        console.log("✅ Razorpay Order Created:", order.id);
         res.json(order);
     } catch (error) {
-        console.error("Create Order Error:", error);
-        res.status(500).json({ message: error.message });
+        console.error("❌ Create Order Error:", error);
+        res.status(500).json({ 
+            message: error.message || "Failed to create payment order",
+            hint: error.name === 'Error' && error.message.includes('Razorpay API keys') 
+                ? "Check RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in Render environment variables."
+                : undefined
+        });
     }
 };
 

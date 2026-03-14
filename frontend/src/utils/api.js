@@ -117,6 +117,9 @@ export const statsAPI = {
   },
   getSuperAdminStats: async () => {
     return api.get('/stats/super-admin');
+  },
+  getPublicStats: async () => {
+    return api.get('/stats/public');
   }
 };
 

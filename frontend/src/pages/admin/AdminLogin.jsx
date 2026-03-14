@@ -89,9 +89,12 @@ export default function AdminLogin() {
                             type="password"
                             required
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e) => setPassword(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            inputMode="numeric"
+                            pattern="\d*"
+                            maxLength="6"
                             className="w-full px-6 py-4 rounded-2xl bg-white border border-gray-200 text-gray-700 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black/5 focus:border-gray-400 transition-all text-sm shadow-sm"
-                            placeholder="Password"
+                            placeholder="6-Digit Password"
                         />
                     </div>
 

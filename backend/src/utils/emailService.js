@@ -66,8 +66,9 @@ const verifySMTP = async () => {
 const sendEmail = async (options) => {
     try {
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.error('CRITICAL: Missing EMAIL_USER or EMAIL_PASS in environment.');
-            return;
+            const msg = 'CRITICAL: Missing EMAIL_USER or EMAIL_PASS in environment.';
+            console.error(msg);
+            throw new Error(msg);
         }
 
         const mailOptions = {

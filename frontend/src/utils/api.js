@@ -78,7 +78,9 @@ api.interceptors.response.use(
         const path = window.location.pathname;
         const isAdminArea = path.includes('/admin') || path.includes('/super-admin') || path.includes('/kitchen');
         
-        if (isAdminArea && !path.includes('/login')) {
+        const isPublicAuthPage = path.includes('/login') || path.includes('/forgot-password') || path.includes('/reset-password') || path.includes('/onboarding');
+        
+        if (isAdminArea && !isPublicAuthPage) {
           window.location.href = '/admin/login';
         }
       }

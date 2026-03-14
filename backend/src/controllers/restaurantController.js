@@ -185,6 +185,7 @@ const completeOnboarding = async (req, res) => {
         } = req.body;
 
         let user;
+        let generatedPassword = null;
 
         // 1. Find User (either by current auth or by setup token)
         if (token) {
@@ -205,17 +206,21 @@ const completeOnboarding = async (req, res) => {
         }
 
         // 2. Update Password if provided
-        if (password) {
-            if (password.length < 6) {
-                return res.status(400).json({ message: 'Password must be at least 6 characters long' });
-            }
-            user.password = password;
+        // 2. Setup or Update Password
+        if (token) {
+            const crypto = require('crypto');
+            generatedPassword = crypto.randomBytes(4).toString('hex'); // 8 characters
+            user.password = generatedPassword;
             // Clear setup token after use and save to usedSetupTokens
             if (!user.usedSetupTokens) user.usedSetupTokens = [];
-            if (token) user.usedSetupTokens.push(token);
+            user.usedSetupTokens.push(token);
             user.setupToken = undefined;
             user.setupTokenExpires = undefined;
             user.isApproved = true; // Ensure they are marked approved
+        } else if (password) {
+            if (password.length >= 6) {
+                user.password = password;
+            }
         }
 
         // Mandatory fields check
@@ -252,7 +257,8 @@ const completeOnboarding = async (req, res) => {
         sendOnboardingSuccessEmail(
             updatedUser.email,
             updatedUser.restaurantName,
-            dashboardUrl
+            dashboardUrl,
+            generatedPassword || password || 'Your existing password'
         ).catch(err => console.error('❌ Background Onboarding success email failed:', err.message));
 
         res.json({
@@ -288,7 +294,11 @@ const getSetupDetails = async (req, res) => {
         }
 
         if (user.usedSetupTokens && user.usedSetupTokens.includes(token)) {
-            return res.json({ alreadyOnboarded: true });
+            return res.json({ 
+                alreadyOnboarded: true,
+                restaurantName: user.restaurantName,
+                email: user.email
+            });
         }
 
         res.json({
@@ -453,6 +463,9 @@ const updateSubscription = async (req, res) => {
                 if (user.subscription.plan === 'None') {
                     user.subscription.plan = 'Trial';
                 }
+            } else if (isActive === false) {
+                user.subscription.endDate = now;
+                user.subscription.status = 'Expired';
             }
         }
 

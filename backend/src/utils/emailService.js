@@ -355,7 +355,7 @@ const sendRejectionEmail = async (userEmail, restaurantName) => {
 /**
  * ONBOARDING SUCCESS EMAIL (Sent after restaurant completes setup)
  */
-const sendOnboardingSuccessEmail = async (userEmail, restaurantName, dashboardUrl, plainTextPassword = 'Your existing password') => {
+const sendOnboardingSuccessEmail = async (userEmail, restaurantName, dashboardUrl) => {
     const html = `
     <!DOCTYPE html>
     <html lang="en">
@@ -418,7 +418,7 @@ const sendOnboardingSuccessEmail = async (userEmail, restaurantName, dashboardUr
                                         <tr>
                                             <td>
                                                 <p style="margin: 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Password</p>
-                                                <p style="margin: 4px 0 0; font-size: 16px; color: #0f172a; font-weight: 600; letter-spacing: 1px;">${plainTextPassword}</p>
+                                                <p style="margin: 4px 0 0; font-size: 14px; color: #0f172a; font-weight: 500;">The secure password you created during setup</p>
                                             </td>
                                         </tr>
                                     </table>

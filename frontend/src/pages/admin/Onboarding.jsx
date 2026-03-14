@@ -8,6 +8,100 @@ import { useSettings } from '../../context/SettingsContext';
 import LocationPickerMap from '../../components/LocationPickerMap';
 
 
+
+const ThemeTimePicker = ({ label, value, onChange }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const containerRef = React.useRef(null);
+
+    // Convert 24h (HH:mm) to 12h parts
+    const getParts = (time) => {
+        if (!time) return { h: '09', m: '00', p: 'AM' };
+        const [h24, m] = time.split(':');
+        const hour = parseInt(h24);
+        const p = hour >= 12 ? 'PM' : 'AM';
+        const h = (hour % 12 || 12).toString().padStart(2, '0');
+        return { h, m, p };
+    };
+
+    const { h, m, p } = getParts(value);
+
+    const updateTime = (newH, newM, newP) => {
+        let hour = parseInt(newH);
+        if (newP === 'PM' && hour < 12) hour += 12;
+        if (newP === 'AM' && hour === 12) hour = 0;
+        const time24 = `${hour.toString().padStart(2, '0')}:${newM}`;
+        onChange(time24);
+    };
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (containerRef.current && !containerRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    return (
+        <div className="relative" ref={containerRef}>
+            <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1">{label}</label>
+            <button
+                type="button"
+                onClick={() => setIsOpen(!isOpen)}
+                className={`w-full flex items-center justify-between px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm outline-none transition-all ${isOpen ? 'ring-2 ring-[#FD6941]/20' : 'hover:bg-gray-100/50'}`}
+            >
+                <span className="font-medium">{h}:{m} {p}</span>
+                <Clock className={`w-4 h-4 transition-colors ${isOpen ? 'text-[#FD6941]' : 'text-gray-300'}`} />
+            </button>
+
+            {isOpen && (
+                <div className="absolute z-[100] mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 grid grid-cols-3 gap-2 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="space-y-1 max-h-48 overflow-y-auto no-scrollbar">
+                        <p className="text-[10px] text-gray-400 uppercase font-bold text-center mb-2">Hour</p>
+                        {Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0')).map(num => (
+                            <button
+                                key={num}
+                                type="button"
+                                onClick={() => updateTime(num, m, p)}
+                                className={`w-full py-2 rounded-lg text-sm transition-all ${h === num ? 'bg-[#FD6941] text-white' : 'hover:bg-gray-50 text-gray-600'}`}
+                            >
+                                {num}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="space-y-1 max-h-48 overflow-y-auto no-scrollbar">
+                        <p className="text-[10px] text-gray-400 uppercase font-bold text-center mb-2">Min</p>
+                        {['00', '15', '30', '45'].map(num => (
+                            <button
+                                key={num}
+                                type="button"
+                                onClick={() => updateTime(h, num, p)}
+                                className={`w-full py-2 rounded-lg text-sm transition-all ${m === num ? 'bg-[#FD6941] text-white' : 'hover:bg-gray-50 text-gray-600'}`}
+                            >
+                                {num}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="space-y-1">
+                        <p className="text-[10px] text-gray-400 uppercase font-bold text-center mb-2">Per</p>
+                        {['AM', 'PM'].map(num => (
+                            <button
+                                key={num}
+                                type="button"
+                                onClick={() => updateTime(h, m, num)}
+                                className={`w-full py-2 rounded-lg text-sm transition-all ${p === num ? 'bg-[#FD6941] text-white' : 'hover:bg-gray-50 text-gray-600'}`}
+                            >
+                                {num}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 const Onboarding = () => {
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token');
@@ -283,6 +377,22 @@ const Onboarding = () => {
                                     </div>
 
                                     <div>
+                                        <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1">Business Email</label>
+                                        <div className="relative">
+                                            <input
+                                                type="email"
+                                                name="businessEmail"
+                                                value={formData.businessEmail}
+                                                onChange={handleChange}
+                                                placeholder="hello@restaurant.com"
+                                                className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
+                                                required
+                                            />
+                                            <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                                        </div>
+                                    </div>
+
+                                    <div>
                                         <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1">Contact Number</label>
                                         <div className="relative">
                                             <input
@@ -301,21 +411,46 @@ const Onboarding = () => {
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1">Business Email</label>
-                                        <div className="relative">
-                                            <input
-                                                type="email"
-                                                name="businessEmail"
-                                                value={formData.businessEmail}
-                                                onChange={handleChange}
-                                                placeholder="hello@restaurant.com"
-                                                className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
-                                                required
-                                            />
-                                            <Mail className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
-                                        </div>
-                                    </div>
+                                    {token && (
+                                        <>
+                                            <div>
+                                                <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1 uppercase tracking-wider">New Password</label>
+                                                <div className="relative">
+                                                    <input
+                                                        type={showPassword ? "text" : "password"}
+                                                        name="password"
+                                                        value={formData.password}
+                                                        onChange={handleChange}
+                                                        placeholder="••••••••"
+                                                        className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
+                                                        required
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowPassword(!showPassword)}
+                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-[#FD6941] transition-colors"
+                                                    >
+                                                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1 uppercase tracking-wider">Confirm Password</label>
+                                                <div className="relative">
+                                                    <input
+                                                        type={showPassword ? "text" : "password"}
+                                                        name="confirmPassword"
+                                                        value={formData.confirmPassword}
+                                                        onChange={handleChange}
+                                                        placeholder="••••••••"
+                                                        className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
+                                                        required
+                                                    />
+                                                    <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300" />
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
 
                                     <div className="md:col-span-2">
                                         <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1">Full Address</label>
@@ -352,24 +487,16 @@ const Onboarding = () => {
 
 
                                     <div className="md:col-span-2 grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1">Opening Time</label>
-                                            <input
-                                                type="time"
-                                                value={formData.operatingHours.open}
-                                                onChange={(e) => handleNestedChange('hours', 'open', e.target.value)}
-                                                className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1">Closing Time</label>
-                                            <input
-                                                type="time"
-                                                value={formData.operatingHours.close}
-                                                onChange={(e) => handleNestedChange('hours', 'close', e.target.value)}
-                                                className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
-                                            />
-                                        </div>
+                                        <ThemeTimePicker
+                                            label="Opening Time"
+                                            value={formData.operatingHours.open}
+                                            onChange={(val) => handleNestedChange('hours', 'open', val)}
+                                        />
+                                        <ThemeTimePicker
+                                            label="Closing Time"
+                                            value={formData.operatingHours.close}
+                                            onChange={(val) => handleNestedChange('hours', 'close', val)}
+                                        />
                                     </div>
                                 </div>
                             </div>

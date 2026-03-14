@@ -22,7 +22,7 @@ export default function AdminLogin() {
         try {
             const response = await authAPI.login({ email, password });
             const userData = response.data;
-            
+
             if (rememberMe) {
                 localStorage.setItem('rememberedEmail', email);
             } else {
@@ -66,7 +66,7 @@ export default function AdminLogin() {
 
                 <form className="space-y-6" onSubmit={handleLogin}>
                     {error && (
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="bg-red-50 text-red-500 text-xs p-4 rounded-2xl text-center font-medium border border-red-100"
@@ -97,11 +97,11 @@ export default function AdminLogin() {
 
                     <div className="flex items-center justify-between text-xs sm:text-sm text-gray-400 px-1 font-light">
                         <label className="flex items-center cursor-pointer hover:text-gray-600 group">
-                            <input 
-                                type="checkbox" 
+                            <input
+                                type="checkbox"
                                 checked={rememberMe}
                                 onChange={(e) => setRememberMe(e.target.checked)}
-                                className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black mr-2 transition-all group-hover:border-gray-400" 
+                                className="w-4 h-4 rounded border-gray-300 text-black focus:ring-black mr-2 transition-all group-hover:border-gray-400"
                             />
                             <span>Remember me</span>
                         </label>

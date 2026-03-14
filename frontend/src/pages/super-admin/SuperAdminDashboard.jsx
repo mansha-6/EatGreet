@@ -20,6 +20,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { statsAPI, authAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
+import { useSocket } from '../../context/SocketContext';
 import toast from 'react-hot-toast';
 
 const DashboardStat = ({ title, value, change, icon: Icon, gradient, colorClass, onClick }) => (
@@ -66,24 +67,30 @@ export default function SuperAdminDashboard() {
     const [isApproving, setIsApproving] = useState(null);
     const [selectedUser, setSelectedUser] = useState(null);
 
+    const socket = useSocket();
+
     useEffect(() => {
-        const fetchDashboardData = async () => {
-            try {
-                const [statsRes, pendingRes] = await Promise.all([
-                    statsAPI.getSuperAdminStats(),
-                    authAPI.getPendingApprovals()
-                ]);
-                setStats(statsRes.data);
-                setPendingUsers(pendingRes.data);
-            } catch (error) {
-                console.error('Error fetching dashboard data:', error);
-                toast.error('Failed to load dashboard data');
-            } finally {
-                setIsLoading(false);
-            }
-        };
         fetchDashboardData();
     }, []);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on('newPayment', (data) => {
+            console.log('Payment update received in dashboard');
+            fetchDashboardData();
+        });
+
+        // Also listen for new restaurant registrations if that's emitted
+        socket.on('newRestaurantRegistered', () => {
+            fetchDashboardData();
+        });
+
+        return () => {
+            socket.off('newPayment');
+            socket.off('newRestaurantRegistered');
+        };
+    }, [socket]);
 
     const fetchDashboardData = async () => {
         try {

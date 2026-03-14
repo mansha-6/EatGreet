@@ -12,7 +12,7 @@ const seedSuperAdmin = async () => {
                 email: email,
                 password: 'SuperAdmin123!',
                 role: 'superadmin',
-                restaurantName: 'EatGreet HQ'
+                restaurantName: ''
             });
             console.log('Super Admin created: superadmin@eatgreet.com');
         } else {

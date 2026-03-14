@@ -17,9 +17,12 @@ const AdminSettings = () => {
     const updateSettings = settings?.updateSettings;
     const [activeTab, setActiveTab] = useState('profile');
     const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
+    const [isAutoSaving, setIsAutoSaving] = useState(false);
+    const [lastSaved, setLastSaved] = useState(null);
 
     const [profile, setProfile] = useState({
         name: user?.name || '',
+        email: user?.email || '',
         phone: user?.phone || '',
         restaurantName: user?.restaurantName || '',
         city: user?.city || '',
@@ -64,7 +67,7 @@ const AdminSettings = () => {
     const [notificationPreferences, setNotificationPreferences] = useState({
         newOrder: true,
         statusUpdates: true,
-        lowStock: true,
+        emailNotifications: true,
         paymentReceived: true
     });
 
@@ -110,12 +113,15 @@ const AdminSettings = () => {
         const { name, value } = e.target;
         setProfile(prev => ({ ...prev, [name]: value }));
 
-        // Sync with restoDetails if it's the restaurant name or phone
+        // Sync with restoDetails if it's the restaurant name or phone or email
         if (name === 'restaurantName') {
             setRestoDetails(prev => ({ ...prev, name: value }));
         }
         if (name === 'phone') {
             setRestoDetails(prev => ({ ...prev, contactNumber: value }));
+        }
+        if (name === 'email') {
+            setRestoDetails(prev => ({ ...prev, businessEmail: value }));
         }
 
         // Live change: Update context immediately for currency selection
@@ -253,8 +259,11 @@ const AdminSettings = () => {
 
             updateSettings(updatedUserData);
             toast.success('Settings updated successfully!', { id: loadToast });
+
+            // Reset passwords
             setPasswords({ newPassword: '', confirmPassword: '' });
         } catch (error) {
+            console.error(error);
             toast.error(error.response?.data?.message || 'Failed to update settings', { id: loadToast });
         }
     };
@@ -340,15 +349,17 @@ const AdminSettings = () => {
                             {activeTab === 'notifications' && 'Customize your alert preferences'}
                         </p>
                     </div>
-                    {activeTab !== 'subscription' && (
-                        <button
-                            onClick={handleSaveProfile}
-                            className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-normal flex items-center justify-center gap-2 transition-all shadow-sm w-full sm:w-auto text-sm sm:text-base"
-                        >
-                            <Save className="w-4 h-4" />
-                            Save Changes
-                        </button>
-                    )}
+                    <div className="flex items-center gap-4">
+                        {activeTab !== 'subscription' && (
+                            <button
+                                onClick={handleSaveProfile}
+                                className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-normal flex items-center justify-center gap-2 transition-all shadow-sm w-full sm:w-auto text-sm sm:text-base whitespace-nowrap"
+                            >
+                                <Save className="w-4 h-4" />
+                                Save Changes
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Content Area - Scrollable */}
@@ -393,12 +404,7 @@ const AdminSettings = () => {
                                     </div>
                                     <InputGroup label="Full Name" name="name" value={profile.name} onChange={handleProfileChange} />
                                     <InputGroup label="Phone Number" name="phone" value={profile.phone} onChange={handleProfileChange} />
-                                    <div className="md:col-span-2">
-                                        <label className="block text-xs font-normal text-gray-400 mb-2">Email (Read-Only)</label>
-                                        <div className="w-full px-4 py-3 rounded-xl bg-gray-100 border-none text-gray-500 text-sm font-normal">
-                                            {user.email || ""}
-                                        </div>
-                                    </div>
+                                    <InputGroup label="Email Address" name="email" value={profile.email} onChange={handleProfileChange} type="email" />
                                     <div className="md:col-span-2 border-t border-gray-100 pt-6 mt-2">
                                         <h4 className="font-normal text-gray-800 mb-4">Change Password</h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -772,10 +778,10 @@ const AdminSettings = () => {
                                             onClick={() => handleNestedChange('notifications', 'statusUpdates', !notificationPreferences.statusUpdates)}
                                         />
                                         <ToggleItem
-                                            title="Low Stock Alerts"
-                                            description="Warn when inventory is running low"
-                                            enabled={notificationPreferences.lowStock}
-                                            onClick={() => handleNestedChange('notifications', 'lowStock', !notificationPreferences.lowStock)}
+                                            title="Order Email Notifications"
+                                            description="Receive emails for every new order"
+                                            enabled={notificationPreferences.emailNotifications}
+                                            onClick={() => handleNestedChange('notifications', 'emailNotifications', !notificationPreferences.emailNotifications)}
                                         />
                                         <ToggleItem
                                             title="Payment Received"

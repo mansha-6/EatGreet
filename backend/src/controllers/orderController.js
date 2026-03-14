@@ -6,7 +6,11 @@ const notifyAdminOfOrder = async (restaurantName, orderData) => {
     try {
         // Find the admin user for this restaurant
         const admin = await User.findOne({ restaurantName: restaurantName, role: 'admin' });
-        if (admin && admin.email) {
+        
+        // Respect user's email notification preference
+        const emailEnabled = admin?.notificationPreferences?.emailNotifications ?? true;
+
+        if (admin && admin.email && emailEnabled) {
             await sendNewOrderNotificationEmail(admin.email, restaurantName, orderData);
             console.log(`✉️ Order notification sent to admin: ${admin.email}`);
         }

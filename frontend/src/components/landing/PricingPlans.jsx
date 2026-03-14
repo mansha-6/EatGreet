@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Sparkles, Zap, ShieldCheck, Rocket } from 'lucide-react';
+import { paymentAPI } from '../../utils/api';
+import { useSettings } from '../../context/SettingsContext';
+import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const standardPlanBase = {
     name: "EatGreet Pro",
@@ -62,6 +66,15 @@ export default function PricingPlans() {
     // Different icon per billing period
     const ActiveIcon = isAnnual ? Sparkles : Rocket;
     const CustomIcon = customizedPlan.icon;
+
+    const navigate = useNavigate();
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    const handlePaymentClick = () => {
+        const planType = isAnnual ? 'Annually' : 'Monthly';
+        navigate(`/activate-plan?plan=${planType}`);
+    };
+
 
     return (
         <section className="pt-24 pb-8 md:pb-24 relative overflow-hidden bg-white text-gray-900" id="pricing">
@@ -390,16 +403,24 @@ export default function PricingPlans() {
                             ))}
                         </ul>
 
-                        <motion.a
-                            href="#contact"
+                        <motion.button
+                            onClick={handlePaymentClick}
+                            disabled={isProcessing}
                             animate={{
                                 background: isHighlighted ? '#FD6941' : '#111111',
                             }}
                             transition={{ duration: 0.35 }}
-                            className="w-full py-4 md:py-5 rounded-full font-normal tracking-wider uppercase text-xs md:text-sm text-white shadow-xl transition-opacity duration-300 hover:opacity-85"
+                            className="w-full py-4 md:py-5 rounded-full font-normal tracking-wider uppercase text-xs md:text-sm text-white shadow-xl transition-opacity duration-300 hover:opacity-85 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
-                            Start My Trial
-                        </motion.a>
+                            {isProcessing ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                    Processing...
+                                </>
+                            ) : (
+                                "Activate Plan"
+                            )}
+                        </motion.button>
                     </motion.div>
 
                     {/* ── Customized Plan Card ── */}
@@ -453,6 +474,7 @@ export default function PricingPlans() {
                     <div className="shrink-0 w-[7vw] md:hidden" />
                 </div>
             </div>
+
         </section>
     );
 }

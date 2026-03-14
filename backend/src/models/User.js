@@ -57,7 +57,7 @@ const userSchema = new mongoose.Schema({
     notificationPreferences: {
         newOrder: { type: Boolean, default: true },
         statusUpdates: { type: Boolean, default: true },
-        lowStock: { type: Boolean, default: true },
+        emailNotifications: { type: Boolean, default: true },
         paymentReceived: { type: Boolean, default: true }
     },
 

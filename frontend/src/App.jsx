@@ -10,6 +10,8 @@ import { shouldRequireOnboarding } from './utils/onboarding';
 const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
 const Signup = lazy(() => import('./pages/auth/Signup'));
 const SetupPassword = lazy(() => import('./pages/auth/SetupPassword'));
+const PaymentStatus = lazy(() => import('./pages/payment/PaymentStatus'));
+const PlanActivation = lazy(() => import('./pages/payment/PlanActivation'));
 
 // Super Admin Imports
 const SuperAdminLayout = lazy(() => import('./layouts/SuperAdminLayout'));
@@ -162,6 +164,9 @@ function App() {
             <Route path="/setup-password" element={<SetupPassword />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/payment-status" element={<PaymentStatus />} />
+            <Route path="/activate-plan" element={<PlanActivation />} />
+            <Route path="/renew-subscription" element={<Navigate to="/activate-plan" replace />} />
 
             {/* Personalized Onboarding - Public via Token */}
             <Route path="/:restaurantName/onboarding" element={<Onboarding />} />

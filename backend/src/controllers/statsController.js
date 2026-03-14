@@ -350,4 +350,18 @@ const getSuperAdminStats = async (req, res) => {
     }
 };
 
-module.exports = { getAdminStats, getSuperAdminStats };
+const getPublicStats = async (req, res) => {
+    try {
+        // Return some generalized platform-wide "Live" stats to make the login feel active
+        res.json({
+            revenueToday: "$42,108.00",
+            activeTables: Math.floor(Math.random() * (45 - 32) + 32),
+            capacity: "68%",
+            satisfiedClients: "10k+"
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { getAdminStats, getSuperAdminStats, getPublicStats };

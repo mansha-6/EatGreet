@@ -185,7 +185,6 @@ const completeOnboarding = async (req, res) => {
         } = req.body;
 
         let user;
-        let generatedPassword = null;
 
         // 1. Find User (either by current auth or by setup token)
         if (token) {
@@ -205,12 +204,12 @@ const completeOnboarding = async (req, res) => {
             return res.status(401).json({ message: 'Authentication required' });
         }
 
-        // 2. Update Password if provided
         // 2. Setup or Update Password
         if (token) {
-            const crypto = require('crypto');
-            generatedPassword = crypto.randomBytes(4).toString('hex'); // 8 characters
-            user.password = generatedPassword;
+            if (!password || password.length < 6) {
+                return res.status(400).json({ message: 'Password must be at least 6 characters long' });
+            }
+            user.password = password;
             // Clear setup token after use and save to usedSetupTokens
             if (!user.usedSetupTokens) user.usedSetupTokens = [];
             user.usedSetupTokens.push(token);
@@ -257,8 +256,7 @@ const completeOnboarding = async (req, res) => {
         sendOnboardingSuccessEmail(
             updatedUser.email,
             updatedUser.restaurantName,
-            dashboardUrl,
-            generatedPassword || password || 'Your existing password'
+            dashboardUrl
         ).catch(err => console.error('❌ Background Onboarding success email failed:', err.message));
 
         res.json({

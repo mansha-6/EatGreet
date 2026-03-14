@@ -222,6 +222,17 @@ const Onboarding = () => {
             }
         }
 
+        if (token) {
+            if (!formData.password || formData.password.length < 6) {
+                toast.error('Password must be at least 6 characters');
+                return;
+            }
+            if (formData.password !== formData.confirmPassword) {
+                toast.error('Passwords do not match');
+                return;
+            }
+        }
+
         setLoading(true);
         const loadToast = toast.loading('Setting up your restaurant...');
         try {
@@ -257,7 +268,7 @@ const Onboarding = () => {
                             <div>
                                 <h3 className="font-semibold text-gray-800 mb-1">Check Your Inbox</h3>
                                 <p className="text-sm text-gray-500 leading-relaxed font-light">
-                                    Your secure login details and auto-generated password have been sent to your email. Please check your inbox for your unique restaurant dashboard link to log in securely.
+                                    Your secure login link has been sent to your email. Please check your inbox for your unique restaurant dashboard link to log in using the password you just created.
                                 </p>
                             </div>
                         </div>

@@ -109,7 +109,7 @@ const updateRestaurantDetails = async (req, res) => {
                 user.notificationPreferences = {
                     newOrder: req.body.notificationPreferences.newOrder ?? user.notificationPreferences.newOrder,
                     statusUpdates: req.body.notificationPreferences.statusUpdates ?? user.notificationPreferences.statusUpdates,
-                    lowStock: req.body.notificationPreferences.lowStock ?? user.notificationPreferences.lowStock,
+                    emailNotifications: req.body.notificationPreferences.emailNotifications ?? user.notificationPreferences.emailNotifications,
                     paymentReceived: req.body.notificationPreferences.paymentReceived ?? user.notificationPreferences.paymentReceived
                 };
             }
@@ -458,7 +458,7 @@ const updateSubscription = async (req, res) => {
             const now = new Date();
             const isExpired = !user.subscription.endDate || new Date(user.subscription.endDate) <= now;
             if (isActive === true && isExpired) {
-                user.subscription.endDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // +14 days
+                user.subscription.endDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // Set to +7 days for trial/reactivation
                 user.subscription.status = 'Active';
                 if (user.subscription.plan === 'None') {
                     user.subscription.plan = 'Trial';
@@ -469,11 +469,18 @@ const updateSubscription = async (req, res) => {
             }
         }
 
+        // If Super Admin explicitly sets plan to Trial, force 7 days
+        if (plan === 'Trial') {
+            const now = new Date();
+            user.subscription.endDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+            user.subscription.status = 'Active';
+        }
+
         user.subscription = {
             ...user.subscription,
             plan: plan || user.subscription.plan,
             status: status || user.subscription.status,
-            endDate: endDate ? new Date(endDate) : user.subscription.endDate,
+            endDate: (plan === 'Trial') ? user.subscription.endDate : (endDate ? new Date(endDate) : user.subscription.endDate),
             autoRenew: autoRenew !== undefined ? autoRenew : user.subscription.autoRenew,
             startDate: user.subscription.startDate || new Date()
         };

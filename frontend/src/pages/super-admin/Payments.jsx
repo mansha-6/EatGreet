@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { CreditCard, DollarSign, Download, Calendar, X, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
 import { paymentAPI, statsAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
+import { useSocket } from '../../context/SocketContext';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import toast from 'react-hot-toast';
@@ -177,6 +178,25 @@ export default function Payments() {
             setIsLoading(false);
         }
     };
+
+    const socket = useSocket();
+
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on('newPayment', (data) => {
+            console.log('New payment received:', data);
+            toast.success(`New payment received from ${data.restaurantName}!`, {
+                icon: '💰',
+                duration: 5000
+            });
+            fetchData();
+        });
+
+        return () => {
+            socket.off('newPayment');
+        };
+    }, [socket]);
 
     useEffect(() => {
         fetchData();

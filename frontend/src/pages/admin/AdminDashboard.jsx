@@ -357,7 +357,7 @@ const AdminDashboard = () => {
         <div className="min-h-screen bg-transparent px-2 sm:px-4 pt-0 pb-4 sm:pt-0 sm:pb-8 space-y-4 md:space-y-6">
             <div className="space-y-1">
                 <h1 className="text-[20px] sm:text-[24px] lg:text-[28px] font-normal text-black tracking-tight leading-none">Dashboard</h1>
-                <p className="text-[11px] sm:text-[13px] lg:text-[14px] text-gray-400 font-normal uppercase tracking-widest opacity-60">Welcome back, Admin</p>
+                <p className="text-[11px] sm:text-[13px] lg:text-[14px] text-gray-400 font-normal uppercase tracking-widest opacity-60">Welcome back, {user?.name || 'Admin'}</p>
             </div>
 
             {/* Main Content Grid - 1 Column on Mobile, 12 on Desktop */}

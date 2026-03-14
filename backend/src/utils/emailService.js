@@ -29,6 +29,7 @@ const createTransporter = ({ host, port, secure }) => nodemailer.createTransport
     connectionTimeout: 15000, 
     greetingTimeout: 15000,
     socketTimeout: 30000,
+    family: 4, // Force IPv4 to prevent ENETUNREACH on IPv6-only resolution
     tls: {
         // Essential for working with varied hosting environments
         rejectUnauthorized: false
@@ -77,19 +78,6 @@ const sendEmail = async (options) => {
             html: options.html,
             attachments: options.attachments || []
         };
-
-        // Automatically attach logo if used and file exists
-        if (options.html.includes(`cid:${LOGO_CID}`)) {
-            if (fs.existsSync(LOCAL_LOGO_PATH)) {
-                mailOptions.attachments.push({
-                    filename: 'logo-full.png',
-                    path: LOCAL_LOGO_PATH,
-                    cid: LOGO_CID
-                });
-            } else {
-                console.warn(`⚠️ Logo not found at ${LOCAL_LOGO_PATH}, skipping attachment.`);
-            }
-        }
 
         const info = await primaryTransporter.sendMail(mailOptions);
         console.log(`✉️ Email successfully sent to ${options.email} | ID: ${info.messageId}`);
@@ -526,7 +514,7 @@ const sendSubscriptionReminder = async (userEmail, userName, planName, endDate) 
             <p style="color: #555; line-height: 1.6;">This is a friendly reminder that your <b>${planName}</b> plan will expire on <b>${new Date(endDate).toLocaleDateString()}</b>.</p>
             <p style="color: #555; line-height: 1.6;">To ensure uninterrupted service for your restaurant, please renew your plan soon.</p>
             <div style="margin: 30px 0; text-align: center;">
-                <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/admin/billing" style="background-color: #FD6941; color: white; padding: 12px 30px; text-decoration: none; border-radius: 50px; font-weight: bold; display: inline-block;">Renew Now</a>
+                <a href="${FRONTEND_URL}/renew-subscription" style="background-color: #FD6941; color: white; padding: 12px 30px; text-decoration: none; border-radius: 50px; font-weight: bold; display: inline-block;">Renew Now</a>
             </div>
             <p style="color: #333; font-size: 14px; margin-top: 32px;">Best regards,<br/><b>The EatGreet Team</b></p>
         </div>

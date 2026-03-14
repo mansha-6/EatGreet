@@ -120,6 +120,9 @@ export const statsAPI = {
 
 export const paymentAPI = {
   getAll: (params) => api.get('/payments', { params }),
+  verifyAccount: (credentials) => api.post('/payments/verify-account', credentials),
+  createOrder: (data) => api.post('/payments/create-order', data),
+  verifyPayment: (data) => api.post('/payments/verify', data),
 };
 
 export const menuAPI = {

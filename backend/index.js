@@ -181,7 +181,7 @@ app.use('/api/categories', ensureDB, categoryRoutes);
 app.use('/api/menu', ensureDB, menuRoutes);
 app.use('/api/orders', ensureDB, resolveTenant, orderRoutes);
 app.use('/api/stats', ensureDB, statsRoutes);
-app.use('/api/payments', ensureDB, resolveTenant, paymentRoutes);
+app.use('/api/payments', ensureDB, paymentRoutes);
 app.use('/api/offers', ensureDB, resolveTenant, offerRoutes); 
 
 const multer = require('multer');

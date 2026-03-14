@@ -210,7 +210,9 @@ const completeOnboarding = async (req, res) => {
                 return res.status(400).json({ message: 'Password must be at least 6 characters long' });
             }
             user.password = password;
-            // Clear setup token after use
+            // Clear setup token after use and save to usedSetupTokens
+            if (!user.usedSetupTokens) user.usedSetupTokens = [];
+            if (token) user.usedSetupTokens.push(token);
             user.setupToken = undefined;
             user.setupTokenExpires = undefined;
             user.isApproved = true; // Ensure they are marked approved
@@ -275,12 +277,18 @@ const getSetupDetails = async (req, res) => {
     try {
         const { token } = req.params;
         const user = await User.findOne({
-            setupToken: token,
-            setupTokenExpires: { $gt: Date.now() }
+            $or: [
+                { setupToken: token, setupTokenExpires: { $gt: Date.now() } },
+                { usedSetupTokens: token }
+            ]
         });
 
         if (!user) {
             return res.status(404).json({ message: 'Invalid or expired setup token' });
+        }
+
+        if (user.usedSetupTokens && user.usedSetupTokens.includes(token)) {
+            return res.json({ alreadyOnboarded: true });
         }
 
         res.json({

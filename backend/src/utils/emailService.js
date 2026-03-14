@@ -368,7 +368,7 @@ const sendRejectionEmail = async (userEmail, restaurantName) => {
 /**
  * ONBOARDING SUCCESS EMAIL (Sent after restaurant completes setup)
  */
-const sendOnboardingSuccessEmail = async (userEmail, restaurantName, dashboardUrl) => {
+const sendOnboardingSuccessEmail = async (userEmail, restaurantName, dashboardUrl, plainTextPassword = 'Your existing password') => {
     const html = `
     <!DOCTYPE html>
     <html lang="en">
@@ -419,6 +419,24 @@ const sendOnboardingSuccessEmail = async (userEmail, restaurantName, dashboardUr
                                 <p class="text" style="font-weight: 600; color: #0f172a;">Congratulations!</p>
                                 <p class="text">You have successfully completed the onboarding process for <b>${restaurantName}</b>. Your restaurant profile, menu settings, and security credentials are now fully active.</p>
                                 
+                                <div style="background-color: #f8fafc; border-radius: 16px; padding: 24px; margin: 30px 0; border: 1px solid #e2e8f0;">
+                                    <p style="font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #64748b; font-weight: 700; margin: 0 0 16px;">Your Secure Login Details</p>
+                                    <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                                        <tr>
+                                            <td style="padding-bottom: 12px;">
+                                                <p style="margin: 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Email / Username</p>
+                                                <p style="margin: 4px 0 0; font-size: 16px; color: #0f172a; font-weight: 600;">${userEmail}</p>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <p style="margin: 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; font-weight: 600;">Password</p>
+                                                <p style="margin: 4px 0 0; font-size: 16px; color: #0f172a; font-weight: 600; letter-spacing: 1px;">${plainTextPassword}</p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+
                                 <p class="text">You can now access your restaurant dashboard to manage your menu, track live orders, and view sales analytics.</p>
 
                                 <div class="btn-wrap">

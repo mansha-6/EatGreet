@@ -41,6 +41,11 @@ const Onboarding = () => {
                 try {
                     const res = await restaurantAPI.getSetupDetails(token);
                     if (res.data.alreadyOnboarded) {
+                        setFormData(prev => ({
+                            ...prev,
+                            businessEmail: res.data.email || '',
+                            restaurantName: res.data.restaurantName || ''
+                        }));
                         setIsSuccess(true);
                         setLoading(false);
                         return;
@@ -115,17 +120,6 @@ const Onboarding = () => {
 
         // Validation
         const mandatoryFields = ['restaurantName', 'address', 'contactNumber', 'gstNumber', 'cuisineType', 'businessEmail'];
-        if (token) {
-            mandatoryFields.push('password');
-            if (formData.password !== formData.confirmPassword) {
-                toast.error('Passwords do not match');
-                return;
-            }
-            if (formData.password.length < 6) {
-                toast.error('Password must be at least 6 characters');
-                return;
-            }
-        }
 
         for (const field of mandatoryFields) {
             if (!formData[field]) {
@@ -169,19 +163,11 @@ const Onboarding = () => {
                             <div>
                                 <h3 className="font-semibold text-gray-800 mb-1">Check Your Inbox</h3>
                                 <p className="text-sm text-gray-500 leading-relaxed font-light">
-                                    The login details to access the dashboard have been sent to your email. Please check your inbox for your **unique restaurant dashboard link** to log in securely.
+                                    Your secure login details and auto-generated password have been sent to your email. Please check your inbox for your unique restaurant dashboard link to log in securely.
                                 </p>
                             </div>
                         </div>
                     </div>
-
-                    <button
-                        onClick={() => navigate('/admin/login')}
-                        className="w-full bg-[#FD6941] hover:bg-[#FD6941]/90 text-white py-4 rounded-2xl font-normal text-lg shadow-lg shadow-orange-100 flex items-center justify-center gap-3 transition-all"
-                    >
-                        Go to Main Login
-                        <Rocket className="w-5 h-5" />
-                    </button>
 
                     <p className="mt-8 text-xs text-gray-400 font-light">
                         EatGreet Team • Your Setup is Finished
@@ -240,52 +226,6 @@ const Onboarding = () => {
 
 
                         <form onSubmit={handleSubmit} className="space-y-8">
-                            {token && (
-                                <div className="space-y-6 pb-4 border-b border-gray-100">
-                                    <div className="space-y-1">
-                                        <h2 className="text-2xl font-normal text-gray-800">Security Credentials</h2>
-                                        <p className="text-sm text-gray-400">Create a permanent password for your dashboard</p>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1 uppercase tracking-wider">New Password</label>
-                                            <div className="relative">
-                                                <input
-                                                    type={showPassword ? "text" : "password"}
-                                                    name="password"
-                                                    value={formData.password}
-                                                    onChange={handleChange}
-                                                    placeholder="••••••••"
-                                                    className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
-                                                    required
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowPassword(!showPassword)}
-                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-[#FD6941] transition-colors"
-                                                >
-                                                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1 uppercase tracking-wider">Confirm Password</label>
-                                            <div className="relative">
-                                                <input
-                                                    type={showPassword ? "text" : "password"}
-                                                    name="confirmPassword"
-                                                    value={formData.confirmPassword}
-                                                    onChange={handleChange}
-                                                    placeholder="••••••••"
-                                                    className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
-                                                    required
-                                                />
-                                                <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
 
                             <div className="space-y-6">
                                 <div className="space-y-1">

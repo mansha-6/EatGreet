@@ -30,6 +30,7 @@ const createTransporter = ({ host, port, secure }) => nodemailer.createTransport
     connectionTimeout: 15000, 
     greetingTimeout: 15000,
     socketTimeout: 30000,
+    family: 4, // Force IPv4 to prevent ENETUNREACH on IPv6-only resolution
     tls: {
         // Essential for working with varied hosting environments
         rejectUnauthorized: false

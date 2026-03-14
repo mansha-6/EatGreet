@@ -181,8 +181,7 @@ const completeOnboarding = async (req, res) => {
             cuisineType,
             businessEmail,
             location,
-            operatingHours,
-            password
+            operatingHours
         } = req.body;
 
         let user;

@@ -9,8 +9,7 @@ if (dns.setDefaultResultOrder) {
 }
 
 const FRONTEND_URL = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
-const LOGO_CID = 'eatgreet-logo-full';
-const LOGO_URL = `cid:${LOGO_CID}`;
+const LOGO_URL = 'https://eat-greet.vercel.app/logo-full.png';
 
 // Path to local logo for embedding
 const LOCAL_LOGO_PATH = path.join(__dirname, '../../../frontend/public/logo-full.png');

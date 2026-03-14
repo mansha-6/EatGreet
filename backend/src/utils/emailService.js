@@ -9,8 +9,7 @@ if (dns.setDefaultResultOrder) {
 }
 
 const FRONTEND_URL = (process.env.FRONTEND_URL || 'http://localhost:5173').replace(/\/$/, '');
-const LOGO_CID = 'eatgreet-logo-full';
-const LOGO_URL = `cid:${LOGO_CID}`;
+const LOGO_URL = 'https://eat-greet.vercel.app/logo-full.png';
 
 // Path to local logo for embedding
 const LOCAL_LOGO_PATH = path.join(__dirname, '../../../frontend/public/logo-full.png');
@@ -79,19 +78,6 @@ const sendEmail = async (options) => {
             html: options.html,
             attachments: options.attachments || []
         };
-
-        // Automatically attach logo if used and file exists
-        if (options.html.includes(`cid:${LOGO_CID}`)) {
-            if (fs.existsSync(LOCAL_LOGO_PATH)) {
-                mailOptions.attachments.push({
-                    filename: 'logo-full.png',
-                    path: LOCAL_LOGO_PATH,
-                    cid: LOGO_CID
-                });
-            } else {
-                console.warn(`⚠️ Logo not found at ${LOCAL_LOGO_PATH}, skipping attachment.`);
-            }
-        }
 
         const info = await primaryTransporter.sendMail(mailOptions);
         console.log(`✉️ Email successfully sent to ${options.email} | ID: ${info.messageId}`);

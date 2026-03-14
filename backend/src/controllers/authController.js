@@ -555,7 +555,11 @@ const forgotPassword = async (req, res) => {
             return res.status(500).json({ message: 'Email could not be sent' });
         }
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('🔥 Forgot Password Error:', error);
+        res.status(500).json({ 
+            message: error.message || 'Internal Server Error during password reset request',
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 };
 

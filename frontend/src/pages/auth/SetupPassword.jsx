@@ -27,8 +27,8 @@ const SetupPassword = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (password.length < 6) {
-            toast.error('Password must be at least 6 characters long');
+        if (password.length !== 6 || !/^\d+$/.test(password)) {
+            toast.error('Password must be exactly 6 numeric digits');
             return;
         }
 
@@ -97,8 +97,11 @@ const SetupPassword = () => {
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="••••••••"
+                                    onChange={(e) => setPassword(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                    placeholder="123456"
+                                    inputMode="numeric"
+                                    pattern="\d*"
+                                    maxLength="6"
                                     className="w-full px-4 py-4 bg-gray-50 border-none rounded-2xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
                                     required
                                 />
@@ -119,8 +122,11 @@ const SetupPassword = () => {
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    placeholder="••••••••"
+                                    onChange={(e) => setConfirmPassword(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                    placeholder="123456"
+                                    inputMode="numeric"
+                                    pattern="\d*"
+                                    maxLength="6"
                                     className="w-full px-4 py-4 bg-gray-50 border-none rounded-2xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
                                     required
                                 />
@@ -134,9 +140,9 @@ const SetupPassword = () => {
                         </div>
 
                         <ul className="space-y-2 py-2">
-                            <li className={`flex items-center gap-2 text-xs ${password.length >= 6 ? 'text-green-500' : 'text-gray-400'}`}>
-                                {password.length >= 6 ? <CheckCircle size={12} /> : <div className="w-3 h-3 border border-current rounded-full" />}
-                                Minimum 6 characters
+                            <li className={`flex items-center gap-2 text-xs ${password.length === 6 ? 'text-green-500' : 'text-gray-400'}`}>
+                                {password.length === 6 ? <CheckCircle size={12} /> : <div className="w-3 h-3 border border-current rounded-full" />}
+                                Exactly 6 numeric digits
                             </li>
                             <li className={`flex items-center gap-2 text-xs ${password && password === confirmPassword ? 'text-green-500' : 'text-gray-400'}`}>
                                 {password && password === confirmPassword ? <CheckCircle size={12} /> : <div className="w-3 h-3 border border-current rounded-full" />}

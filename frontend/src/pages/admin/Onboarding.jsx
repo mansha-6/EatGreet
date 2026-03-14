@@ -169,6 +169,11 @@ const Onboarding = () => {
             setFormData(prev => ({ ...prev, [name]: numericValue }));
             return;
         }
+        if (name === 'password' || name === 'confirmPassword') {
+            const numericValue = value.replace(/\D/g, '').slice(0, 6);
+            setFormData(prev => ({ ...prev, [name]: numericValue }));
+            return;
+        }
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
@@ -223,8 +228,8 @@ const Onboarding = () => {
         }
 
         if (token) {
-            if (!formData.password || formData.password.length < 6) {
-                toast.error('Password must be at least 6 characters');
+            if (!formData.password || formData.password.length !== 6) {
+                toast.error('Password must be exactly 6 numeric digits');
                 return;
             }
             if (formData.password !== formData.confirmPassword) {
@@ -425,14 +430,17 @@ const Onboarding = () => {
                                     {token && (
                                         <>
                                             <div>
-                                                <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1 uppercase tracking-wider">New Password</label>
+                                                <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1 uppercase tracking-wider">New Password (6 Digits)</label>
                                                 <div className="relative">
                                                     <input
                                                         type={showPassword ? "text" : "password"}
                                                         name="password"
                                                         value={formData.password}
                                                         onChange={handleChange}
-                                                        placeholder="••••••••"
+                                                        placeholder="123456"
+                                                        inputMode="numeric"
+                                                        pattern="\d*"
+                                                        maxLength="6"
                                                         className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
                                                         required
                                                     />
@@ -453,7 +461,10 @@ const Onboarding = () => {
                                                         name="confirmPassword"
                                                         value={formData.confirmPassword}
                                                         onChange={handleChange}
-                                                        placeholder="••••••••"
+                                                        placeholder="123456"
+                                                        inputMode="numeric"
+                                                        pattern="\d*"
+                                                        maxLength="6"
                                                         className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
                                                         required
                                                     />

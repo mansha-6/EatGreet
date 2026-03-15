@@ -1,11 +1,11 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const { 
-    sendEmail, 
-    sendApprovalEmail, 
-    sendRejectionEmail, 
+const {
+    sendEmail,
+    sendApprovalEmail,
+    sendRejectionEmail,
     sendOnboardingSuccessEmail,
-    sendSubscriptionReminder: sendSubReminder 
+    sendSubscriptionReminder: sendSubReminder
 } = require('../utils/emailService');
 
 const generateToken = (id) => {
@@ -212,8 +212,26 @@ const completeOnboarding = async (req, res) => {
 
         // 2. Setup or Update Password
         if (token) {
-            if (!password || !/^\d{6}$/.test(password)) {
-                return res.status(400).json({ message: 'Password must be exactly 6 numeric digits' });
+            const checks = {
+                length: password && password.length <= 8 && password.length > 0,
+                upper: /[A-Z]/.test(password),
+                lower: /[a-z]/.test(password),
+                digit: /[0-9]/.test(password),
+                symbol: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+            };
+
+            const missing = [];
+            if (!password) missing.push("Password required");
+            else {
+                if (password.length > 8) missing.push("Password too long (max 8 chars)");
+                if (!checks.upper) missing.push("Uppercase letter missing");
+                if (!checks.lower) missing.push("Lowercase letter missing");
+                if (!checks.digit) missing.push("Digit missing");
+                if (!checks.symbol) missing.push("Symbol missing");
+            }
+
+            if (missing.length > 0) {
+                return res.status(400).json({ message: missing[0] });
             }
             user.password = password;
             // Clear setup token after use and save to usedSetupTokens
@@ -298,7 +316,7 @@ const getSetupDetails = async (req, res) => {
         }
 
         if (user.usedSetupTokens && user.usedSetupTokens.includes(token)) {
-            return res.json({ 
+            return res.json({
                 alreadyOnboarded: true,
                 restaurantName: user.restaurantName,
                 email: user.email
@@ -579,7 +597,7 @@ const approveRestaurant = async (req, res) => {
 
         // Generate a secure setup token (valid for 7 days)
         const setupToken = crypto.randomBytes(32).toString('hex');
-        
+
         user.isApproved = true;
         user.setupToken = setupToken;
         user.setupTokenExpires = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -625,7 +643,7 @@ const rejectRestaurant = async (req, res) => {
 
         // Determine recipient email
         const targetEmail = user.email || user.restaurantDetails?.businessEmail;
-        
+
         if (!targetEmail) {
             console.warn(`⚠️ No email address found for user ${user._id} during rejection.`);
         } else {

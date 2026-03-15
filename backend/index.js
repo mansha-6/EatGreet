@@ -39,7 +39,12 @@ const initDB = async () => {
 };
 
 // Immediate init (Background)
-initDB();
+initDB().then(async (connected) => {
+    if (connected) {
+        const { verifySMTP } = require('./src/utils/emailService');
+        await verifySMTP();
+    }
+});
 
 // Enhanced CORS configuration
 const normalizeOrigin = (value) => {

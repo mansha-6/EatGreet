@@ -64,6 +64,7 @@ const verifySMTP = async () => {
  * Core internal send function
  */
 const sendEmail = async (options) => {
+    console.log(`📡 Preparing to send email to [${options.email}] with subject [${options.subject}]`);
     try {
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
             const msg = 'CRITICAL: Missing EMAIL_USER or EMAIL_PASS in environment.';
@@ -432,6 +433,7 @@ const sendOnboardingSuccessEmail = async (userEmail, restaurantName, dashboardUr
     </body>
     </html>`;
 
+    console.log(`🚀 Dispatching Onboarding Success email to: ${userEmail} for restaurant: ${restaurantName}`);
     return sendEmail({
         email: userEmail,
         subject: `🚀 Your Dashboard is Ready: ${restaurantName}`,

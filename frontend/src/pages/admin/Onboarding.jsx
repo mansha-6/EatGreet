@@ -111,6 +111,7 @@ const Onboarding = () => {
     const [uploadingLogo, setUploadingLogo] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [passwordError, setPasswordError] = useState('');
 
     const [formData, setFormData] = useState({
         token: token || '',
@@ -170,8 +171,7 @@ const Onboarding = () => {
             return;
         }
         if (name === 'password' || name === 'confirmPassword') {
-            const numericValue = value.replace(/\D/g, '').slice(0, 6);
-            setFormData(prev => ({ ...prev, [name]: numericValue }));
+            setFormData(prev => ({ ...prev, [name]: value }));
             return;
         }
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -220,18 +220,36 @@ const Onboarding = () => {
         // Validation
         const mandatoryFields = ['restaurantName', 'address', 'contactNumber', 'gstNumber', 'cuisineType', 'businessEmail'];
 
-        for (const field of mandatoryFields) {
-            if (!formData[field]) {
-                toast.error(`${field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} is mandatory`);
-                return;
-            }
+        const missingFields = mandatoryFields.filter(field => !formData[field]);
+        if (missingFields.length > 0) {
+            toast.error('Please fill up all your details to proceed.');
+            return;
         }
 
         if (token) {
-            if (!formData.password || formData.password.length !== 6) {
-                toast.error('Password must be exactly 6 numeric digits');
+            const password = formData.password;
+            const checks = {
+                length: password.length <= 8 && password.length > 0,
+                upper: /[A-Z]/.test(password),
+                lower: /[a-z]/.test(password),
+                digit: /[0-9]/.test(password),
+                symbol: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+            };
+
+            const missing = [];
+            if (password.length > 8) missing.push("Password too long (max 8 chars)");
+            if (password.length === 0) missing.push("Password required");
+            if (!checks.upper) missing.push("Uppercase letter missing");
+            if (!checks.lower) missing.push("Lowercase letter missing");
+            if (!checks.digit) missing.push("Digit missing");
+            if (!checks.symbol) missing.push("Symbol missing");
+
+            if (missing.length > 0) {
+                toast.error(missing[0]);
+                setPasswordError(missing.join(', '));
                 return;
             }
+
             if (formData.password !== formData.confirmPassword) {
                 toast.error('Passwords do not match');
                 return;
@@ -430,17 +448,15 @@ const Onboarding = () => {
                                     {token && (
                                         <>
                                             <div>
-                                                <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1 uppercase tracking-wider">New Password (6 Digits)</label>
+                                                <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1 uppercase tracking-wider">New Password (8 Chars max)</label>
                                                 <div className="relative">
                                                     <input
                                                         type={showPassword ? "text" : "password"}
                                                         name="password"
                                                         value={formData.password}
                                                         onChange={handleChange}
-                                                        placeholder="123456"
-                                                        inputMode="numeric"
-                                                        pattern="\d*"
-                                                        maxLength="6"
+                                                        placeholder="••••••••"
+                                                        maxLength="8"
                                                         className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
                                                         required
                                                     />
@@ -452,6 +468,18 @@ const Onboarding = () => {
                                                         {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                                                     </button>
                                                 </div>
+                                                {formData.password && (
+                                                    <div className="mt-2 space-y-1">
+                                                        <div className="flex flex-wrap gap-2">
+                                                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${/[A-Z]/.test(formData.password) ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>Uppercase</span>
+                                                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${/[a-z]/.test(formData.password) ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>Lowercase</span>
+                                                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${/[0-9]/.test(formData.password) ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>Digit</span>
+                                                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>Symbol</span>
+                                                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${formData.password.length > 0 && formData.password.length <= 8 ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>Max 8 Chars</span>
+                                                        </div>
+                                                        {passwordError && <p className="text-[10px] text-red-400 mt-1 italic">{passwordError}</p>}
+                                                    </div>
+                                                )}
                                             </div>
                                             <div>
                                                 <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1 uppercase tracking-wider">Confirm Password</label>
@@ -461,10 +489,8 @@ const Onboarding = () => {
                                                         name="confirmPassword"
                                                         value={formData.confirmPassword}
                                                         onChange={handleChange}
-                                                        placeholder="123456"
-                                                        inputMode="numeric"
-                                                        pattern="\d*"
-                                                        maxLength="6"
+                                                        placeholder="••••••••"
+                                                        maxLength="8"
                                                         className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
                                                         required
                                                     />

@@ -84,6 +84,24 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const suggestionSession = useRef(null);
+    const formRef = useRef(null);
+    const cityInputContainerRef = useRef(null);
+    const suggestionsRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (cityInputContainerRef.current && !cityInputContainerRef.current.contains(event.target)) {
+                setShowSuggestions(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, []);
 
     const validateField = (name, value) => {
         let error = '';
@@ -256,7 +274,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
 
         if (Object.keys(errors).length > 0) {
             setFieldErrors(errors);
-            setError('Please fix the errors in the form.');
+            setError('Please fill up all your details to proceed.');
             return;
         }
 
@@ -292,7 +310,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
     };
 
     return (
-        <form className="space-y-8" onSubmit={handleSubmit} noValidate>
+        <form ref={formRef} className="space-y-8" onSubmit={handleSubmit} noValidate>
             {error && (
                 <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -386,7 +404,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                 </div>
 
                 {/* Location */}
-                <div className="space-y-2 group relative">
+                <div className="space-y-2 group relative" ref={cityInputContainerRef}>
                     <label className="text-xs font-bold text-gray-700 ml-1 uppercase tracking-wider group-focus-within:text-[#FD6941] transition-colors flex justify-between h-4 items-center">
                         <span>City<span className="text-red-500">*</span></span>
                         {fieldErrors.city && (
@@ -422,10 +440,16 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                     <AnimatePresence>
                         {showSuggestions && citySuggestions.length > 0 && (
                             <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-hidden max-h-48 overflow-y-auto"
+                                ref={suggestionsRef}
+                                initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                data-lenis-prevent
+                                className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-y-auto no-scrollbar max-h-80 overscroll-contain"
+                                style={{ 
+                                    touchAction: 'pan-y',
+                                    WebkitOverflowScrolling: 'touch'
+                                }}
                             >
                                 {citySuggestions.map((city, idx) => (
                                     <button

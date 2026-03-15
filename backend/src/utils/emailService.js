@@ -274,6 +274,7 @@ const sendApprovalEmail = async (userEmail, userName, setupUrl, restaurantName) 
  * REJECTION EMAIL (When admin declines registration)
  */
 const sendRejectionEmail = async (userEmail, restaurantName) => {
+    console.log(`📧 Preparing rejection email for ${userEmail}...`);
     const html = `
     <!DOCTYPE html>
     <html lang="en">
@@ -349,6 +350,7 @@ const sendRejectionEmail = async (userEmail, restaurantName) => {
     return sendEmail({
         email: userEmail,
         subject: 'Update: Your EatGreet Application Request',
+        text: `Regarding ${restaurantName}: Thank you for your interest. After reviewing your business details, we regret to inform you that we are unable to approve your application at this time.`,
         html: html
     });
 };

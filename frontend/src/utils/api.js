@@ -6,7 +6,7 @@ const getDefaultApiBaseUrl = () => {
     const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
     if (!isLocalhost) return '/api';
   }
-  return 'http://localhost:5001/api';
+  return 'http://127.0.0.1:5001/api';
 };
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || getDefaultApiBaseUrl()).replace(/\/$/, '');
@@ -105,6 +105,7 @@ export const authAPI = {
   getRestaurants: () => api.get('/restaurant/all'),
   getPendingApprovals: () => api.get('/restaurant/pending'),
   approveRestaurant: (id) => api.put(`/restaurant/approve/${id}`),
+  rejectRestaurant: (id) => api.delete(`/restaurant/reject/${id}`),
   deleteRestaurant: (id) => api.delete(`/restaurant/${id}`),
   updateSubscription: (data) => api.put('/restaurant/subscription', data),
   sendReminder: (data) => api.post('/restaurant/reminder', data),

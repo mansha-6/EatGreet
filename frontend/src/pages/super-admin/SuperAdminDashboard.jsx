@@ -66,6 +66,13 @@ export default function SuperAdminDashboard() {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isApproving, setIsApproving] = useState(null);
     const [selectedUser, setSelectedUser] = useState(null);
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: null,
+        type: 'approve' // 'approve' or 'reject'
+    });
 
     const socket = useSocket();
 
@@ -109,7 +116,16 @@ export default function SuperAdminDashboard() {
     };
 
     const handleApprove = async (id) => {
-        if (!window.confirm('Are you sure you want to approve this restaurant? A default password and confirmation will be sent via email.')) return;
+        setConfirmModal({
+            isOpen: true,
+            title: 'Approve Restaurant',
+            message: 'Are you sure you want to approve this restaurant? A default password and confirmation will be sent via email.',
+            type: 'approve',
+            onConfirm: () => proceedApprove(id)
+        });
+    };
+
+    const proceedApprove = async (id) => {
 
         setIsApproving(id);
         const loadingToast = toast.loading('Approving and sending email...');
@@ -127,10 +143,19 @@ export default function SuperAdminDashboard() {
     };
 
     const handleDelete = async (id, name) => {
-        if (!window.confirm(`Are you sure you want to reject and delete the application from ${name}?`)) return;
+        setConfirmModal({
+            isOpen: true,
+            title: 'Reject Application',
+            message: `Are you sure you want to reject and delete the application from ${name}?`,
+            type: 'reject',
+            onConfirm: () => proceedDelete(id)
+        });
+    };
+
+    const proceedDelete = async (id) => {
 
         try {
-            await authAPI.deleteRestaurant(id);
+            await authAPI.rejectRestaurant(id);
             toast.success('Application rejected and user deleted');
             await fetchDashboardData(); // Refresh all live stats
         } catch (error) {
@@ -452,6 +477,53 @@ export default function SuperAdminDashboard() {
                                 >
                                     Reject Application
                                 </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Custom Confirmation Modal */}
+            <AnimatePresence>
+                {confirmModal.isOpen && (
+                    <div className="fixed inset-0 z-[6000] flex items-center justify-center px-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                            className="relative w-full max-w-sm bg-white rounded-[2.5rem] p-8 shadow-2xl z-[6010] border border-gray-100"
+                        >
+                            <div className="text-center">
+                                <div className={`w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 ${confirmModal.type === 'approve' ? 'bg-green-50 text-green-500' : 'bg-rose-50 text-rose-500'}`}>
+                                    {confirmModal.type === 'approve' ? <CheckCircle className="w-8 h-8" /> : <XCircle className="w-8 h-8" />}
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">{confirmModal.title}</h3>
+                                <p className="text-sm text-gray-500 leading-relaxed mb-8">{confirmModal.message}</p>
+                                
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                                        className="flex-1 py-3.5 rounded-2xl font-medium text-gray-500 bg-gray-50 hover:bg-gray-100 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            confirmModal.onConfirm();
+                                            setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                                        }}
+                                        className={`flex-1 py-3.5 rounded-2xl font-medium text-white shadow-lg transition-all ${confirmModal.type === 'approve' ? 'bg-[#FD6941] hover:bg-[#FD6941]/90 shadow-orange-100' : 'bg-rose-500 hover:bg-rose-600 shadow-rose-100'}`}
+                                    >
+                                        Confirm
+                                    </button>
+                                </div>
                             </div>
                         </motion.div>
                     </div>

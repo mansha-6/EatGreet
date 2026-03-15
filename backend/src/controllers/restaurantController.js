@@ -1,6 +1,12 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const { sendEmail } = require('../utils/emailService');
+const { 
+    sendEmail, 
+    sendApprovalEmail, 
+    sendRejectionEmail, 
+    sendOnboardingSuccessEmail,
+    sendSubscriptionReminder: sendSubReminder 
+} = require('../utils/emailService');
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -584,14 +590,19 @@ const approveRestaurant = async (req, res) => {
         const restaurantSlug = user.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant';
         const setupUrl = `${frontendUrl}/${restaurantSlug}/onboarding?token=${setupToken}`;
 
-        const { sendApprovalEmail } = require('../utils/emailService');
-        // Send approval email in background
-        sendApprovalEmail(
-            user.email,
-            user.name,
-            setupUrl,
-            user.restaurantName || 'your restaurant'
-        ).catch(err => console.error('❌ Background Approval email failed:', err.message));
+        // Send approval email
+        try {
+            console.log(`📡 Attempting to send approval email to: ${user.email}`);
+            await sendApprovalEmail(
+                user.email,
+                user.name,
+                setupUrl,
+                user.restaurantName || 'your restaurant'
+            );
+            console.log(`✅ Approval email successfully sent to: ${user.email}`);
+        } catch (err) {
+            console.error(`❌ Approval email delivery failed to ${user.email}:`, err.message);
+        }
 
         res.json({ message: 'Restaurant approved and onboarding link sent.' });
     } catch (error) {
@@ -612,12 +623,28 @@ const rejectRestaurant = async (req, res) => {
             return res.status(400).json({ message: 'User is already approved and cannot be rejected' });
         }
 
-        const { sendRejectionEmail } = require('../utils/emailService');
-        // Send rejection email in background
-        sendRejectionEmail(
-            user.email,
-            user.restaurantName || 'your restaurant'
-        ).catch(err => console.error('❌ Background Rejection email failed:', err.message));
+        // Determine recipient email
+        const targetEmail = user.email || user.restaurantDetails?.businessEmail;
+        
+        if (!targetEmail) {
+            console.warn(`⚠️ No email address found for user ${user._id} during rejection.`);
+        } else {
+            try {
+                console.log(`📡 Attempting to send rejection email to: ${targetEmail}`);
+                // Send rejection email and await it before deleting user data
+                await sendRejectionEmail(
+                    targetEmail,
+                    user.restaurantName || 'your restaurant'
+                );
+                console.log(`✅ Rejection email successfully sent to: ${targetEmail}`);
+            } catch (err) {
+                console.error(`❌ Rejection email delivery failed to ${targetEmail}:`, err.message);
+                // We still proceed with deletion to keep the system clean
+            }
+        }
+
+        // Add a very small delay to ensure SMTP pool/process doesn't cut off
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         // Delete the user account after rejection
         await User.deleteOne({ _id: req.params.id });

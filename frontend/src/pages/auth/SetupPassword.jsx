@@ -27,8 +27,24 @@ const SetupPassword = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (password.length !== 6 || !/^\d+$/.test(password)) {
-            toast.error('Password must be exactly 6 numeric digits');
+        const checks = {
+            length: password.length <= 8 && password.length > 0,
+            upper: /[A-Z]/.test(password),
+            lower: /[a-z]/.test(password),
+            digit: /[0-9]/.test(password),
+            symbol: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+        };
+
+        const missing = [];
+        if (password.length > 8) missing.push("Password too long (max 8 chars)");
+        if (password.length === 0) missing.push("Password required");
+        if (!checks.upper) missing.push("Uppercase letter missing");
+        if (!checks.lower) missing.push("Lowercase letter missing");
+        if (!checks.digit) missing.push("Digit missing");
+        if (!checks.symbol) missing.push("Symbol missing");
+
+        if (missing.length > 0) {
+            toast.error(missing[0]);
             return;
         }
 
@@ -92,16 +108,14 @@ const SetupPassword = () => {
                 <div className="p-8">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label className="block text-xs font-semibold text-gray-400 mb-2 ml-1 uppercase tracking-wider">New Password</label>
+                            <label className="block text-xs font-semibold text-gray-400 mb-2 ml-1 uppercase tracking-wider">New Password (Max 8 chars)</label>
                             <div className="relative">
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                    placeholder="123456"
-                                    inputMode="numeric"
-                                    pattern="\d*"
-                                    maxLength="6"
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    maxLength="8"
                                     className="w-full px-4 py-4 bg-gray-50 border-none rounded-2xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
                                     required
                                 />
@@ -122,15 +136,19 @@ const SetupPassword = () => {
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                    placeholder="123456"
-                                    inputMode="numeric"
-                                    pattern="\d*"
-                                    maxLength="6"
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    maxLength="8"
                                     className="w-full px-4 py-4 bg-gray-50 border-none rounded-2xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
                                     required
                                 />
-                                <Lock className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-[#FD6941] transition-colors"
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
                             </div>
                             {password && confirmPassword && (
                                 <p className={`text-[10px] mt-2 ml-1 font-medium ${password === confirmPassword ? 'text-green-500' : 'text-red-500'}`}>
@@ -139,16 +157,16 @@ const SetupPassword = () => {
                             )}
                         </div>
 
-                        <ul className="space-y-2 py-2">
-                            <li className={`flex items-center gap-2 text-xs ${password.length === 6 ? 'text-green-500' : 'text-gray-400'}`}>
-                                {password.length === 6 ? <CheckCircle size={12} /> : <div className="w-3 h-3 border border-current rounded-full" />}
-                                Exactly 6 numeric digits
-                            </li>
-                            <li className={`flex items-center gap-2 text-xs ${password && password === confirmPassword ? 'text-green-500' : 'text-gray-400'}`}>
-                                {password && password === confirmPassword ? <CheckCircle size={12} /> : <div className="w-3 h-3 border border-current rounded-full" />}
-                                Passwords must match
-                            </li>
-                        </ul>
+                        <div className="mt-2 space-y-1 bg-gray-50/50 p-4 rounded-2xl">
+                            <p className="text-[10px] text-gray-400 uppercase font-bold mb-2">Password Requirements:</p>
+                            <div className="flex flex-wrap gap-2">
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${/[A-Z]/.test(password) ? 'bg-green-100 text-green-600' : 'bg-white border border-gray-100 text-gray-400'}`}>Uppercase</span>
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${/[a-z]/.test(password) ? 'bg-green-100 text-green-600' : 'bg-white border border-gray-100 text-gray-400'}`}>Lowercase</span>
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${/[0-9]/.test(password) ? 'bg-green-100 text-green-600' : 'bg-white border border-gray-100 text-gray-400'}`}>Digit</span>
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${/[!@#$%^&*(),.?":{}|<>]/.test(password) ? 'bg-green-100 text-green-600' : 'bg-white border border-gray-100 text-gray-400'}`}>Symbol</span>
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${password.length > 0 && password.length <= 8 ? 'bg-green-100 text-green-600' : 'bg-white border border-gray-100 text-gray-400'}`}>Max 8 Chars</span>
+                            </div>
+                        </div>
 
                         <button
                             type="submit"

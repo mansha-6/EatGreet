@@ -131,18 +131,15 @@ export default function AdminLogin() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-[11px] font-semibold text-gray-400 mb-2 ml-1 uppercase tracking-[0.1em]">Password (6-Digit PIN)</label>
+                                    <label className="block text-[11px] font-semibold text-gray-400 mb-2 ml-1 uppercase tracking-[0.1em]">Password</label>
                                     <div className="relative group">
                                         <input
                                             type="password"
                                             required
                                             value={password}
-                                            onChange={(e) => setPassword(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                            inputMode="numeric"
-                                            pattern="\d*"
-                                            maxLength="6"
-                                            className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent text-gray-700 placeholder-gray-300 focus:outline-none focus:bg-white focus:border-[#FD6941]/20 transition-all text-[24px] tracking-[0.5em] shadow-sm"
-                                            placeholder="••••••"
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            className="w-full px-6 py-4 rounded-2xl bg-gray-50 border-2 border-transparent text-gray-700 placeholder-gray-300 focus:outline-none focus:bg-white focus:border-[#FD6941]/20 transition-all text-sm shadow-sm"
+                                            placeholder="••••••••"
                                         />
                                         <Lock className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300 group-focus-within:text-[#FD6941] transition-colors" />
                                     </div>
@@ -194,58 +191,9 @@ export default function AdminLogin() {
                     />
                     <div className="absolute inset-0 bg-gradient-to-tr from-black/80 via-transparent to-transparent"></div>
                     
-                    {/* Floating UI Elements matching "Crextio" aesthetic */}
+                    {/* Floating UI Elements removed as requested */}
                     <div className="relative z-10 w-full h-full p-12 flex flex-col justify-end">
-                        <motion.div 
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
-                            className="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-[2rem] w-fit mb-6"
-                        >
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg">
-                                    <TrendingUp className="text-[#FD6941] w-6 h-6" />
-                                </div>
-                                <div>
-                                    <p className="text-white text-xs opacity-70 mb-1">Total Revenue</p>
-                                    <p className="text-white text-xl font-bold">{liveStats.revenueToday}</p>
-                                </div>
-                            </div>
-                        </motion.div>
-
-                        <motion.div 
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.7 }}
-                            className="bg-white/10 backdrop-blur-xl border border-white/20 p-6 rounded-[2rem] w-[280px]"
-                        >
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="flex -space-x-3">
-                                    {[1,2,3].map(i => (
-                                        <div key={i} className="w-8 h-8 rounded-full border-2 border-white/30 bg-gray-800 flex items-center justify-center overflow-hidden">
-                                            <UserCircle className="text-white opacity-40" />
-                                        </div>
-                                    ))}
-                                </div>
-                                <span className="text-white text-xs opacity-80">+{liveStats.activeTables} active tables</span>
-                            </div>
-                            <div className="h-1.5 w-full bg-white/20 rounded-full overflow-hidden">
-                                <motion.div 
-                                    initial={{ width: 0 }}
-                                    animate={{ width: "75%" }}
-                                    transition={{ duration: 1.5, delay: 1 }}
-                                    className="h-full bg-white"
-                                />
-                            </div>
-                            <p className="text-[10px] text-white opacity-60 mt-3 font-medium uppercase tracking-widest">Live Kitchen Status: {liveStats.capacity} Capacity</p>
-                        </motion.div>
-
-                        <div className="mt-12 text-white">
-                            <h2 className="text-2xl font-bold italic mb-2">Smart Management</h2>
-                            <p className="text-sm opacity-60 font-light leading-relaxed max-w-[320px] italic">
-                                Elevate your dining experience with EatGreet's intelligent automation and 6-digit PIN security.
-                            </p>
-                        </div>
+                        {/* Content removed */}
                     </div>
 
                     {/* Branding Watermark Removed */}

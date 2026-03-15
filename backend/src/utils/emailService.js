@@ -22,17 +22,17 @@ const createTransporter = ({ host, port, secure }) => nodemailer.createTransport
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
-    // Standard connection settings
+    // Enhanced settings for cloud environments like Render
     pool: true,
-    maxConnections: 5,
+    maxConnections: 3,
     maxMessages: 100,
-    connectionTimeout: 15000, 
-    greetingTimeout: 15000,
-    socketTimeout: 30000,
-    family: 4, // Force IPv4 to prevent ENETUNREACH on IPv6-only resolution
+    connectionTimeout: 20000, // 20 seconds
+    greetingTimeout: 20000,
+    socketTimeout: 40000,
+    family: 4, // Force IPv4 to prevent connection issues on Render
     tls: {
-        // Essential for working with varied hosting environments
-        rejectUnauthorized: false
+        rejectUnauthorized: false,
+        minVersion: 'TLSv1.2'
     }
 });
 

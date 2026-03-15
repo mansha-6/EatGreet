@@ -188,40 +188,35 @@ export default function PricingPlans() {
                             {/* "Save 20%" floats centred above the Annually tab.
                                 Positioning is on the plain outer span so framer-motion
                                 transforms (y/scale) never override translateX(-50%). */}
-                            <AnimatePresence>
-                                {isAnnual && (
-                                    <span
-                                        style={{
-                                            position: 'absolute',
-                                            top: -26,
-                                            left: '50%',
-                                            transform: 'translateX(-50%)',
-                                            pointerEvents: 'none',
-                                        }}
-                                    >
-                                        <motion.span
-                                            initial={{ opacity: 0, y: 6, scale: 0.75 }}
-                                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                                            exit={{ opacity: 0, y: 6, scale: 0.75 }}
-                                            transition={{ duration: 0.22, ease: 'easeOut' }}
-                                            style={{
-                                                display: 'inline-block',
-                                                background: '#FD6941',
-                                                borderRadius: '999px',
-                                                fontSize: '8px',
-                                                fontWeight: 800,
-                                                color: '#fff',
-                                                padding: '3px 10px',
-                                                letterSpacing: '0.07em',
-                                                whiteSpace: 'nowrap',
-                                                boxShadow: '0 2px 10px rgba(253,105,65,0.45)',
-                                            }}
-                                        >
-                                            SAVE 20%
-                                        </motion.span>
-                                    </span>
-                                )}
-                            </AnimatePresence>
+                            <span
+                                style={{
+                                    position: 'absolute',
+                                    top: -26,
+                                    left: '50%',
+                                    transform: 'translateX(-50%)',
+                                    pointerEvents: 'none',
+                                }}
+                            >
+                                <motion.span
+                                    initial={{ opacity: 0, y: 6, scale: 0.75 }}
+                                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                                    transition={{ duration: 0.22, ease: 'easeOut' }}
+                                    style={{
+                                        display: 'inline-block',
+                                        background: '#FD6941',
+                                        borderRadius: '999px',
+                                        fontSize: '8px',
+                                        fontWeight: 800,
+                                        color: '#fff',
+                                        padding: '3px 10px',
+                                        letterSpacing: '0.07em',
+                                        whiteSpace: 'nowrap',
+                                        boxShadow: '0 2px 10px rgba(253,105,65,0.45)',
+                                    }}
+                                >
+                                    SAVE 20%
+                                </motion.span>
+                            </span>
                         </button>
                     </motion.div>
                 </div>

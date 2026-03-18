@@ -49,11 +49,37 @@ const SUPER_ADMIN_LOGIN_EMAIL = (process.env.SUPERADMIN_LOGIN_EMAIL || 'superadm
 const createOtpCode = () => String(Math.floor(100000 + Math.random() * 900000));
 const hashOtp = (otpCode) => crypto.createHash('sha256').update(otpCode).digest('hex');
 
+const validatePassword = (password) => {
+    if (!password) return { isValid: false, message: 'Password is required' };
+    if (password.length < 8 || password.length > 15) {
+        return { isValid: false, message: 'Password must be between 8 and 15 characters' };
+    }
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSymbol = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+
+    if (!hasUpper || !hasLower || !hasNumber || !hasSymbol) {
+        return { isValid: false, message: 'Password must include uppercase, lowercase, numbers, and symbols' };
+    }
+    return { isValid: true };
+};
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = async (req, res) => {
     const { name, email, password, role, phone, city, restaurantName, currency, registrationNote } = req.body;
+
+    // Only validate password complexity for non-admin initial registrations
+    // Admin registrations from landing page use phone as temporary password (handled in SetupPassword later)
+    const isInitialAdminReg = (role === 'admin' && password === phone);
+    if (!isInitialAdminReg) {
+        const passValidation = validatePassword(password);
+        if (!passValidation.isValid) {
+            return res.status(400).json({ message: passValidation.message });
+        }
+    }
 
     try {
         const userExists = await User.findOne({ email });
@@ -493,6 +519,11 @@ const setupPassword = async (req, res) => {
             return res.status(400).json({ message: 'Token and Password are required' });
         }
 
+        const passValidation = validatePassword(password);
+        if (!passValidation.isValid) {
+            return res.status(400).json({ message: passValidation.message });
+        }
+
         const user = await User.findOne({
             setupToken: token,
             setupTokenExpires: { $gt: Date.now() }
@@ -577,6 +608,11 @@ const resetPassword = async (req, res) => {
         }
 
         // Set new password
+        const passValidation = validatePassword(req.body.password);
+        if (!passValidation.isValid) {
+            return res.status(400).json({ message: passValidation.message });
+        }
+
         user.password = req.body.password;
         user.resetPasswordToken = undefined;
         user.resetPasswordExpires = undefined;

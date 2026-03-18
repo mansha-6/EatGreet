@@ -28,8 +28,25 @@ const ResetPassword = () => {
             return toast.error('Passwords do not match');
         }
 
-        if (formData.password.length < 6) {
-            return toast.error('Password must be at least 6 characters');
+        const password = formData.password;
+        const checks = {
+            length: password.length >= 8 && password.length <= 15,
+            upper: /[A-Z]/.test(password),
+            lower: /[a-z]/.test(password),
+            digit: /[0-9]/.test(password),
+            symbol: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+        };
+
+        const missing = [];
+        if (password.length < 8) missing.push("Password too short (min 8 chars)");
+        if (password.length > 15) missing.push("Password too long (max 15 chars)");
+        if (!checks.upper) missing.push("Uppercase letter missing");
+        if (!checks.lower) missing.push("Lowercase letter missing");
+        if (!checks.digit) missing.push("Digit missing");
+        if (!checks.symbol) missing.push("Symbol missing");
+
+        if (missing.length > 0) {
+            return toast.error(missing[0]);
         }
 
         setIsLoading(true);
@@ -102,7 +119,7 @@ const ResetPassword = () => {
                 <form className="space-y-6" onSubmit={handleSubmit}>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-xs font-normal text-gray-400 mb-2 ml-1 uppercase tracking-wider">New Password</label>
+                            <label className="block text-xs font-normal text-gray-400 mb-2 ml-1 uppercase tracking-wider">New Password (8-15 characters)</label>
                             <div className="relative">
                                 <input
                                     type={showPassword ? "text" : "password"}
@@ -112,6 +129,7 @@ const ResetPassword = () => {
                                     onChange={handleChange}
                                     className="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-transparent text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black/5 focus:bg-white focus:border-gray-200 transition-all text-sm shadow-sm"
                                     placeholder="••••••••"
+                                    maxLength="15"
                                 />
                                 <button
                                     type="button"
@@ -134,6 +152,7 @@ const ResetPassword = () => {
                                     onChange={handleChange}
                                     className="w-full px-6 py-4 rounded-2xl bg-gray-50 border border-transparent text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-black/5 focus:bg-white focus:border-gray-200 transition-all text-sm shadow-sm"
                                     placeholder="••••••••"
+                                    maxLength="15"
                                 />
                                 <Lock className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
                             </div>

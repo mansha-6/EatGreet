@@ -28,7 +28,7 @@ const SetupPassword = () => {
         e.preventDefault();
 
         const checks = {
-            length: password.length <= 8 && password.length > 0,
+            length: password.length >= 8 && password.length <= 15,
             upper: /[A-Z]/.test(password),
             lower: /[a-z]/.test(password),
             digit: /[0-9]/.test(password),
@@ -36,7 +36,8 @@ const SetupPassword = () => {
         };
 
         const missing = [];
-        if (password.length > 8) missing.push("Password too long (max 8 chars)");
+        if (password.length < 8) missing.push("Password too short (min 8 chars)");
+        if (password.length > 15) missing.push("Password too long (max 15 chars)");
         if (password.length === 0) missing.push("Password required");
         if (!checks.upper) missing.push("Uppercase letter missing");
         if (!checks.lower) missing.push("Lowercase letter missing");
@@ -108,14 +109,14 @@ const SetupPassword = () => {
                 <div className="p-8">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label className="block text-xs font-semibold text-gray-400 mb-2 ml-1 uppercase tracking-wider">New Password (Max 8 chars)</label>
+                            <label className="block text-xs font-semibold text-gray-400 mb-2 ml-1 uppercase tracking-wider">New Password (8-15 chars)</label>
                             <div className="relative">
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     placeholder="••••••••"
-                                    maxLength="8"
+                                    maxLength="15"
                                     className="w-full px-4 py-4 bg-gray-50 border-none rounded-2xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
                                     required
                                 />
@@ -138,7 +139,7 @@ const SetupPassword = () => {
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
                                     placeholder="••••••••"
-                                    maxLength="8"
+                                    maxLength="15"
                                     className="w-full px-4 py-4 bg-gray-50 border-none rounded-2xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
                                     required
                                 />
@@ -164,7 +165,7 @@ const SetupPassword = () => {
                                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${/[a-z]/.test(password) ? 'bg-green-100 text-green-600' : 'bg-white border border-gray-100 text-gray-400'}`}>Lowercase</span>
                                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${/[0-9]/.test(password) ? 'bg-green-100 text-green-600' : 'bg-white border border-gray-100 text-gray-400'}`}>Digit</span>
                                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${/[!@#$%^&*(),.?":{}|<>]/.test(password) ? 'bg-green-100 text-green-600' : 'bg-white border border-gray-100 text-gray-400'}`}>Symbol</span>
-                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${password.length > 0 && password.length <= 8 ? 'bg-green-100 text-green-600' : 'bg-white border border-gray-100 text-gray-400'}`}>Max 8 Chars</span>
+                                <span className={`text-[10px] px-2 py-0.5 rounded-full ${password.length >= 8 && password.length <= 15 ? 'bg-green-100 text-green-600' : 'bg-white border border-gray-100 text-gray-400'}`}>8-15 Chars</span>
                             </div>
                         </div>
 

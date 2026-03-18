@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+Allow: /signup
+Allow: /admin/login
+Allow: /terms
+Allow: /privacy
+Allow: /shipping-policy
+Allow: /cancellation-refunds
+Allow: /contact
+
+# Block internal authenticated routes from indexing
+Disallow: /admin/
+Disallow: /super-admin/
+Disallow: /kitchen/
+Disallow: /setup-password
+Disallow: /reset-password/
+Disallow: /payment-status
+Disallow: /activate-plan
+
+Sitemap: https://eatgreet.com/sitemap.xml

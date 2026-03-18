@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { authAPI, statsAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
 import { Mail, Lock, ArrowRight, UserCircle, LayoutDashboard, UtensilsCrossed, TrendingUp, X } from 'lucide-react';
+import logoFull from '../../assets/logo-full.png';
 
 export default function AdminLogin() {
     const { login } = useSettings();
@@ -86,12 +87,9 @@ export default function AdminLogin() {
                         <motion.div 
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="flex items-center gap-2 mb-12"
+                            className="mb-12"
                         >
-                            <div className="w-10 h-10 bg-[#FD6941] rounded-xl flex items-center justify-center shadow-lg shadow-orange-200">
-                                <UtensilsCrossed className="text-white w-5 h-5" />
-                            </div>
-                            <span className="text-gray-900 font-bold text-xl tracking-tight">EatGreet</span>
+                            <img src={logoFull} alt="EatGreet" className="h-8 md:h-10 w-auto" />
                         </motion.div>
 
                         <motion.div
@@ -99,8 +97,8 @@ export default function AdminLogin() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
                         >
-                            <h1 className="text-[32px] md:text-[40px] font-bold text-gray-900 leading-tight mb-2 italic">Welcome back</h1>
-                            <p className="text-gray-400 text-sm mb-10 font-light italic">Login to manage your restaurant dashboard</p>
+                            <h1 className="text-[32px] md:text-[40px] font-bold text-gray-900 leading-tight mb-2">Welcome back</h1>
+                            <p className="text-gray-400 text-sm mb-10 font-normal">Login to manage your restaurant dashboard</p>
                         </motion.div>
 
                         <form onSubmit={handleLogin} className="space-y-6">
@@ -146,7 +144,7 @@ export default function AdminLogin() {
                                 </div>
                             </div>
 
-                            <div className="flex items-center justify-between text-xs text-gray-400 px-1 italic">
+                            <div className="flex items-center justify-between text-xs text-gray-400 px-1">
                                 <label className="flex items-center cursor-pointer hover:text-gray-600 transition-colors">
                                     <input
                                         type="checkbox"
@@ -176,7 +174,7 @@ export default function AdminLogin() {
                     </div>
 
                     <div className="mt-8 pt-8 border-t border-gray-100">
-                        <p className="text-center text-sm text-gray-400 font-light italic">
+                        <p className="text-center text-sm text-gray-400 font-normal">
                             Don't have an account? <Link to="/signup" className="text-[#FD6941] font-bold hover:underline ml-1">Get Started</Link>
                         </p>
                     </div>

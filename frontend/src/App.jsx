@@ -13,6 +13,13 @@ const SetupPassword = lazy(() => import('./pages/auth/SetupPassword'));
 const PaymentStatus = lazy(() => import('./pages/payment/PaymentStatus'));
 const PlanActivation = lazy(() => import('./pages/payment/PlanActivation'));
 
+// Legal Pages
+const TermsAndConditions = lazy(() => import('./pages/legal/TermsAndConditions'));
+const PrivacyPolicy = lazy(() => import('./pages/legal/PrivacyPolicy'));
+const ShippingPolicy = lazy(() => import('./pages/legal/ShippingPolicy'));
+const CancellationRefunds = lazy(() => import('./pages/legal/CancellationRefunds'));
+const ContactUs = lazy(() => import('./pages/legal/ContactUs'));
+
 // Super Admin Imports
 const SuperAdminLayout = lazy(() => import('./layouts/SuperAdminLayout'));
 const SuperAdminDashboard = lazy(() => import('./pages/super-admin/SuperAdminDashboard'));
@@ -167,6 +174,13 @@ function App() {
             <Route path="/payment-status" element={<PaymentStatus />} />
             <Route path="/activate-plan" element={<PlanActivation />} />
             <Route path="/renew-subscription" element={<Navigate to="/activate-plan" replace />} />
+
+            {/* Legal Pages */}
+            <Route path="/terms" element={<TermsAndConditions />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/shipping-policy" element={<ShippingPolicy />} />
+            <Route path="/cancellation-refunds" element={<CancellationRefunds />} />
+            <Route path="/contact" element={<ContactUs />} />
 
             {/* Personalized Onboarding - Public via Token */}
             <Route path="/:restaurantName/onboarding" element={<Onboarding />} />

@@ -239,6 +239,28 @@ const AdminSettings = () => {
                     return;
                 }
 
+                const password = passwords.newPassword;
+                const checks = {
+                    length: password.length >= 8 && password.length <= 15,
+                    upper: /[A-Z]/.test(password),
+                    lower: /[a-z]/.test(password),
+                    digit: /[0-9]/.test(password),
+                    symbol: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+                };
+
+                const missing = [];
+                if (password.length < 8) missing.push("too short (min 8)");
+                if (password.length > 15) missing.push("too long (max 15)");
+                if (!checks.upper) missing.push("uppercase missing");
+                if (!checks.lower) missing.push("lowercase missing");
+                if (!checks.digit) missing.push("digit missing");
+                if (!checks.symbol) missing.push("symbol missing");
+
+                if (missing.length > 0) {
+                    toast.error(`Password ${missing[0]}`, { id: loadToast });
+                    return;
+                }
+
                 const currentPassword = window.prompt("Please enter your current password to confirm changes:");
                 if (!currentPassword) {
                     toast.error('Current password is required to change password', { id: loadToast });
@@ -408,8 +430,8 @@ const AdminSettings = () => {
                                     <div className="md:col-span-2 border-t border-gray-100 pt-6 mt-2">
                                         <h4 className="font-normal text-gray-800 mb-4">Change Password</h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <InputGroup label="New Password" name="newPassword" value={passwords.newPassword} onChange={handlePasswordChange} type="password" placeholder="••••••••" />
-                                            <InputGroup label="Confirm Password" name="confirmPassword" value={passwords.confirmPassword} onChange={handlePasswordChange} type="password" placeholder="••••••••" />
+                                            <InputGroup label="New Password (8-15 chars + Symbols)" name="newPassword" value={passwords.newPassword} onChange={handlePasswordChange} type="password" placeholder="••••••••" maxLength="15" />
+                                            <InputGroup label="Confirm Password" name="confirmPassword" value={passwords.confirmPassword} onChange={handlePasswordChange} type="password" placeholder="••••••••" maxLength="15" />
                                         </div>
                                     </div>
                                 </div>

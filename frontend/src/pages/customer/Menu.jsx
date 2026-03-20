@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useOutletContext, useSearchParams } from 'react-router-dom';
+import { useOutletContext, useSearchParams, useNavigate } from 'react-router-dom';
 import { MENU_ITEMS_KEY, CATEGORIES_KEY } from '../../constants';
 import {
     Search, Plus, Minus, ShoppingBag,
@@ -21,6 +21,9 @@ import nonVegIcon from '../../assets/non-veg.svg';
 import arVideo from '../../assets/AR_Menu_Experience_Video_Generation.mp4';
 import arIcon from '../../assets/3d-icon-black.svg';
 import { useSocket } from '../../context/SocketContext';
+import logoFull from '../../assets/logo-full.png';
+
+const generateSlug = (name) => name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'item';
 
 const dietaryIcons = {
     'Sugar-Free': sugarFreeIcon,
@@ -62,6 +65,7 @@ import { useSettings } from '../../context/SettingsContext';
 
 const Menu = () => {
     const { user, currencySymbol: contextSymbol } = useSettings();
+    const navigate = useNavigate();
     const {
         cart, addToCart, removeFromCart, clearCart,
         showBill, setShowBill,
@@ -90,6 +94,7 @@ const Menu = () => {
 
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedItem, setSelectedItem] = useState(null);
+    const [isInitialLoading, setIsInitialLoading] = useState(true);
     const [orderPlaced, setOrderPlaced] = useState(false);
     const [menuItems, setMenuItems] = useState([]);
     const [categories, setCategories] = useState(["All"]);
@@ -186,7 +191,8 @@ const Menu = () => {
             const [menuRes, catRes, offerRes] = await Promise.all([
                 menuAPI.getAll(params),
                 categoryAPI.getAll(params),
-                apis.offerAPI.getAll(params)
+                apis.offerAPI.getAll(params),
+                new Promise(resolve => setTimeout(resolve, 1000))
             ]);
             setMenuItems(menuRes.data || []);
             setCategories(["All", ...(catRes.data || []).map(c => c.name)]);
@@ -195,6 +201,8 @@ const Menu = () => {
             setFetchedOffers(activeOffers);
         } catch (error) {
             console.error('Error fetching data:', error);
+        } finally {
+            setIsInitialLoading(false);
         }
     };
 
@@ -402,6 +410,16 @@ const Menu = () => {
             originalPrice: hasBackendDiscount ? item.originalPrice : null
         };
     });
+
+    if (isInitialLoading) {
+        return (
+            <div className="fixed inset-0 z-[200] flex justify-center items-center bg-white min-h-[100dvh]">
+                <div className="flex flex-col items-center gap-8 animate-in fade-in zoom-in-95 duration-1000">
+                    <img src={logoFull} alt="EatGreet" className="h-16 md:h-20 w-auto object-contain animate-pulse" />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-gray-50 min-h-screen pb-32 md:pb-0">
@@ -629,17 +647,7 @@ const Menu = () => {
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    const viewerId = `model-${item._id}`;
-                                                    const viewer = document.getElementById(viewerId);
-                                                    if (viewer) {
-                                                        if (viewer.activateAR) {
-                                                            viewer.activateAR();
-                                                        } else {
-                                                            console.warn("activateAR method not found on model-viewer element");
-                                                        }
-                                                    } else {
-                                                        console.error(`Model viewer with ID ${viewerId} not found`);
-                                                    }
+                                                    navigate(`3d/${generateSlug(item.name)}`);
                                                 }}
                                                 disabled={isPreviewMode}
                                                 className={`flex w-8 h-8 md:w-14 md:h-14 rounded-full items-center justify-center transition-all shadow-sm bg-white text-black border border-gray-300 hover:scale-110 active:scale-95 duration-300 ${isPreviewMode ? 'opacity-100 cursor-not-allowed' : ''}`}
@@ -1052,8 +1060,7 @@ const Menu = () => {
                                     {(selectedItem.models && selectedItem.models.length > 0) && (
                                         <button
                                             onClick={() => {
-                                                const viewer = document.querySelector('#preview-model-viewer');
-                                                if (viewer) viewer.activateAR();
+                                                navigate(`3d/${generateSlug(selectedItem.name)}`);
                                             }}
                                             className="h-12 w-12 md:h-14 md:w-14 rounded-full bg-blue-50 border border-blue-100 text-black flex items-center justify-center hover:bg-blue-100 transition-colors shadow-sm"
                                         >
@@ -1143,6 +1150,7 @@ const Menu = () => {
                     </div>
                 )
             }
+
         </div >
     );
 };

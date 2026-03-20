@@ -57,6 +57,7 @@ const CustomerLayout = lazy(() => import('./layouts/CustomerLayout'));
 const Menu = lazy(() => import('./pages/customer/Menu'));
 const CustomerProfile = lazy(() => import('./pages/customer/CustomerProfile'));
 const CustomerSettings = lazy(() => import('./pages/customer/CustomerSettings'));
+const Customer3DViewer = lazy(() => import('./pages/customer/Customer3DViewer'));
 
 const LoadingSpinner = () => (
   <div className="min-h-screen flex items-center justify-center bg-[#EBF2F2]">
@@ -249,7 +250,7 @@ function App() {
               <Route index element={<Menu />} />
               <Route path="menu" element={<Menu />} />
               <Route path="profile" element={<CustomerProfile />} />
-
+              <Route path="3d/:itemName" element={<Customer3DViewer />} />
             </Route>
 
             {/* New Safe Table Specific Route */}
@@ -257,6 +258,7 @@ function App() {
               <Route index element={<Menu />} />
               <Route path="menu" element={<Menu />} />
               <Route path="profile" element={<CustomerProfile />} />
+              <Route path="3d/:itemName" element={<Customer3DViewer />} />
             </Route>
 
             {/* Legacy Table Specific Route */}
@@ -264,6 +266,7 @@ function App() {
               <Route index element={<Menu />} />
               <Route path="menu" element={<Menu />} />
               <Route path="profile" element={<CustomerProfile />} />
+              <Route path="3d/:itemName" element={<Customer3DViewer />} />
             </Route>
 
 

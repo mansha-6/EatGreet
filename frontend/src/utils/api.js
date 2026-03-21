@@ -152,6 +152,13 @@ export const offerAPI = {
   delete: (id) => api.delete(`/offers/${id}`),
 };
 
+export const blogAPI = {
+  getAll: () => api.get('/blogs'),
+  getBySlug: (slug) => api.get(`/blogs/${slug}`),
+  create: (data) => api.post('/blogs', data),
+  delete: (id) => api.delete(`/blogs/${id}`),
+};
+
 export const orderAPI = {
   getOrders: (params) => api.get('/orders', { params }),
   create: (orderData, restaurantName) => api.post('/orders', orderData, { params: { restaurantName } }),
@@ -264,7 +271,8 @@ const apis = {
   orderAPI,
   customerAPI,
   restaurantAPI,
-  uploadAPI
+  uploadAPI,
+  blogAPI
 };
 
 export default apis;

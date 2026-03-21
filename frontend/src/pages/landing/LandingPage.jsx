@@ -39,12 +39,14 @@ import PricingPlans from '../../components/landing/PricingPlans';
 import { ContainerScroll } from '../../components/landing/ContainerScroll';
 import LandingFooter from '../../components/landing/LandingFooter';
 import arVideo from '../../assets/AR_Menu_Experience_Video_Generation.mp4';
+import arPoster from '../../assets/ar-video-poster.png';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 gsap.registerPlugin(ScrollTrigger);
 
 import FluidCanvas from '../../components/landing/FluidCanvas';
 import Lenis from 'lenis';
+import SEO from '../../components/SEO';
 
 const navItems = [
     { name: "Menu", link: "#menu-showcase" },
@@ -580,6 +582,11 @@ export default function LandingPage() {
 
     return (
         <div className="min-h-screen bg-white text-gray-900 overflow-visible relative">
+            <SEO 
+                title="EatGreet | One-stop dining platform for your restaurant"
+                description="Orchestrate every touchpoint — interactive 3D menus, kitchen displays, real-time analytics, and a full manager command center in one ecosystem."
+                keywords="restaurant management, AR menu, digital menu, 3D food visualization, kitchen display system, POS, restaurant analytics"
+            />
             <FluidCanvas />
 
             <FloatingNav navItems={navItems} />
@@ -652,6 +659,8 @@ export default function LandingPage() {
                             loop
                             muted
                             playsInline
+                            poster={arPoster}
+                            preload="metadata"
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         >
                             <source src={arVideo} type="video/mp4" />

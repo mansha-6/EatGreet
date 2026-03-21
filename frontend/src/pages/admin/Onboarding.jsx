@@ -229,7 +229,7 @@ const Onboarding = () => {
         if (token) {
             const password = formData.password;
             const checks = {
-                length: password.length <= 8 && password.length > 0,
+                length: password.length >= 8 && password.length <= 16,
                 upper: /[A-Z]/.test(password),
                 lower: /[a-z]/.test(password),
                 digit: /[0-9]/.test(password),
@@ -237,7 +237,8 @@ const Onboarding = () => {
             };
 
             const missing = [];
-            if (password.length > 8) missing.push("Password too long (max 8 chars)");
+            if (password.length < 8) missing.push("Password too short (min 8 chars)");
+            if (password.length > 16) missing.push("Password too long (max 16 chars)");
             if (password.length === 0) missing.push("Password required");
             if (!checks.upper) missing.push("Uppercase letter missing");
             if (!checks.lower) missing.push("Lowercase letter missing");
@@ -448,7 +449,7 @@ const Onboarding = () => {
                                     {token && (
                                         <>
                                             <div>
-                                                <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1 uppercase tracking-wider">New Password (8 Chars max)</label>
+                                                <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1 uppercase tracking-wider">New Password (8-16 characters)</label>
                                                 <div className="relative">
                                                     <input
                                                         type={showPassword ? "text" : "password"}
@@ -456,7 +457,7 @@ const Onboarding = () => {
                                                         value={formData.password}
                                                         onChange={handleChange}
                                                         placeholder="••••••••"
-                                                        maxLength="8"
+                                                        maxLength="16"
                                                         className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
                                                         required
                                                     />
@@ -475,7 +476,7 @@ const Onboarding = () => {
                                                             <span className={`text-[10px] px-2 py-0.5 rounded-full ${/[a-z]/.test(formData.password) ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>Lowercase</span>
                                                             <span className={`text-[10px] px-2 py-0.5 rounded-full ${/[0-9]/.test(formData.password) ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>Digit</span>
                                                             <span className={`text-[10px] px-2 py-0.5 rounded-full ${/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>Symbol</span>
-                                                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${formData.password.length > 0 && formData.password.length <= 8 ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>Max 8 Chars</span>
+                                                            <span className={`text-[10px] px-2 py-0.5 rounded-full ${formData.password.length >= 8 && formData.password.length <= 16 ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>8-16 Chars</span>
                                                         </div>
                                                         {passwordError && <p className="text-[10px] text-red-400 mt-1 italic">{passwordError}</p>}
                                                     </div>
@@ -490,7 +491,7 @@ const Onboarding = () => {
                                                         value={formData.confirmPassword}
                                                         onChange={handleChange}
                                                         placeholder="••••••••"
-                                                        maxLength="8"
+                                                        maxLength="16"
                                                         className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
                                                         required
                                                     />

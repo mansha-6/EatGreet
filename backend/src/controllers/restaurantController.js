@@ -213,7 +213,7 @@ const completeOnboarding = async (req, res) => {
         // 2. Setup or Update Password
         if (token) {
             const checks = {
-                length: password && password.length <= 8 && password.length > 0,
+                length: password && password.length >= 8 && password.length <= 16,
                 upper: /[A-Z]/.test(password),
                 lower: /[a-z]/.test(password),
                 digit: /[0-9]/.test(password),
@@ -223,7 +223,8 @@ const completeOnboarding = async (req, res) => {
             const missing = [];
             if (!password) missing.push("Password required");
             else {
-                if (password.length > 8) missing.push("Password too long (max 8 chars)");
+                if (password.length < 8) missing.push("Password too short (min 8 chars)");
+                if (password.length > 16) missing.push("Password too long (max 16 chars)");
                 if (!checks.upper) missing.push("Uppercase letter missing");
                 if (!checks.lower) missing.push("Lowercase letter missing");
                 if (!checks.digit) missing.push("Digit missing");

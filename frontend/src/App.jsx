@@ -12,6 +12,8 @@ const Signup = lazy(() => import('./pages/auth/Signup'));
 const SetupPassword = lazy(() => import('./pages/auth/SetupPassword'));
 const PaymentStatus = lazy(() => import('./pages/payment/PaymentStatus'));
 const PlanActivation = lazy(() => import('./pages/payment/PlanActivation'));
+const BlogList = lazy(() => import('./pages/blogs/BlogList'));
+const BlogSingle = lazy(() => import('./pages/blogs/BlogSingle'));
 
 // Legal Pages
 const TermsAndConditions = lazy(() => import('./pages/legal/TermsAndConditions'));
@@ -182,6 +184,10 @@ function App() {
             <Route path="/shipping-policy" element={<ShippingPolicy />} />
             <Route path="/cancellation-refunds" element={<CancellationRefunds />} />
             <Route path="/contact" element={<ContactUs />} />
+
+            {/* Blogs */}
+            <Route path="/blogs" element={<BlogList />} />
+            <Route path="/blogs/:slug" element={<BlogSingle />} />
 
             {/* Personalized Onboarding - Public via Token */}
             <Route path="/:restaurantName/onboarding" element={<Onboarding />} />

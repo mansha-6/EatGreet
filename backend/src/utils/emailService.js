@@ -51,11 +51,15 @@ const primaryTransporter = createTransporter({
  */
 const verifySMTP = async () => {
     try {
-        await primaryTransporter.verify();
+        console.log(`🔍 DIAGNOSTIC: Testing SMTP via ${smtpHost}:${smtpPort} (Secure: ${smtpSecure})...`);
+        const result = await primaryTransporter.verify();
         console.log('✅ SMTP Connection verified successfully');
         return true;
     } catch (error) {
         console.error('❌ SMTP Verification failed:', error.message);
+        if (error.code === 'ENETUNREACH') {
+            console.error('💡 TIP: The server cannot reach the mail host. This is often an IPv6 issue. Forcing IPv4...');
+        }
         return false;
     }
 };
@@ -522,7 +526,7 @@ const sendSubscriptionReminder = async (userEmail, userName, planName, endDate) 
 const sendNewOrderNotificationEmail = async (adminEmail, restaurantName, orderData) => {
     const { items, totalAmount, tableNumber, customerInfo, dailySequence, instruction } = orderData;
     const formattedTotal = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(totalAmount);
-    
+
     const itemsHtml = items.map(item => `
         <tr style="border-bottom: 1px solid #f1f5f9;">
             <td style="padding: 12px 0;">

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Globe, ShieldCheck } from 'lucide-react';
+import { Globe, ShieldCheck, BookText } from 'lucide-react';
 import logoFull from '../../assets/logo-full.png';
 
 export default function LandingFooter() {
@@ -49,7 +49,8 @@ export default function LandingFooter() {
                             <ul className="space-y-3 md:space-y-4 text-gray-500 text-[12px] md:text-sm font-medium">
                                 <li className="hover:text-[#FD6941] transition-all cursor-pointer flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" /> Global</li>
                                 <li className="hover:text-[#FD6941] transition-all cursor-pointer flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" /> Privacy</li>
-                                <li><Link to="/contact" className="hover:text-[#FD6941] transition-all text-[11px] md:text-[13px]">Contact Us</Link></li>
+                                <li><Link to="/blogs" className="hover:text-[#FD6941] transition-all flex items-center gap-1.5"><BookText className="w-3.5 h-3.5" /> Blogs</Link></li>
+                                <li><Link to="/contact" className="hover:text-[#FD6941] transition-all">Contact Us</Link></li>
                             </ul>
                         </div>
 

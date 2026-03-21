@@ -51,8 +51,8 @@ const hashOtp = (otpCode) => crypto.createHash('sha256').update(otpCode).digest(
 
 const validatePassword = (password) => {
     if (!password) return { isValid: false, message: 'Password is required' };
-    if (password.length < 8 || password.length > 15) {
-        return { isValid: false, message: 'Password must be between 8 and 15 characters' };
+    if (password.length < 8 || password.length > 16) {
+        return { isValid: false, message: 'Password must be between 8 and 16 characters' };
     }
     const hasUpper = /[A-Z]/.test(password);
     const hasLower = /[a-z]/.test(password);
@@ -246,11 +246,12 @@ const sendSuperAdminOtp = async (req, res) => {
         const now = new Date();
         const lastSent = user.superAdminOtp?.lastSentAt ? new Date(user.superAdminOtp.lastSentAt) : null;
         if (lastSent && now.getTime() - lastSent.getTime() < 60 * 1000) {
+            console.log('⏳ OTP throttled: requested too soon.');
             return res.status(429).json({ message: 'OTP already sent recently. Please wait 60 seconds.' });
         }
 
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.error(`🚨 EMAIL_SERVICE_ERROR: EMAIL_USER is ${process.env.EMAIL_USER ? 'PRESENT' : 'MISSING'}, EMAIL_PASS is ${process.env.EMAIL_PASS ? 'PRESENT' : 'MISSING'}.`);
+            console.error(`🚨 EMAIL_SERVICE_ERROR: EMAIL_USER or EMAIL_PASS missing in environment!`);
             return res.status(503).json({
                 message: 'Email service is not configured on server. Please set EMAIL_USER and EMAIL_PASS.'
             });
@@ -259,43 +260,35 @@ const sendSuperAdminOtp = async (req, res) => {
         const otpCode = createOtpCode();
         const newOtpData = {
             codeHash: hashOtp(otpCode),
-            expiresAt: new Date(now.getTime() + 5 * 60 * 1000), // Extended to 5 mins for better UX
+            expiresAt: new Date(now.getTime() + 5 * 60 * 1000),
             lastSentAt: now,
             attempts: 0
         };
 
-        // 2. Send email first. If it fails, we don't update the user's OTP in DB.
-        console.log(`📡 Dispatching Super Admin OTP to ${normalizedEmail}...`);
-        if (process.env.NODE_ENV === 'development' || process.env.DEBUG_OTP === 'true') {
-            console.log(`🔑 [SECURITY LOG] Super Admin OTP Code: ${otpCode}`);
-        }
+        console.log(`📡 Attempting to dispatch Super Admin OTP to ${normalizedEmail} using ${process.env.EMAIL_USER}...`);
         
         try {
             await sendSuperAdminOtpEmail(normalizedEmail, otpCode);
+            console.log('✅ Super Admin OTP email dispatched successfully');
             
-            // 3. Only save to DB if email sent successfully
             user.superAdminOtp = newOtpData;
             await user.save();
+            console.log('✅ OTP data saved to database');
 
             res.status(200).json({
                 message: 'Access code sent! Please check your email.',
                 otpSent: true
             });
         } catch (emailError) {
-            console.error(`❌ Email Delivery Failed: ${emailError.message}`);
+            console.error('❌ Email Delivery Failed in controller:', emailError);
             res.status(500).json({ 
                 message: `Failed to deliver OTP email: ${emailError.message}`,
-                debug: process.env.NODE_ENV === 'development' ? emailError.stack : undefined
+                error: emailError.code,
+                stack: process.env.NODE_ENV === 'development' ? emailError.stack : undefined
             });
         }
     } catch (error) {
-        console.error('❌ Super Admin OTP Error:', error);
-        if (error.code === 'EAUTH') {
-            return res.status(502).json({ message: 'SMTP authentication failed. Please verify email credentials.' });
-        }
-        if (['ECONNECTION', 'ETIMEDOUT', 'ESOCKET'].includes(error.code)) {
-            return res.status(504).json({ message: 'Email server timeout. Please try again in a moment.' });
-        }
+        console.error('❌ Super Admin OTP Critical Error:', error);
         res.status(500).json({ message: 'Failed to send OTP email. Please try again.' });
     }
 };

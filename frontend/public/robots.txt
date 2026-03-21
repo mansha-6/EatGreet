@@ -7,6 +7,8 @@ Allow: /privacy
 Allow: /shipping-policy
 Allow: /cancellation-refunds
 Allow: /contact
+Allow: /blogs
+Allow: /blogs/
 
 # Block internal authenticated routes from indexing
 Disallow: /admin/

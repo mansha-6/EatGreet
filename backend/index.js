@@ -152,6 +152,7 @@ const orderRoutes = require('./src/routes/orderRoutes');
 const statsRoutes = require('./src/routes/statsRoutes');
 const paymentRoutes = require('./src/routes/paymentRoutes');
 const offerRoutes = require('./src/routes/offerRoutes'); // Added offerRoutes
+const blogRoutes = require('./src/routes/blogRoutes'); // Added blogRoutes
 const { resolveTenant } = require('./src/middleware/tenantMiddleware');
 
 // Health check
@@ -164,6 +165,20 @@ app.get('/api/health', async (req, res) => {
         env: process.env.NODE_ENV,
         ver: '1.2.0'
     });
+});
+
+app.get('/api/health/smtp', async (req, res) => {
+    const { verifySMTP } = require('./src/utils/emailService');
+    const isSmtpWorking = await verifySMTP();
+    if (isSmtpWorking) {
+        res.json({ status: 'ok', message: 'SMTP Connection is active' });
+    } else {
+        res.status(503).json({ 
+            status: 'error', 
+            message: 'SMTP Connection failed',
+            tip: 'Check your EMAIL_USER and EMAIL_PASS environment variables.'
+        });
+    }
 });
 
 // Middleware to ensure DB is connected for critical routes
@@ -188,6 +203,7 @@ app.use('/api/orders', ensureDB, resolveTenant, orderRoutes);
 app.use('/api/stats', ensureDB, statsRoutes);
 app.use('/api/payments', ensureDB, paymentRoutes);
 app.use('/api/offers', ensureDB, resolveTenant, offerRoutes); 
+app.use('/api/blogs', ensureDB, blogRoutes);
 
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });

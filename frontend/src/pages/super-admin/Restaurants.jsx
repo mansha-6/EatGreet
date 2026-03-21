@@ -166,7 +166,7 @@ export default function Restaurants() {
 
     const generatePassword = () => {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789@#';
-        return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+        return Array.from({ length: 12 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
     };
 
     const openAddModal = () => {
@@ -183,7 +183,7 @@ export default function Restaurants() {
         let value = rawValue;
         if (field === 'name') value = rawValue.replace(/[^a-zA-Z\s]/g, '');
         if (field === 'phone') value = rawValue.replace(/[^0-9]/g, '').slice(0, 10);
-        if (field === 'password') value = rawValue.slice(0, 8);
+        if (field === 'password') value = rawValue.slice(0, 16);
 
         setAddForm(prev => ({ ...prev, [field]: value }));
 
@@ -389,7 +389,8 @@ export default function Restaurants() {
         if (!addForm.email.trim()) errors.email = 'Required field';
         else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addForm.email)) errors.email = 'Invalid email';
         if (!addForm.password.trim()) errors.password = 'Required field';
-        else if (addForm.password.length < 6) errors.password = 'Min 6 characters';
+        else if (addForm.password.length < 8) errors.password = 'Min 8 characters';
+        else if (addForm.password.length > 16) errors.password = 'Max 16 characters';
         if (!addForm.restaurantName.trim()) errors.restaurantName = 'Required field';
         if (!addForm.phone.trim()) errors.phone = 'Required field';
         else if (addForm.phone.length !== 10) errors.phone = 'Must be exactly 10 digits';

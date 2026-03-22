@@ -813,7 +813,7 @@ const AdminMenu = () => {
                 </div>
 
                 {/* Menu Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 2xl:grid-cols-4 gap-3 sm:gap-4 max-h-[calc(100vh-260px)] overflow-y-auto no-scrollbar pb-10">
 
                     {/* Menu Items */}
                     {/* Loading State */}
@@ -887,7 +887,7 @@ const AdminMenu = () => {
                                             </span>
                                         </div>
 
-                                        <p className="text-[9px] sm:text-xs text-gray-400 leading-tight line-clamp-2 mt-auto">
+                                        <p className="text-[9px] sm:text-xs text-gray-400 leading-tight line-clamp-2 mt-auto min-h-[24px] sm:min-h-[30px]">
                                             {item.description}
                                         </p>
                                     </div>
@@ -930,7 +930,7 @@ const AdminMenu = () => {
                     {/* Add New Item Card */}
                     <div
                         onClick={openModal}
-                        className="border-2 border-dashed border-gray-200 rounded-[1.5rem] sm:rounded-3xl p-4 sm:p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#FD6941] hover:bg-[#FD6941]/5 transition-all h-[150px] sm:h-full group bg-gray-50 gap-3"
+                        className="border-2 border-dashed border-gray-200 rounded-[1.5rem] sm:rounded-3xl p-4 sm:p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:border-[#FD6941] hover:bg-[#FD6941]/5 transition-all h-[150px] sm:h-full sm:min-h-[350px] group bg-gray-50 gap-3"
                     >
                         <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300 shrink-0">
                             <Plus className="w-6 h-6 sm:w-8 sm:h-8 text-[#FD6941]" />

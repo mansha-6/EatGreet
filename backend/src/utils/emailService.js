@@ -765,12 +765,17 @@ const sendContactEmail = async ({ name, email, subject, message }) => {
             <td align="center">
                 <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:580px;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.08);">
 
-                    <!-- Header -->
+                    <!-- Logo bar (white bg so logo is always visible) -->
                     <tr>
-                        <td style="background:linear-gradient(135deg,#FD6941 0%,#ff8c6b 100%);padding:32px;text-align:center;">
-                            <img src="${LOGO_URL}" alt="EatGreet" style="height:44px;width:auto;display:block;margin:0 auto 16px;filter:brightness(0) invert(1);">
-                            <h1 style="margin:0;font-size:22px;font-weight:800;color:#ffffff;letter-spacing:0.5px;">New Contact Message</h1>
-                            <p style="margin:8px 0 0;font-size:13px;color:rgba(255,255,255,0.85);">Received on ${receivedAt} IST</p>
+                        <td style="background:#ffffff;padding:20px 32px 16px;text-align:center;border-bottom:1px solid #f1f5f9;">
+                            <img src="${LOGO_URL}" alt="EatGreet" style="height:36px;width:auto;display:block;margin:0 auto;">
+                        </td>
+                    </tr>
+                    <!-- Orange title bar -->
+                    <tr>
+                        <td style="background:linear-gradient(135deg,#FD6941 0%,#e8522e 100%);padding:28px 32px;text-align:center;">
+                            <h1 style="margin:0;font-size:22px;font-weight:800;color:#ffffff;letter-spacing:0.3px;">📬 New Contact Message</h1>
+                            <p style="margin:8px 0 0;font-size:13px;color:rgba(255,255,255,0.88);">Received on ${receivedAt} IST</p>
                         </td>
                     </tr>
 

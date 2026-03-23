@@ -12,6 +12,7 @@ const contactInfo = [
 export default function ContactUs() {
     const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
     const [submitted, setSubmitted] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -21,6 +22,7 @@ export default function ContactUs() {
             toast.error('Please fill in all required fields');
             return;
         }
+        setIsLoading(true);
         try {
             const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
             const res = await fetch(`${API_URL}/api/contact`, {
@@ -34,6 +36,8 @@ export default function ContactUs() {
             setSubmitted(true);
         } catch (err) {
             toast.error(err.message || 'Something went wrong. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -139,10 +143,20 @@ export default function ContactUs() {
 
                             <button
                                 type="submit"
-                                className="w-full bg-[#FD6941] text-white py-4 rounded-xl font-bold hover:bg-[#e15a35] transition-all shadow-lg shadow-orange-100 flex items-center justify-center gap-2 active:scale-95"
+                                disabled={isLoading}
+                                className="w-full bg-[#FD6941] text-white py-4 rounded-xl font-bold hover:bg-[#e15a35] transition-all shadow-lg shadow-orange-100 flex items-center justify-center gap-2 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed disabled:active:scale-100"
                             >
-                                <SendHorizonal className="w-4 h-4" />
-                                Send Message
+                                {isLoading ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        Sending...
+                                    </>
+                                ) : (
+                                    <>
+                                        <SendHorizonal className="w-4 h-4" />
+                                        Send Message
+                                    </>
+                                )}
                             </button>
                         </form>
                     )}

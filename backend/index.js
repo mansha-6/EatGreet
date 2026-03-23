@@ -205,6 +205,22 @@ app.use('/api/payments', ensureDB, paymentRoutes);
 app.use('/api/offers', ensureDB, resolveTenant, offerRoutes); 
 app.use('/api/blogs', ensureDB, blogRoutes);
 
+// Contact form — no DB needed, just sends email
+app.post('/api/contact', async (req, res) => {
+    try {
+        const { name, email, subject, message } = req.body;
+        if (!name || !email || !message) {
+            return res.status(400).json({ message: 'Name, email, and message are required.' });
+        }
+        const { sendContactEmail } = require('./src/utils/emailService');
+        await sendContactEmail({ name, email, subject, message });
+        res.json({ success: true, message: 'Your message has been sent!' });
+    } catch (err) {
+        console.error('Contact form error:', err.message);
+        res.status(500).json({ message: 'Failed to send message. Please try again later.' });
+    }
+});
+
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 

@@ -19,7 +19,7 @@ const sections = [
     },
     {
         title: '5. Technical Issues',
-        content: `If you experience issues accessing the Platform after payment, contact our support team immediately at support@eatgreet.com. We commit to resolving access issues within 4 business hours.`
+        content: `If you experience issues accessing the Platform after payment, contact our support team immediately at support@eatgreet.com. We commit to resolving access issues within 24–48 business hours.`
     },
     {
         title: '6. Contact',

@@ -8,108 +8,88 @@ import {
 import { cn } from "../../lib/utils";
 import logoFull from '../../assets/logo-full.png';
 
-export const FloatingNav = ({
-    navItems,
-    className,
-}) => {
+export const FloatingNav = ({ navItems, className }) => {
     const { scrollY } = useScroll();
-
     const [visible, setVisible] = useState(true);
     const [open, setOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [activeSection, setActiveSection] = useState("");
     const hideTimerRef = React.useRef(null);
 
-    // Track active section based on scroll
     React.useEffect(() => {
-        const observerOptions = {
-            root: null,
-            rootMargin: '-40% 0px -40% 0px', // More centered detection
-            threshold: 0
-        };
-
-        const observerCallback = (entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    if (entry.target.id === "hero-container") {
-                        setActiveSection("");
-                    } else {
-                        setActiveSection(`#${entry.target.id}`);
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setActiveSection(entry.target.id === "hero-container" ? "" : `#${entry.target.id}`);
                     }
-                }
-            });
-        };
-
-        const observer = new IntersectionObserver(observerCallback, observerOptions);
-
-        // Observe Hero
+                });
+            },
+            { root: null, rootMargin: '-40% 0px -40% 0px', threshold: 0 }
+        );
         const hero = document.getElementById("hero-container");
         if (hero) observer.observe(hero);
-
-        // Target sections based on nav item links
         navItems.forEach(item => {
-            const id = item.link.replace('#', '');
-            const element = document.getElementById(id);
-            if (element) observer.observe(element);
+            const el = document.getElementById(item.link.replace('#', ''));
+            if (el) observer.observe(el);
         });
-
         return () => observer.disconnect();
     }, [navItems]);
 
     useMotionValueEvent(scrollY, "change", (latest) => {
-        // Show immediately while scrolling
         setVisible(true);
         setScrolled(latest > 50);
-
-        // Reset the idle timer
         if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-
-        // Hide after 2.2 seconds of inactivity, only if scrolled down and menu is closed
         hideTimerRef.current = setTimeout(() => {
-            if (latest > 120 && !open) {
-                setVisible(false);
-            }
+            if (latest > 120 && !open) setVisible(false);
         }, 2200);
     });
 
-    // Cleanup timer on unmount
     React.useEffect(() => {
-        return () => {
-            if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
-        };
+        return () => { if (hideTimerRef.current) clearTimeout(hideTimerRef.current); };
     }, []);
 
     return (
         <AnimatePresence mode="wait">
             <motion.header
-                // ❌ Removed x: "-50%"
                 initial={{ y: -100 }}
-                animate={{
-                    y: visible ? (scrolled ? 16 : 0) : -100,
-                    width: scrolled ? "min(1250px, 94%)" : "100%",
-                    // ❌ Removed x: "-50%"
-                }}
-                transition={{
-                    duration: 0.4,
-                    ease: [0.23, 1, 0.32, 1]
-                }}
+                animate={{ y: visible ? 0 : -100 }}
+                transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
                 className={cn(
-                    "fixed top-0 left-0 right-0 mx-auto z-[5000] flex items-center transition-all duration-500",
+                    // Always fixed full-width — NO width animation
+                    "fixed top-0 left-0 right-0 z-[5000] transition-all duration-500",
                     scrolled
-                        ? "rounded-full bg-white/80 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] border border-white/50 h-14 md:h-16 mt-4"
-                        : "h-16 md:h-20 bg-white border-b border-black/[0.05]",
+                        ? "pt-3 pb-0 px-3 sm:px-5 md:px-8"   // padding creates float gap
+                        : "bg-white border-b border-black/[0.06]",
                     className
                 )}
             >
-                <div className="max-w-[1400px] mx-auto w-full px-6 md:px-10 flex items-center justify-between">
-                    {/* Brand */}
-                    <div className="flex items-center gap-3">
-                        <img src={logoFull} alt="EatGreet Logo" className="h-[24px] md:h-[28px] w-auto" />
-                    </div>
+                {/* Inner bar — pill on scroll, flat on top */}
+                <div className={cn(
+                    "w-full mx-auto flex flex-col transition-all duration-500",
+                    scrolled
+                        ? "max-w-6xl rounded-2xl sm:rounded-full bg-white/92 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.10)] border border-gray-100"
+                        : "max-w-none"
+                )}>
+                    {/* ── Main row ── */}
+                    <div className={cn(
+                        "flex items-center justify-between",
+                        scrolled
+                            ? "h-14 px-4 sm:px-6 md:px-10"
+                            : "h-16 md:h-[72px] px-5 sm:px-8 md:px-12"
+                    )}>
 
-                    {/* Navigation Links - Desktop with Animated Box */}
-                    <nav className="hidden md:flex items-center justify-center relative h-10 px-2">
-                        <div className="flex items-center gap-1 relative h-full">
+                        {/* Logo */}
+                        <a href="/" className="flex items-center shrink-0">
+                            <img
+                                src={logoFull}
+                                alt="EatGreet"
+                                className="h-[22px] sm:h-[24px] lg:h-[28px] w-auto"
+                            />
+                        </a>
+
+                        {/* Nav links — desktop only (1024px+) */}
+                        <nav className="hidden lg:flex items-center h-10 gap-1">
                             {navItems.map((item, idx) => {
                                 const isActive = activeSection === item.link && scrolled;
                                 return (
@@ -117,97 +97,97 @@ export const FloatingNav = ({
                                         key={idx}
                                         href={item.link}
                                         className={cn(
-                                            "relative px-6 h-full flex items-center justify-center text-[13px] font-bold transition-colors tracking-[0.18em] uppercase rounded-full z-10 min-w-[110px]",
+                                            "relative px-5 h-full flex items-center text-[11px] font-bold uppercase tracking-[0.15em] rounded-full transition-colors whitespace-nowrap",
                                             isActive ? "text-[#FD6941]" : "text-gray-500 hover:text-black"
                                         )}
                                     >
                                         {isActive && (
                                             <motion.div
                                                 layoutId="nav-pill"
-                                                initial={false} // ✅ Prevents the awkward corner jump when it first appears
-                                                className="absolute inset-0 bg-[#FD6941]/30 border border-[#FD6941]/40 rounded-full z-[-1]"
-                                                transition={{
-                                                    type: "spring",
-                                                    stiffness: 380,
-                                                    damping: 30
-                                                }}
+                                                initial={false}
+                                                className="absolute inset-0 bg-[#FD6941]/20 border border-[#FD6941]/30 rounded-full -z-10"
+                                                transition={{ type: "spring", stiffness: 380, damping: 30 }}
                                             />
                                         )}
-                                        {/* ✅ Wrap the text in a span to ensure it always stays above the pill */}
-                                        <span className="relative z-10">{item.name}</span>
+                                        {item.name}
                                     </a>
                                 );
                             })}
+                        </nav>
+
+                        {/* Right actions */}
+                        <div className="flex items-center gap-2 sm:gap-3 lg:gap-5 shrink-0">
+                            {/* Login — 640px+ */}
+                            <a
+                                href="/admin/login"
+                                className="hidden sm:block text-[11px] font-extrabold text-[#FD6941] hover:text-[#E55A35] transition-colors uppercase tracking-widest whitespace-nowrap"
+                            >
+                                Login
+                            </a>
+
+                            {/* Get Started — 640px+ */}
+                            <a
+                                href="#contact"
+                                className="hidden sm:inline-flex items-center px-4 py-2 sm:px-5 lg:px-7 lg:py-2.5 bg-[#FD6941] text-white text-[10px] lg:text-[11px] font-extrabold rounded-full hover:bg-[#E55A35] transition-all shadow-md shadow-[#FD6941]/20 whitespace-nowrap tracking-wider uppercase"
+                            >
+                                Get Started
+                            </a>
+
+                            {/* Hamburger — below lg (mobile + tablet) */}
+                            <button
+                                onClick={() => setOpen(!open)}
+                                className="lg:hidden flex flex-col justify-center gap-[5px] w-8 h-8 cursor-pointer focus:outline-none"
+                                aria-label="Toggle menu"
+                            >
+                                <motion.span animate={{ rotate: open ? 45 : 0, y: open ? 7 : 0 }} className="h-0.5 w-5 bg-gray-800 rounded-full block origin-center" />
+                                <motion.span animate={{ opacity: open ? 0 : 1 }} className="h-0.5 w-5 bg-gray-800 rounded-full block" />
+                                <motion.span animate={{ rotate: open ? -45 : 0, y: open ? -7 : 0 }} className="h-0.5 w-5 bg-gray-800 rounded-full block origin-center" />
+                            </button>
                         </div>
-                    </nav>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-4 md:gap-8">
-                        <a
-                            href="/admin/login"
-                            className="text-[13px] font-bold text-gray-700 hover:text-black transition-colors px-1 uppercase tracking-widest hidden md:block"
-                        >
-                            LOGIN
-                        </a>
-                        <a
-                            href="#contact"
-                            className="hidden md:flex px-8 py-3 bg-[#FD6941] text-white text-[12px] font-extrabold rounded-full hover:bg-[#E55A35] transition-all shadow-lg shadow-[#FD6941]/20 whitespace-nowrap tracking-wider uppercase"
-                        >
-                            Get Started
-                        </a>
-
-                        {/* Mobile Menu Toggle (Three Line Dropdown) */}
-                        <button
-                            onClick={() => setOpen(!open)}
-                            className="md:hidden flex flex-col gap-1.5 w-6 cursor-pointer focus:outline-none pr-1"
-                        >
-                            <motion.span
-                                animate={{ rotate: open ? 45 : 0, y: open ? 8 : 0 }}
-                                className="h-0.5 w-full bg-black rounded-full block origin-center"
-                            />
-                            <motion.span
-                                animate={{ opacity: open ? 0 : 1 }}
-                                className="h-0.5 w-full bg-black rounded-full block"
-                            />
-                            <motion.span
-                                animate={{ rotate: open ? -45 : 0, y: open ? -8 : 0 }}
-                                className="h-0.5 w-full bg-black rounded-full block origin-center"
-                            />
-                        </button>
                     </div>
-                </div>
 
-                {/* Mobile Menu Overlay */}
-                <AnimatePresence>
-                    {open && (
-                        <motion.div
-                            initial={{ opacity: 0, height: 0, scale: 0.98 }}
-                            animate={{ opacity: 1, height: 'auto', scale: 1 }}
-                            exit={{ opacity: 0, height: 0, scale: 0.98 }}
-                            className={cn(
-                                "absolute top-full left-0 right-0 bg-white border-b border-black/[0.05] md:hidden overflow-hidden",
-                                scrolled && "rounded-3xl mt-2 shadow-2xl border border-black/5 mx-2"
-                            )}
-                        >
-                            <div className="flex flex-col p-8 gap-6">
-                                {navItems.map((item, idx) => (
-                                    <a
-                                        key={idx}
-                                        href={item.link}
-                                        onClick={() => setOpen(false)}
-                                        className="text-xs font-bold text-gray-700 tracking-[0.2em] uppercase"
-                                    >
-                                        {item.name}
-                                    </a>
-                                ))}
-                                <div className="pt-6 border-t border-gray-100 flex items-center justify-between">
-                                    <a href="/admin/login" className="text-xs font-bold text-gray-900 tracking-[0.22em] uppercase">Login</a>
-                                    <a href="#contact" onClick={() => setOpen(false)} className="text-xs font-extrabold text-[#FD6941] tracking-[0.2em] uppercase">Connect</a>
+                    {/* ── Dropdown ── mobile & tablet */}
+                    <AnimatePresence>
+                        {open && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="overflow-hidden lg:hidden"
+                            >
+                                <div className="px-4 sm:px-6 pt-1 pb-5 flex flex-col gap-4">
+                                    {/* Nav links: 2 cols mobile, 4 cols tablet */}
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-1">
+                                        {navItems.map((item, idx) => (
+                                            <a
+                                                key={idx}
+                                                href={item.link}
+                                                onClick={() => setOpen(false)}
+                                                className="text-[11px] font-bold text-gray-600 tracking-[0.18em] uppercase py-3 px-2 rounded-xl hover:bg-gray-50 hover:text-[#FD6941] transition-colors text-center"
+                                            >
+                                                {item.name}
+                                            </a>
+                                        ))}
+                                    </div>
+
+                                    {/* Mobile bottom row — Login + CTA (hidden sm+ since shown in header) */}
+                                    <div className="flex items-center justify-between pt-3 border-t border-gray-100 sm:hidden">
+                                        <a href="/admin/login" className="text-[11px] font-extrabold text-[#FD6941] uppercase tracking-wider">
+                                            Login
+                                        </a>
+                                        <a
+                                            href="#contact"
+                                            onClick={() => setOpen(false)}
+                                            className="px-5 py-2 bg-[#FD6941] text-white text-[10px] font-extrabold rounded-full hover:bg-[#E55A35] transition-all uppercase tracking-wider"
+                                        >
+                                            Get Started
+                                        </a>
+                                    </div>
                                 </div>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
             </motion.header>
         </AnimatePresence>
     );

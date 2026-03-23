@@ -745,6 +745,110 @@ const sendForgotPasswordEmail = async (userEmail, userName, resetUrl) => {
     });
 };
 
+/**
+ * CONTACT FORM EMAIL (Sent to EatGreet inbox when a user submits the contact form)
+ */
+const sendContactEmail = async ({ name, email, subject, message }) => {
+    const receivedAt = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+    const adminEmail = process.env.APP_ADMIN_EMAIL || 'eatgreetofficial@gmail.com';
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Contact Message</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background-color:#f1f5f9;padding:40px 16px;">
+        <tr>
+            <td align="center">
+                <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="max-width:580px;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.08);">
+
+                    <!-- Header -->
+                    <tr>
+                        <td style="background:linear-gradient(135deg,#FD6941 0%,#ff8c6b 100%);padding:32px;text-align:center;">
+                            <img src="${LOGO_URL}" alt="EatGreet" style="height:44px;width:auto;display:block;margin:0 auto 16px;filter:brightness(0) invert(1);">
+                            <h1 style="margin:0;font-size:22px;font-weight:800;color:#ffffff;letter-spacing:0.5px;">New Contact Message</h1>
+                            <p style="margin:8px 0 0;font-size:13px;color:rgba(255,255,255,0.85);">Received on ${receivedAt} IST</p>
+                        </td>
+                    </tr>
+
+                    <!-- Sender Meta -->
+                    <tr>
+                        <td style="padding:28px 32px 0;">
+                            <p style="margin:0 0 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;">Sender Details</p>
+                            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="border:1px solid #e2e8f0;border-radius:12px;overflow:hidden;">
+                                <tr style="background:#f8fafc;">
+                                    <td style="padding:12px 16px;width:30%;border-bottom:1px solid #e2e8f0;">
+                                        <p style="margin:0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#94a3b8;">Name</p>
+                                    </td>
+                                    <td style="padding:12px 16px;border-bottom:1px solid #e2e8f0;">
+                                        <p style="margin:0;font-size:14px;font-weight:700;color:#0f172a;">${name}</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:12px 16px;width:30%;border-bottom:1px solid #e2e8f0;background:#f8fafc;">
+                                        <p style="margin:0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#94a3b8;">Email</p>
+                                    </td>
+                                    <td style="padding:12px 16px;border-bottom:1px solid #e2e8f0;">
+                                        <a href="mailto:${email}" style="font-size:14px;font-weight:600;color:#FD6941;text-decoration:none;">${email}</a>
+                                    </td>
+                                </tr>
+                                <tr style="background:#f8fafc;">
+                                    <td style="padding:12px 16px;width:30%;">
+                                        <p style="margin:0;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#94a3b8;">Subject</p>
+                                    </td>
+                                    <td style="padding:12px 16px;">
+                                        <p style="margin:0;font-size:14px;color:#334155;">${subject || '(No subject provided)'}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Message Body -->
+                    <tr>
+                        <td style="padding:24px 32px 0;">
+                            <p style="margin:0 0 12px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;">Message</p>
+                            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-left:4px solid #FD6941;border-radius:0 12px 12px 0;padding:20px 24px;">
+                                <p style="margin:0;font-size:15px;color:#334155;line-height:1.8;white-space:pre-wrap;">${message}</p>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- CTA -->
+                    <tr>
+                        <td style="padding:24px 32px 32px;text-align:center;">
+                            <a href="mailto:${email}?subject=Re: ${encodeURIComponent(subject || 'Your message to EatGreet')}"
+                               style="display:inline-block;background:#FD6941;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:50px;font-size:14px;font-weight:700;letter-spacing:0.3px;box-shadow:0 4px 14px rgba(253,105,65,0.35);">
+                                ✉️ &nbsp; Reply to ${name}
+                            </a>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background:#f8fafc;padding:20px 32px;text-align:center;border-top:1px solid #e2e8f0;">
+                            <img src="${LOGO_URL}" alt="EatGreet" style="height:28px;width:auto;display:block;margin:0 auto 10px;opacity:0.5;">
+                            <p style="margin:0;color:#94a3b8;font-size:11px;">© ${new Date().getFullYear()} EatGreet Technologies. This email was generated automatically from the Contact Us form.</p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`;
+
+    return sendEmail({
+        email: adminEmail,
+        subject: `📬 Contact: ${subject || 'New message'} — from ${name}`,
+        html
+    });
+};
+
 module.exports = {
     sendEmail,
     verifySMTP,
@@ -756,5 +860,7 @@ module.exports = {
     sendSubscriptionReminder,
     sendSuperAdminOtpEmail,
     sendNewOrderNotificationEmail,
-    sendForgotPasswordEmail
+    sendForgotPasswordEmail,
+    sendContactEmail
 };
+

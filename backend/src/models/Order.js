@@ -17,7 +17,9 @@ const orderSchema = new mongoose.Schema({
         quantity: { type: Number, required: true, default: 1 },
         price: { type: Number, required: true },
         status: { type: String, enum: ['pending', 'preparing', 'ready', 'served', 'completed'], default: 'pending' },
-        addedAt: { type: Date, default: Date.now }
+        addedAt: { type: Date, default: Date.now },
+        isRated: { type: Boolean, default: false },
+        userRating: { type: Number }
     }],
     totalAmount: { type: Number, required: true },
     status: { type: String, enum: ['pending', 'preparing', 'ready', 'completed', 'cancelled'], default: 'pending' },

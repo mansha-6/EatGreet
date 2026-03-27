@@ -24,7 +24,9 @@ const menuItemSchema = new mongoose.Schema({
         url: { type: String },
         type: { type: String },
         size: { type: String }
-    }]
+    }],
+    rating: { type: Number, default: 4.5 },
+    ratingCount: { type: Number, default: 0 }
 }, {
     timestamps: true,
     collection: 'menuitems' // Match user's DB structure

@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import '@google/model-viewer';
 import { createPortal } from 'react-dom';
 import { Search, Filter, Plus, Pencil, Trash2, Image as ImageIcon, X, Upload, Eye, Box, Camera, Clock, Flame, AlertCircle, Tag } from 'lucide-react';
 import MediaSlider from '../../components/MediaSlider';
@@ -124,6 +123,10 @@ const AdminMenu = () => {
     const [selectedCategoryFilter, setSelectedCategoryFilter] = useState('');
     const [itemsLoading, setItemsLoading] = useState(true);
 
+    useEffect(() => {
+        import('@google/model-viewer');
+    }, []);
+
     // Sync Helper: Removed complex sync logic for now to ensure stability. 
     // If you want offline sync, restore it later. For now, trust the API.
 
@@ -195,7 +198,68 @@ const AdminMenu = () => {
         }
         setFilteredItems(result);
     }, [menuItems, searchTerm, selectedCategoryFilter]);
+
+    const [visibleCount, setVisibleCount] = useState(12);
+
+    useEffect(() => {
+        setVisibleCount(12);
+    }, [searchTerm, selectedCategoryFilter]);
+
+    const observerTarget = useRef(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            entries => {
+                if (entries[0].isIntersecting) {
+                    setVisibleCount(prev => prev + 12);
+                }
+            },
+            { threshold: 0.1 }
+        );
+
+        if (observerTarget.current) {
+            observer.observe(observerTarget.current);
+        }
+
+        return () => {
+            if (observerTarget.current) {
+                observer.unobserve(observerTarget.current);
+            }
+        };
+    }, []);
     const [editingItem, setEditingItem] = useState(null);
+
+    const getCardMediaItems = (item) => {
+        const uniqueItems = [];
+        const seenUrls = new Set();
+
+        const addIfUnique = (mediaItem) => {
+            if (!mediaItem?.url) return;
+            const normalizedUrl = mediaItem.url.trim();
+            if (!normalizedUrl || seenUrls.has(normalizedUrl)) return;
+
+            seenUrls.add(normalizedUrl);
+            uniqueItems.push(mediaItem);
+        };
+
+        (item.media || []).forEach(addIfUnique);
+
+        if (uniqueItems.length === 0 && item.image) {
+            addIfUnique({
+                url: item.image,
+                type: 'image/jpeg',
+                name: item.name || 'Cover image'
+            });
+        }
+
+        (item.models || []).forEach(addIfUnique);
+
+        if (uniqueItems.length === 0) {
+            return [{ url: 'https://via.placeholder.com/150', type: 'image/jpeg' }];
+        }
+
+        return uniqueItems;
+    };
 
 
     const handleEdit = (item) => {
@@ -835,18 +899,23 @@ const AdminMenu = () => {
                     )}
 
                     {/* Menu Items */}
-                    {!itemsLoading && filteredItems.map((item) => {
+                    {!itemsLoading && filteredItems.slice(0, visibleCount).map((item) => {
                         const catId = item.category?._id || item.category;
                         const catObj = categories.find(c => c._id === catId);
                         const categoryName = catObj ? catObj.name : 'Uncategorized';
 
                         return (
-                            <div key={item._id} className="bg-white rounded-[1.5rem] sm:rounded-3xl p-2 border border-gray-100 shadow-sm hover:shadow-md transition-all group relative flex flex-row sm:flex-col gap-2.5 sm:gap-0 h-[150px] sm:h-auto overflow-hidden">
+                            <div key={item._id} className="bg-white rounded-[1.5rem] sm:rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group relative flex flex-col gap-0 h-auto overflow-hidden">
                                 {/* Image Container */}
-                                <div className="relative w-32 sm:w-full h-full sm:h-52 shrink-0 rounded-[1.2rem] sm:rounded-2xl overflow-hidden sm:mb-1 bg-gray-50">
+                                <div className="relative w-full aspect-video shrink-0 bg-gray-50 overflow-hidden">
                                     <MediaSlider
-                                        media={[...(item.models || []), ...(item.media || [])].length > 0 ? [...(item.models || []), ...(item.media || [])] : [{ url: item.image || 'https://via.placeholder.com/150', type: 'image/jpeg' }]}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                        media={getCardMediaItems(item)}
+                                        className="w-full h-full"
+                                        interval={6000}
+                                        transitionDuration={900}
+                                        showArButton={false}
+                                        modelCheckId={`admin-model-${item._id}`}
+                                        interactiveModelPreview={true}
                                     />
                                     {/* Availability Tag */}
                                     <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 bg-white/90 backdrop-blur-sm px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-1 sm:gap-1.5 shadow-sm">
@@ -865,7 +934,7 @@ const AdminMenu = () => {
                                 </div>
 
                                 {/* Content */}
-                                <div className="flex-1 flex flex-col pt-1 sm:pt-1.5 pr-1 sm:px-4 sm:pb-3">
+                                <div className="flex-1 flex flex-col px-4 pb-4 pt-4">
                                     <div className="flex flex-col gap-0">
                                         <span className="text-[8px] sm:text-[10px] font-normal text-[#FD6941] tracking-wider uppercase leading-none mb-1">
                                             {categoryName}
@@ -937,6 +1006,13 @@ const AdminMenu = () => {
                         </div>
                         <h3 className="font-normal text-base sm:text-lg text-gray-800">Add New Item</h3>
                     </div>
+
+                    {/* Intersection Observer Target */}
+                    {!itemsLoading && filteredItems.length > visibleCount && (
+                        <div ref={observerTarget} className="col-span-full w-full h-10 flex items-center justify-center mt-6">
+                            <div className="w-6 h-6 border-2 border-[#FD6941] border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                    )}
 
                 </div>
             </div>

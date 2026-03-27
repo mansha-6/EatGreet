@@ -92,11 +92,11 @@ const TimeStatusGauge = ({ value }) => {
     const activeCount = Math.round(percent * numTicks);
 
     return (
-        <div className="bg-white rounded-[2rem] p-6 sm:p-8 h-[300px] sm:h-[320px] shadow-sm flex flex-col relative overflow-hidden transition-all border border-transparent">
+        <div className="bg-white rounded-[2rem] p-4 sm:p-6 h-[240px] sm:h-[260px] shadow-sm flex flex-col relative overflow-hidden transition-all border border-transparent">
             <h3 className="text-[14px] sm:text-[20px] lg:text-[24px] font-normal text-black mb-1">Time Status</h3>
 
-            <div className="flex-1 flex items-center justify-center relative translate-y-[-10px]">
-                <svg width="100%" height="240" viewBox="0 0 360 230" className="overflow-visible">
+            <div className="flex-1 flex items-center justify-center relative translate-y-[-20px]">
+                <svg width="100%" height="180" viewBox="0 0 360 230" className="overflow-visible">
                     <defs>
                         <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                             <stop offset="0%" stopColor="#FACC15" />
@@ -354,7 +354,7 @@ const AdminDashboard = () => {
     const restaurantSlug = user?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant';
 
     return (
-        <div className="min-h-screen bg-transparent px-2 sm:px-4 pt-0 pb-4 sm:pt-0 sm:pb-8 space-y-4 md:space-y-6">
+        <div className="h-full bg-transparent px-2 sm:px-4 pt-0 pb-10 sm:pt-0 sm:pb-10 space-y-4 md:space-y-4">
             <div className="space-y-1">
                 <h1 className="text-[20px] sm:text-[24px] lg:text-[28px] font-normal text-black tracking-tight leading-none">Dashboard</h1>
                 <p className="text-[11px] sm:text-[13px] lg:text-[14px] text-gray-400 font-normal uppercase tracking-widest opacity-60">Welcome back, {user?.name || 'Admin'}</p>
@@ -377,7 +377,7 @@ const AdminDashboard = () => {
                     </div>
 
                     {/* Middle Row: Sales Analytics */}
-                    <div className="bg-white rounded-[1.5rem] sm:rounded-[2.8rem] p-4 sm:p-8 relative shadow-sm h-[400px] sm:h-[600px] lg:h-[740px] flex flex-col border border-transparent">
+                    <div className="bg-white rounded-[1.5rem] sm:rounded-[2.8rem] p-4 sm:p-6 relative shadow-sm h-[420px] sm:h-[600px] lg:h-[720px] flex flex-col border border-transparent">
                         <div className="flex justify-between items-center gap-2 mb-4 sm:mb-2">
                             <div
                                 className="flex flex-col cursor-pointer hover:opacity-80 transition-opacity"
@@ -441,7 +441,7 @@ const AdminDashboard = () => {
                     </div>
 
                     {/* Live Active Feed */}
-                    <div className="bg-white rounded-[1.5rem] sm:rounded-[2.8rem] p-4 sm:p-8 shadow-sm flex flex-col h-[400px] sm:h-[500px] lg:h-[560px] border border-transparent">
+                    <div className="bg-white rounded-[1.5rem] sm:rounded-[2.8rem] p-4 sm:p-6 shadow-sm flex flex-col h-[420px] sm:h-[540px] lg:h-[600px] border border-transparent">
                         <div className="flex justify-between items-center mb-4 sm:mb-6">
                             <h2 className="text-[14px] sm:text-[20px] lg:text-[24px] font-normal text-black leading-tight">Live Feed</h2>
                             <div

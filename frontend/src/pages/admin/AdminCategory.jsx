@@ -3,24 +3,11 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Search, Plus, Pencil, Trash2, Utensils, Coffee, Pizza, Salad, Cake, Sandwich, X, Filter, Leaf, Wheat, Flame, Egg, Fish, Milk, Droplet, Martini, Beef, Soup, IceCream, Beer, Drumstick, GlassWater, Apple, Cookie, ChefHat, Heater, Container } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
-import * as FaIcons from 'react-icons/fa6';
-import * as GiIcons from 'react-icons/gi';
-import * as MdIcons from 'react-icons/md';
-import * as SlIcons from 'react-icons/sl';
 
 import { categoryAPI } from '../../utils/api';
 import toast from 'react-hot-toast';
 import { useSocket } from '../../context/SocketContext';
 import { useSettings } from '../../context/SettingsContext';
-
-// Master list of all available icons from multiple libraries (unfiltered)
-const allIcons = [
-    ...Object.keys(LucideIcons).filter(k => /^[A-Z]/.test(k) && k !== 'LucideIcon' && k !== 'Icon' && k !== 'createLucideIcon').map(name => ({ name, prefix: 'lc', Icon: LucideIcons[name] })),
-    ...Object.keys(FaIcons).filter(k => k.startsWith('Fa')).map(name => ({ name, prefix: 'fa', Icon: FaIcons[name] })),
-    ...Object.keys(GiIcons).filter(k => k.startsWith('Gi')).map(name => ({ name, prefix: 'gi', Icon: GiIcons[name] })),
-    ...Object.keys(MdIcons).filter(k => k.startsWith('Md')).map(name => ({ name, prefix: 'md', Icon: MdIcons[name] })),
-    ...Object.keys(SlIcons).filter(k => k.startsWith('Sl')).map(name => ({ name, prefix: 'sl', Icon: SlIcons[name] }))
-];
 
 const AdminCategory = () => {
     const navigate = useNavigate();
@@ -38,6 +25,10 @@ const AdminCategory = () => {
     // New Icon Picker Modal state
     const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
     const [iconSearchTerm, setIconSearchTerm] = useState('');
+    const [faIcons, setFaIcons] = useState({});
+    const [giIcons, setGiIcons] = useState({});
+    const [mdIcons, setMdIcons] = useState({});
+    const [slIcons, setSlIcons] = useState({});
 
     const filterRef = useRef(null);
     const socket = useSocket();
@@ -98,6 +89,37 @@ const AdminCategory = () => {
     useEffect(() => {
         fetchCategories();
     }, []);
+
+    useEffect(() => {
+        const needsExtendedIcons = isIconPickerOpen || categories.some((category) => {
+            const icon = category?.icon || '';
+            return icon.startsWith('fa:') || icon.startsWith('gi:') || icon.startsWith('md:') || icon.startsWith('sl:');
+        });
+
+        if (!needsExtendedIcons) return;
+
+        Promise.all([
+            import('react-icons/fa6'),
+            import('react-icons/gi'),
+            import('react-icons/md'),
+            import('react-icons/sl'),
+        ]).then(([fa, gi, md, sl]) => {
+            setFaIcons(fa);
+            setGiIcons(gi);
+            setMdIcons(md);
+            setSlIcons(sl);
+        });
+    }, [isIconPickerOpen, categories]);
+
+    const allIcons = [
+        ...Object.keys(LucideIcons)
+            .filter((k) => /^[A-Z]/.test(k) && k !== 'LucideIcon' && k !== 'Icon' && k !== 'createLucideIcon')
+            .map((name) => ({ name, prefix: 'lc', Icon: LucideIcons[name] })),
+        ...Object.keys(faIcons).filter((k) => k.startsWith('Fa')).map((name) => ({ name, prefix: 'fa', Icon: faIcons[name] })),
+        ...Object.keys(giIcons).filter((k) => k.startsWith('Gi')).map((name) => ({ name, prefix: 'gi', Icon: giIcons[name] })),
+        ...Object.keys(mdIcons).filter((k) => k.startsWith('Md')).map((name) => ({ name, prefix: 'md', Icon: mdIcons[name] })),
+        ...Object.keys(slIcons).filter((k) => k.startsWith('Sl')).map((name) => ({ name, prefix: 'sl', Icon: slIcons[name] })),
+    ];
 
     const fetchCategories = async () => {
         setIsLoading(true);
@@ -310,11 +332,11 @@ const AdminCategory = () => {
                         // Resolve Icon Component from various libraries
                         let DisplayIcon = Utensils;
                         if (category.icon) {
-                            if (category.icon.startsWith('gi:')) DisplayIcon = GiIcons[category.icon.split(':')[1]] || Utensils;
-                            else if (category.icon.startsWith('fa:')) DisplayIcon = FaIcons[category.icon.split(':')[1]] || Utensils;
+                            if (category.icon.startsWith('gi:')) DisplayIcon = giIcons[category.icon.split(':')[1]] || Utensils;
+                            else if (category.icon.startsWith('fa:')) DisplayIcon = faIcons[category.icon.split(':')[1]] || Utensils;
                             else if (category.icon.startsWith('lc:')) DisplayIcon = LucideIcons[category.icon.split(':')[1]] || Utensils;
-                            else if (category.icon.startsWith('md:')) DisplayIcon = MdIcons[category.icon.split(':')[1]] || Utensils;
-                            else if (category.icon.startsWith('sl:')) DisplayIcon = SlIcons[category.icon.split(':')[1]] || Utensils;
+                            else if (category.icon.startsWith('md:')) DisplayIcon = mdIcons[category.icon.split(':')[1]] || Utensils;
+                            else if (category.icon.startsWith('sl:')) DisplayIcon = slIcons[category.icon.split(':')[1]] || Utensils;
                             else {
                                 // Fallback for old/legacy icons
                                 const matchedOption = iconOptions.find(opt => opt.label === category.icon);
@@ -478,19 +500,19 @@ const AdminCategory = () => {
                                     <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-3 text-[#FD6941]">
                                         {(() => {
                                             if (selectedIconName.startsWith('gi:')) {
-                                                const Icon = GiIcons[selectedIconName.split(':')[1]];
+                                                const Icon = giIcons[selectedIconName.split(':')[1]];
                                                 return Icon ? <Icon className="w-8 h-8" /> : <Utensils className="w-8 h-8" />;
                                             } else if (selectedIconName.startsWith('fa:')) {
-                                                const Icon = FaIcons[selectedIconName.split(':')[1]];
+                                                const Icon = faIcons[selectedIconName.split(':')[1]];
                                                 return Icon ? <Icon className="w-8 h-8" /> : <Utensils className="w-8 h-8" />;
                                             } else if (selectedIconName.startsWith('lc:')) {
                                                 const Icon = LucideIcons[selectedIconName.split(':')[1]];
                                                 return Icon ? <Icon className="w-8 h-8" /> : <Utensils className="w-8 h-8" />;
                                             } else if (selectedIconName.startsWith('md:')) {
-                                                const Icon = MdIcons[selectedIconName.split(':')[1]];
+                                                const Icon = mdIcons[selectedIconName.split(':')[1]];
                                                 return Icon ? <Icon className="w-8 h-8" /> : <Utensils className="w-8 h-8" />;
                                             } else if (selectedIconName.startsWith('sl:')) {
-                                                const Icon = SlIcons[selectedIconName.split(':')[1]];
+                                                const Icon = slIcons[selectedIconName.split(':')[1]];
                                                 return Icon ? <Icon className="w-8 h-8" /> : <Utensils className="w-8 h-8" />;
                                             }
                                             // Fallback for legacy

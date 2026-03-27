@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { CheckCircle2, XCircle, ArrowRight, ShieldCheck, Rocket } from 'lucide-react';
+import { CheckCircle2, XCircle, ArrowRight, ShieldCheck, Rocket, ArrowLeft } from 'lucide-react';
 import { useSettings } from '../../context/SettingsContext';
+import { Link } from 'react-router-dom';
+import logoFull from '../../assets/logo-full.png';
 
 export default function PaymentStatus() {
     const [searchParams] = useSearchParams();
@@ -26,12 +28,30 @@ export default function PaymentStatus() {
     };
 
     return (
-        <div className="min-h-screen bg-[#EBF2F2] flex items-center justify-center p-6">
-            <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="max-w-md w-full bg-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl shadow-gray-200/50 text-center"
-            >
+        <div className="min-h-screen bg-[#EBF2F2] flex flex-col relative overflow-hidden">
+            {/* Top Nav */}
+            <nav className="sticky top-0 z-50 bg-white/60 backdrop-blur-md border-b border-white/80 shadow-sm">
+                <div className="max-w-7xl mx-auto w-full px-6 py-4 flex items-center justify-between">
+                    <Link to="/">
+                        <img src={logoFull} alt="EatGreet" className="h-7 sm:h-8" />
+                    </Link>
+                    <Link
+                        to="/"
+                        className="flex items-center gap-2 text-xs sm:text-sm font-bold text-gray-500 hover:text-[#FD6941] transition-colors"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        <span className="hidden sm:inline">Back to Home</span>
+                        <span className="sm:hidden">Back</span>
+                    </Link>
+                </div>
+            </nav>
+
+            <div className="flex-1 flex items-center justify-center p-6">
+                <motion.div 
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="max-w-md w-full bg-white rounded-[2.5rem] p-8 md:p-12 shadow-2xl shadow-gray-200/50 text-center"
+                >
                 {status === 'success' ? (
                     <>
                         <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -88,6 +108,7 @@ export default function PaymentStatus() {
                     Secure Powered by Razorpay
                 </div>
             </motion.div>
+            </div>
         </div>
     );
 }

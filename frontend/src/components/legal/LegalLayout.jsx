@@ -8,7 +8,6 @@ const legalLinks = [
     { label: 'Privacy Policy', path: '/privacy' },
     { label: 'Shipping Policy', path: '/shipping-policy' },
     { label: 'Cancellation & Refunds', path: '/cancellation-refunds' },
-    { label: 'Contact Us', path: '/contact' },
 ];
 
 export default function LegalLayout({ title, subtitle, lastUpdated, children }) {

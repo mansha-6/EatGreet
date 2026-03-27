@@ -77,7 +77,7 @@ export default function PricingPlans() {
 
 
     return (
-        <section className="pt-24 pb-8 md:pb-24 relative overflow-hidden bg-white text-gray-900" id="pricing">
+        <section className="pt-24 pb-8 md:pb-24 relative overflow-hidden bg-white text-gray-900">
             <div className="absolute top-[10%] left-[-10%] w-[400px] h-[400px] bg-[#FD6941]/5 rounded-full blur-[120px]" />
             <div className="absolute bottom-[10%] right-[-10%] w-[500px] h-[500px] bg-blue-500/5 rounded-full blur-[150px]" />
 

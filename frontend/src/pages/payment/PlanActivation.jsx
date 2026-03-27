@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, Mail, Lock, CheckCircle2, User, Phone, MapPin, Store, ArrowRight, Zap, Sparkles, ChevronDown, CheckCircle } from 'lucide-react';
+import { ShieldCheck, Mail, Lock, CheckCircle2, User, Phone, MapPin, Store, ArrowRight, Zap, Sparkles, ChevronDown, CheckCircle, ArrowLeft } from 'lucide-react';
 import { paymentAPI } from '../../utils/api';
 import { toast } from 'react-hot-toast';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import logoFull from '../../assets/logo-full.png';
 
 const StepBar = ({ step, title, activeStep, completedSteps, setActiveStep, children }) => {
     const isCompleted = completedSteps.includes(step);
@@ -153,16 +154,34 @@ export default function PlanActivation() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-[#F0F4F4] via-[#E2E8E8] to-[#D6DFDF] flex flex-col items-center py-12 px-4 sm:px-6 relative overflow-hidden">
-            {/* Abstract background shapes for premium feel */}
-            <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-[#FD6941]/5 rounded-full blur-[100px]" />
-            <div className="absolute bottom-[-5%] left-[-5%] w-[30%] h-[30%] bg-[#FD6941]/5 rounded-full blur-[80px]" />
+        <div className="min-h-screen bg-gradient-to-br from-[#F0F4F4] via-[#E2E8E8] to-[#D6DFDF] flex flex-col relative overflow-hidden">
+            {/* Top Nav */}
+            <nav className="sticky top-0 z-50 bg-white/40 backdrop-blur-md border-b border-white/50 shadow-sm">
+                <div className="max-w-7xl mx-auto w-full px-6 py-4 flex items-center justify-between">
+                    <Link to="/">
+                        <img src={logoFull} alt="EatGreet" className="h-7 sm:h-8" />
+                    </Link>
+                    <Link
+                        to="/"
+                        className="flex items-center gap-2 text-xs sm:text-sm font-bold text-gray-500 hover:text-[#FD6941] transition-colors"
+                    >
+                        <ArrowLeft className="w-4 h-4" />
+                        <span className="hidden sm:inline">Back to Home</span>
+                        <span className="sm:hidden">Back</span>
+                    </Link>
+                </div>
+            </nav>
 
-            <motion.div 
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="max-w-3xl w-full relative z-10"
-            >
+            <div className="flex-1 flex flex-col items-center justify-center py-12 px-4 sm:px-6 relative">
+                {/* Abstract background shapes for premium feel */}
+                <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-[#FD6941]/5 rounded-full blur-[100px] pointer-events-none" />
+                <div className="absolute bottom-[-5%] left-[-5%] w-[30%] h-[30%] bg-[#FD6941]/5 rounded-full blur-[80px] pointer-events-none" />
+
+                <motion.div 
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="max-w-3xl w-full relative z-10"
+                >
                 <div className="text-center mb-12">
                     <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/60 backdrop-blur-md rounded-full border border-white/60 shadow-sm mb-6">
                         <ShieldCheck className="w-5 h-5 text-[#FD6941]" />
@@ -305,6 +324,7 @@ export default function PlanActivation() {
                     <ShieldCheck className="w-4 h-4" /> Professional SSL Protected Encryption • Powered by Razorpay
                 </p>
             </motion.div>
+            </div>
         </div>
     );
 }

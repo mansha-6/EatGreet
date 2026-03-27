@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect, useState, useRef, Suspense, lazy } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ArrowRight,
@@ -21,7 +21,7 @@ import {
     User,
     Eye,
     Check,
-    Search
+    Search,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { FloatingNav } from '../../components/landing/FloatingNav';
@@ -29,24 +29,17 @@ import menuIcon from '../../assets/menu-icon.png';
 import logoFull from '../../assets/logo-full.png';
 import contactIllustrationHD from '../../assets/contact-illustration-hd.png';
 
-import { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../../utils/api';
 
-import InfiniteMenuScroll from '../../components/landing/InfiniteMenuScroll';
-import BentoFeatures from '../../components/landing/BentoFeatures';
-import PricingPlans from '../../components/landing/PricingPlans';
-import { ContainerScroll } from '../../components/landing/ContainerScroll';
-import LandingFooter from '../../components/landing/LandingFooter';
+const InfiniteMenuScroll = lazy(() => import('../../components/landing/InfiniteMenuScroll'));
+const BentoFeatures = lazy(() => import('../../components/landing/BentoFeatures'));
+const PricingPlans = lazy(() => import('../../components/landing/PricingPlans'));
+const LandingFooter = lazy(() => import('../../components/landing/LandingFooter'));
 import arVideo from '../../assets/AR_Menu_Experience_Video_Generation.mp4';
-import arPoster from '../../assets/ar-video-poster.png';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-gsap.registerPlugin(ScrollTrigger);
 
-import FluidCanvas from '../../components/landing/FluidCanvas';
-import Lenis from 'lenis';
+const FluidCanvas = lazy(() => import('../../components/landing/FluidCanvas'));
 import SEO from '../../components/SEO';
+import LazyMount from '../../components/performance/LazyMount';
 
 const navItems = [
     { name: "Menu", link: "#menu-showcase" },
@@ -54,21 +47,6 @@ const navItems = [
     { name: "Pricing", link: "#pricing" },
     { name: "Waitlist", link: "#contact" },
 ];
-
-// Load Google Maps Script
-if (typeof window !== 'undefined' && !window.google && !document.getElementById('google-maps-script')) {
-    const mapsKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    if (mapsKey) {
-        const script = document.createElement('script');
-        script.id = 'google-maps-script';
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${mapsKey}&libraries=places&loading=async`;
-        script.async = true;
-        script.defer = true;
-        document.head.appendChild(script);
-    } else {
-        console.warn("Google Maps API key is missing. City autocomplete will be disabled.");
-    }
-}
 
 const WaitlistForm = ({ handleRegisterSuccess }) => {
     const [formData, setFormData] = useState({
@@ -89,6 +67,24 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
     const formRef = useRef(null);
     const cityInputContainerRef = useRef(null);
     const suggestionsRef = useRef(null);
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        if (window.google || document.getElementById('google-maps-script')) return;
+
+        const mapsKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+        if (!mapsKey) {
+            console.warn("Google Maps API key is missing. City autocomplete will be disabled.");
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.id = 'google-maps-script';
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${mapsKey}&libraries=places&loading=async`;
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -160,7 +156,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                 try {
                     // Load the places library
                     const { AutocompleteSuggestion, AutocompleteSessionToken } = await window.google.maps.importLibrary("places");
-                    
+
                     if (!suggestionSession.current) {
                         suggestionSession.current = new AutocompleteSessionToken();
                     }
@@ -172,7 +168,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                     };
 
                     const { suggestions } = await AutocompleteSuggestion.fetchAutocompleteSuggestions(request);
-                    
+
                     if (suggestions) {
                         setCitySuggestions(suggestions.map(s => s.placePrediction.text.text));
                         setShowSuggestions(true);
@@ -448,7 +444,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                                 exit={{ opacity: 0, scale: 0.95, y: -10 }}
                                 data-lenis-prevent
                                 className="absolute z-50 top-full left-0 right-0 mt-2 bg-white border border-gray-100 rounded-2xl shadow-xl overflow-y-auto no-scrollbar max-h-80 overscroll-contain"
-                                style={{ 
+                                style={{
                                     touchAction: 'pan-y',
                                     WebkitOverflowScrolling: 'touch'
                                 }}
@@ -531,37 +527,23 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
 export default function LandingPage() {
     const { hash } = useLocation();
     const navigate = useNavigate();
+    const [enableHeavyFx, setEnableHeavyFx] = useState(true);
+    const [shouldLoadHeroVideo, setShouldLoadHeroVideo] = useState(false);
+    const heroVideoRef = useRef(null);
 
-    // Initialize Lenis Smooth Scroll
     useEffect(() => {
-        // Disable Lenis on touch devices as it often interferes with native scroll feel
+        const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        if (isTouchDevice) return;
+        const lowMemoryDevice = (navigator.deviceMemory || 8) <= 4;
+        const lowCoreDevice = (navigator.hardwareConcurrency || 8) <= 4;
+        const saveData = navigator.connection?.saveData === true;
 
-        const lenis = new Lenis({
-            duration: 1.2,
-            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-            direction: 'vertical',
-            gestureDirection: 'vertical',
-            smooth: true,
-            mouseMultiplier: 1,
-            infinite: false,
-        });
-
-        // Integrate Lenis with GSAP ScrollTrigger
-        lenis.on('scroll', ScrollTrigger.update);
-
-        const updateGSAP = (time) => {
-            lenis.raf(time * 1000);
-        };
-        gsap.ticker.add(updateGSAP);
-        gsap.ticker.lagSmoothing(0);
-
-        return () => {
-            lenis.destroy();
-            gsap.ticker.remove(updateGSAP);
-        };
+        if (prefersReducedMotion || saveData || (isTouchDevice && (lowMemoryDevice || lowCoreDevice))) {
+            setEnableHeavyFx(false);
+        }
     }, []);
+
+    // Keep native browser scrolling for reliability across mouse/touch devices.
 
     const handleRegisterSuccess = () => {
         setTimeout(() => {
@@ -580,14 +562,37 @@ export default function LandingPage() {
         }
     }, [hash]);
 
+    useEffect(() => {
+        if (!heroVideoRef.current || shouldLoadHeroVideo) return;
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (entries[0]?.isIntersecting) {
+                    setShouldLoadHeroVideo(true);
+                    observer.disconnect();
+                }
+            },
+            { rootMargin: '300px 0px', threshold: 0.01 }
+        );
+
+        observer.observe(heroVideoRef.current);
+        return () => observer.disconnect();
+    }, [shouldLoadHeroVideo]);
+
     return (
         <div className="min-h-screen bg-white text-gray-900 overflow-visible relative">
-            <SEO 
+            <SEO
                 title="EatGreet | One-stop dining platform for your restaurant"
                 description="Orchestrate every touchpoint — interactive 3D menus, kitchen displays, real-time analytics, and a full manager command center in one ecosystem."
                 keywords="restaurant management, AR menu, digital menu, 3D food visualization, kitchen display system, POS, restaurant analytics"
             />
-            <FluidCanvas />
+            {enableHeavyFx && (
+                <Suspense fallback={null}>
+                    <LazyMount rootMargin="200px 0px" fallback={null}>
+                        <FluidCanvas />
+                    </LazyMount>
+                </Suspense>
+            )}
 
             <FloatingNav navItems={navItems} />
 
@@ -637,7 +642,7 @@ export default function LandingPage() {
                     <a href="#contact" className="px-6 md:px-8 py-3 md:py-3.5 bg-gray-900 text-white font-medium rounded-full hover:bg-gray-700 transition-all shadow-lg text-[11px] md:text-sm tracking-wide uppercase">
                         Get started free
                     </a>
-                    <a href="#site-footer" className="px-6 md:px-8 py-3 md:py-3.5 text-gray-700 font-medium text-[11px] md:text-sm flex items-center gap-2 hover:text-[#FD6941] transition-colors uppercase tracking-widest">
+                    <a href="#contact" className="px-6 md:px-8 py-3 md:py-3.5 text-gray-700 font-medium text-[11px] md:text-sm flex items-center gap-2 hover:text-[#FD6941] transition-colors uppercase tracking-widest">
                         Contact us <ArrowRight className="w-3.5 h-3.5" />
                     </a>
                 </motion.div>
@@ -655,15 +660,15 @@ export default function LandingPage() {
                         <div className="absolute inset-0 z-10 border-[8px] md:border-[12px] border-white/5 pointer-events-none rounded-[2rem] md:rounded-[3rem]" />
 
                         <video
+                            ref={heroVideoRef}
                             autoPlay
                             loop
                             muted
                             playsInline
-                            poster={arPoster}
-                            preload="metadata"
+                            preload={shouldLoadHeroVideo ? "metadata" : "none"}
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                         >
-                            <source src={arVideo} type="video/mp4" />
+                            {shouldLoadHeroVideo && <source src={arVideo} type="video/mp4" />}
                         </video>
                     </div>
 
@@ -673,10 +678,18 @@ export default function LandingPage() {
             </section>
 
             {/* Menu Showcase Section */}
-            <InfiniteMenuScroll />
+            <Suspense fallback={<div className="h-24" />}>
+                <LazyMount minHeightClass="min-h-[180px]" rootMargin="300px 0px">
+                    <InfiniteMenuScroll />
+                </LazyMount>
+            </Suspense>
 
             {/* Smart Bento Ecosystem Features */}
-            <BentoFeatures />
+            <Suspense fallback={<div className="h-24 bg-gray-50" />}>
+                <LazyMount minHeightClass="min-h-[200px]" rootMargin="300px 0px">
+                    <BentoFeatures />
+                </LazyMount>
+            </Suspense>
 
             {/* Deep Dive Grid */}
             <section className="pb-16 md:pb-20 bg-gray-50" >
@@ -754,6 +767,8 @@ export default function LandingPage() {
                                 transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
                                 src={menuIcon}
                                 alt="3D Menu"
+                                loading="lazy"
+                                decoding="async"
                                 className="absolute bottom-4 right-4 w-32 md:w-48 opacity-90 drop-shadow-2xl"
                             />
                         </motion.div>
@@ -797,7 +812,13 @@ export default function LandingPage() {
             </section >
 
             {/* SaaS Pricing Tiers */}
-            <PricingPlans />
+            <section id="pricing">
+                <Suspense fallback={<div className="h-24" />}>
+                    <LazyMount minHeightClass="min-h-[220px]" rootMargin="1000px 0px">
+                        <PricingPlans />
+                    </LazyMount>
+                </Suspense>
+            </section>
 
             {/* Footer / CTA Section */}
             <section id="contact" className="pt-4 pb-16 md:py-20 px-4 md:px-6">
@@ -821,6 +842,8 @@ export default function LandingPage() {
                                 whileInView={{ opacity: 1, scale: 1 }}
                                 src={contactIllustrationHD}
                                 alt="Contact Illustration"
+                                loading="lazy"
+                                decoding="async"
                                 className="w-full max-w-md object-contain drop-shadow-xl"
                             />
                         </div>
@@ -833,7 +856,11 @@ export default function LandingPage() {
                 </div>
             </section >
 
-            <LandingFooter />
+            <Suspense fallback={<div className="h-16" />}>
+                <LazyMount rootMargin="300px 0px" minHeightClass="min-h-[80px]">
+                    <LandingFooter />
+                </LazyMount>
+            </Suspense>
         </div >
     );
 }

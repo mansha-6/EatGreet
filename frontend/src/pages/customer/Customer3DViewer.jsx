@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import '@google/model-viewer';
-import { X, Plus, Minus, Clock } from 'lucide-react';
+import { X, Plus, Minus, Clock, Zap } from 'lucide-react';
 import { menuAPI } from '../../utils/api';
 import arIcon from '../../assets/3d-icon-black.svg';
 import { useSettings } from '../../context/SettingsContext';

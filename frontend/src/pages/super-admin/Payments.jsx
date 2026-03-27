@@ -4,8 +4,6 @@ import { CreditCard, DollarSign, Download, Calendar, X, ChevronLeft, ChevronRigh
 import { paymentAPI, statsAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
 import { useSocket } from '../../context/SocketContext';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import toast from 'react-hot-toast';
 import EatGreetLogo from '../../assets/logo-full.png';
 
@@ -205,6 +203,10 @@ export default function Payments() {
     const handleDownloadPDF = async () => {
         const toastId = toast.loading('Generating Super Admin Report...');
         try {
+            const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+                import('jspdf'),
+                import('jspdf-autotable')
+            ]);
             const doc = new jsPDF();
             const brandOrange = [253, 105, 65];
             const textDark = [30, 30, 30];

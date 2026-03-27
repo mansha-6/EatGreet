@@ -317,4 +317,51 @@ const checkTableStatus = async (req, res) => {
     }
 };
 
-module.exports = { createOrder, getOrders, updateOrderStatus, checkTableStatus };
+const submitRating = async (req, res) => {
+    try {
+        const { Order, MenuItem } = req.tenantModels;
+        const { ratings } = req.body; // [{ itemId, star }]
+        const { id } = req.params;
+
+        const order = await Order.findById(id);
+        if (!order) return res.status(404).json({ message: 'Order not found' });
+
+        for (const r of ratings) {
+            // Locate the item in the order to mark as rated
+            const orderItem = order.items.find(it => it.menuItem.toString() === r.itemId);
+            if (orderItem && !orderItem.isRated) {
+                orderItem.isRated = true;
+                orderItem.userRating = Number(r.star);
+
+                // Update the master MenuItem record with new average
+                const item = await MenuItem.findById(r.itemId);
+                if (item) {
+                    const currentCount = item.ratingCount || 0;
+                    const currentRating = item.rating || 0;
+                    
+                    const newCount = currentCount + 1;
+                    const newRatingValue = ((currentRating * currentCount) + Number(r.star)) / newCount;
+                    
+                    item.rating = Number(newRatingValue.toFixed(1));
+                    item.ratingCount = newCount;
+                    await item.save();
+                }
+            }
+        }
+
+        await order.save();
+        
+        // Notify via socket for live updates if enabled
+        const io = req.app.get('io');
+        if (io && req.tenantDbName) {
+            io.to(req.tenantDbName).emit('ratingUpdated', { orderId: id });
+        }
+
+        res.json({ success: true, message: 'Ratings processed successfully' });
+    } catch (error) {
+        console.error("Submit Rating Error:", error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { createOrder, getOrders, updateOrderStatus, checkTableStatus, submitRating };

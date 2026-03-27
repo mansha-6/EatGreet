@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createOrder, getOrders, updateOrderStatus, checkTableStatus } = require('../controllers/orderController');
+const { createOrder, getOrders, updateOrderStatus, checkTableStatus, submitRating } = require('../controllers/orderController');
 const { protect, admin } = require('../middleware/authMiddleware');
 const { resolveTenant } = require('../middleware/tenantMiddleware');
 
@@ -13,6 +13,9 @@ router.get('/table-status/:tableNumber', resolveTenant, checkTableStatus);
 
 router.route('/:id/status')
     .put(protect, admin, resolveTenant, updateOrderStatus);
+
+router.route('/:id/rate')
+    .put(resolveTenant, submitRating);
 
 router.route('/:id/items/:itemIdx/status')
     .put(protect, admin, resolveTenant, updateOrderStatus); // Reusing controller for simplicity, but I should probably add a dedicated one or update the existing one

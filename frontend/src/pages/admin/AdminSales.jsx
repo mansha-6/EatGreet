@@ -10,8 +10,6 @@ import {
 } from 'lucide-react';
 import { orderAPI, restaurantAPI, statsAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 
 import { useSocket } from '../../context/SocketContext';
 import toast from 'react-hot-toast';
@@ -698,6 +696,10 @@ const AdminSales = () => {
 
         const toastId = toast.loading('Generating PDF report...');
         try {
+            const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+                import('jspdf'),
+                import('jspdf-autotable')
+            ]);
             const formatCurrencyPDF = (amount) => `Rs. ${(Number(amount) || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
             const innerLoadImage = (url) => new Promise((resolve) => {
                 const img = new Image(); img.crossOrigin = 'Anonymous'; img.src = url;
@@ -1042,7 +1044,7 @@ const AdminSales = () => {
     };
 
     return (
-        <div className="space-y-6 pb-4">
+        <div className="space-y-6 pb-10">
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>

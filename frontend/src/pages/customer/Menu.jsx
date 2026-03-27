@@ -111,11 +111,42 @@ const Menu = () => {
     const [showFullForm, setShowFullForm] = useState(true);
 
     const [isTableOccupied, setIsTableOccupied] = useState(false);
+    const [isVerified, setIsVerified] = useState(false);
     const [occupantInfo, setOccupantInfo] = useState(null);
     const [showCategoryFilter, setShowCategoryFilter] = useState(false);
     const [verificationPhone, setVerificationPhone] = useState("");
 
     const socket = useSocket();
+
+    // Rating Logic States
+    const [activeOrderId, setActiveOrderId] = useState(() => sessionStorage.getItem('eatgreet_current_order'));
+    const [showRatingModal, setShowRatingModal] = useState(false);
+    const [ratingData, setRatingData] = useState([]); // [{ itemId, star }]
+    const [itemsToRate, setItemsToRate] = useState([]);
+
+    // Order Status Polling for Rating Popup
+    useEffect(() => {
+        if (!activeOrderId || isPreviewMode) return;
+
+        const pollStatus = async () => {
+            try {
+                const { data } = await orderAPI.getOrder(activeOrderId);
+                if (data && data.status === 'completed') {
+                    setItemsToRate(data.items.filter(it => !it.isRated));
+                    if (data.items.some(it => !it.isRated)) {
+                        setShowRatingModal(true);
+                    }
+                    sessionStorage.removeItem('eatgreet_current_order');
+                    setActiveOrderId(null);
+                }
+            } catch (error) {
+                console.error("Polling error", error);
+            }
+        };
+
+        const interval = setInterval(pollStatus, 10000); // Check every 10s
+        return () => clearInterval(interval);
+    }, [activeOrderId, isPreviewMode]);
 
     useEffect(() => {
         if (tenantName) {
@@ -129,7 +160,8 @@ const Menu = () => {
             try {
                 const res = await orderAPI.checkTableStatus(tableNo, tenantName);
                 if (res.data.status === 'occupied') {
-                    if (!customerDetails.phone || customerDetails.phone !== res.data.customer.phone) {
+                    // Only show pop if not verified
+                    if (!isVerified && (!customerDetails.phone || customerDetails.phone !== res.data.customer.phone)) {
                         setIsTableOccupied(true);
                         setOccupantInfo(res.data.customer);
                     } else {
@@ -137,6 +169,7 @@ const Menu = () => {
                     }
                 } else {
                     setIsTableOccupied(false);
+                    setIsVerified(false); // Reset verification if table is free
                 }
             } catch (e) {
                 console.error("Occupancy Check Failed", e);
@@ -146,6 +179,9 @@ const Menu = () => {
 
     useEffect(() => {
         checkStatus();
+        // Poll every 10 minutes (600,000ms) to sync table status
+        const interval = setInterval(checkStatus, 600000);
+        return () => clearInterval(interval);
     }, [checkStatus]);
 
     // Socket Listener for Real-Time Menu & Category Updates
@@ -357,9 +393,16 @@ const Menu = () => {
 
         const loadToast = toast.loading('Placing your order...');
         try {
-            await orderAPI.create(orderData, tenantName);
+            const res = await orderAPI.create(orderData, tenantName);
+            const createdOrder = res.data;
             toast.success('Order placed successfully!', { id: loadToast });
             setOrderPlaced(true);
+
+            // Track for rating popup
+            if (createdOrder?._id) {
+                setActiveOrderId(createdOrder._id);
+                sessionStorage.setItem('eatgreet_current_order', createdOrder._id);
+            }
 
             setTimeout(() => {
                 setOrderPlaced(false);
@@ -539,7 +582,7 @@ const Menu = () => {
 
                                 {/* Media Slider if available, else Image */}
                                 <MediaSlider
-                                    media={[...(item.models || []), ...(item.media || []), { url: item.image, type: 'image' }]}
+                                    media={[...(item.media || []), { url: item.image, type: 'image' }]}
                                     className="w-full h-full object-cover"
                                     modelCheckId={`model-${item._id}`}
                                     compact={true}
@@ -592,7 +635,7 @@ const Menu = () => {
 
                                         {/* Rating - Desktop Only */}
                                         <span className="hidden md:flex items-center gap-1 bg-green-50 text-green-700 px-1.5 py-0 rounded-md font-normal text-[10px]">
-                                            <Star className="w-2.5 h-2.5 fill-current" /> {item.rating || '4.5'}
+                                            <Star className="w-2.5 h-2.5 fill-current" /> {item.rating ? Number(item.rating).toFixed(1) : (item.rating || '4.5')}
                                         </span>
                                     </div>
                                 </div>
@@ -637,7 +680,7 @@ const Menu = () => {
                                     {/* Mobile: Rating (Default) OR Like (In Cart) */}
                                     <div className="flex md:hidden items-center">
                                         <span className="flex items-center gap-1 bg-green-50 text-green-700 px-1 py-0.5 rounded-md font-normal text-[9px]">
-                                            <Star className="w-2 h-2 fill-current" /> {item.rating || '4.5'}
+                                            <Star className="w-2 h-2 fill-current" /> {item.rating ? Number(item.rating).toFixed(1) : (item.rating || '4.5')}
                                         </span>
                                     </div>
 
@@ -650,10 +693,10 @@ const Menu = () => {
                                                     navigate(`3d/${generateSlug(item.name)}`);
                                                 }}
                                                 disabled={isPreviewMode}
-                                                className={`flex w-8 h-8 md:w-14 md:h-14 rounded-full items-center justify-center transition-all shadow-sm bg-white text-black border border-gray-300 hover:scale-110 active:scale-95 duration-300 ${isPreviewMode ? 'opacity-100 cursor-not-allowed' : ''}`}
+                                                className={`flex w-9 h-9 md:w-14 md:h-14 rounded-full items-center justify-center transition-all bg-white text-black border border-gray-100 hover:scale-110 active:scale-95 duration-300 ${isPreviewMode ? 'opacity-100 cursor-not-allowed' : ''}`}
                                                 title="View in AR"
                                             >
-                                                <img src={arIcon} alt="AR View" className="w-4 h-4 md:w-8 md:h-8" />
+                                                <img src={arIcon} alt="AR View" className="w-[18px] h-[18px] md:w-8 md:h-8" />
                                             </button>
                                         )}
 
@@ -690,7 +733,7 @@ const Menu = () => {
                                                         e.stopPropagation();
                                                         addToCart(item);
                                                     }}
-                                                    className="w-8 h-8 md:w-14 md:h-14 bg-white text-[#FD6941] border border-[#FFE4DE] rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 shadow-sm focus:outline-none"
+                                                    className="w-9 h-9 md:w-14 md:h-14 bg-white text-[#FD6941] border border-[#FFE4DE] rounded-full flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 focus:outline-none"
                                                 >
                                                     <Plus className="w-5 h-5 md:w-7 md:h-7" />
                                                 </button>
@@ -1136,6 +1179,7 @@ const Menu = () => {
                                                 setCustomerDetails(prev => ({ ...prev, phone: verificationPhone, name: occupantInfo.name }));
                                                 setIsTableOccupied(false);
                                                 setShowFullForm(false);
+                                                setIsVerified(true);
                                             } else {
                                                 toast.error("Phone number does not match current order.");
                                             }
@@ -1151,7 +1195,79 @@ const Menu = () => {
                 )
             }
 
-        </div >
+            {/* Rating Modal */}
+            {showRatingModal && (
+                <div className="fixed inset-0 z-[150] bg-black/60 backdrop-blur-md flex items-center justify-center p-6 sm:p-4">
+                    <div className="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="p-8 text-center bg-gradient-to-b from-[#FD6941]/10 to-transparent">
+                            <div className="w-16 h-16 bg-[#FD6941] text-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                                <Star className="w-8 h-8 fill-current" />
+                            </div>
+                            <h2 className="text-2xl font-normal text-gray-900 mb-1">How was your meal?</h2>
+                            <p className="text-gray-500 text-sm">Rate the items you enjoyed today</p>
+                        </div>
+                        
+                        <div className="max-h-[50vh] overflow-y-auto px-8 pb-4 space-y-6 no-scrollbar">
+                            {itemsToRate.map((item, idx) => (
+                                <div key={idx} className="flex flex-col items-center gap-3">
+                                    <p className="text-gray-800 font-medium">{item.name}</p>
+                                    <div className="flex gap-2">
+                                        {[1, 2, 3, 4, 5].map(star => (
+                                            <button
+                                                key={star}
+                                                onClick={() => {
+                                                    const existing = ratingData.find(r => r.itemId === item.menuItem);
+                                                    if (existing) {
+                                                        setRatingData(ratingData.map(r => r.itemId === item.menuItem ? { ...r, star } : r));
+                                                    } else {
+                                                        setRatingData([...ratingData, { itemId: item.menuItem, star }]);
+                                                    }
+                                                }}
+                                                className={`transition-all duration-300 ${ (ratingData.find(r => r.itemId === item.menuItem)?.star >= star) ? 'text-[#FD6941] scale-110' : 'text-gray-200 hover:text-orange-200' }`}
+                                            >
+                                                <Star className={`w-8 h-8 ${ (ratingData.find(r => r.itemId === item.menuItem)?.star >= star) ? 'fill-current' : '' }`} />
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="p-8 pt-0 flex flex-col gap-3">
+                            <button
+                                onClick={async () => {
+                                    if (ratingData.length === 0) {
+                                        toast.error("Please select at least one rating");
+                                        return;
+                                    }
+                                    try {
+                                        const originalOrderId = sessionStorage.getItem('last_completed_order') || activeOrderId;
+                                        await orderAPI.rateOrder(originalOrderId, ratingData);
+                                        toast.success("Thank you for your feedback!");
+                                        setShowRatingModal(false);
+                                        setRatingData([]);
+                                        // Force refresh items to show "live" rating
+                                        const menuRes = await menuAPI.getAll({ restaurantName: tenantName, restaurantId });
+                                        setMenuItems(menuRes.data);
+                                    } catch (err) {
+                                        toast.error("Failed to submit rating");
+                                    }
+                                }}
+                                className="w-full bg-[#FD6941] text-white py-4 rounded-2xl font-medium shadow-xl hover:shadow-[0_10px_20px_rgba(253,105,65,0.4)] transition-all active:scale-95"
+                            >
+                                Submit Feedback
+                            </button>
+                            <button 
+                                onClick={() => setShowRatingModal(false)}
+                                className="w-full py-2 text-gray-400 text-sm hover:text-gray-600 transition-colors"
+                            >
+                                Skip for now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 

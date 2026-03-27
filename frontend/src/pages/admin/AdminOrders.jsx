@@ -478,7 +478,7 @@ const AdminOrders = () => {
     }
 
     return (
-        <div className="space-y-4 sm:space-y-8 px-1 sm:px-0">
+        <div className="space-y-4 sm:space-y-8 px-1 sm:px-0 pb-10">
             <div className="mb-4 sm:mb-8">
                 <h1 className="text-[20px] sm:text-[24px] lg:text-[36px] font-medium text-black tracking-tight leading-none">Orders</h1>
                 <p className="text-gray-500 text-sm sm:text-base">Manage your restaurant active orders</p>

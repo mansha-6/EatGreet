@@ -1,9 +1,18 @@
-import { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef, useState, useEffect } from 'react';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { ShieldCheck, BarChart3, ChefHat, Users } from 'lucide-react';
 
 export default function BentoFeatures() {
     const containerRef = useRef(null);
+    const prefersReducedMotion = useReducedMotion();
+    const [disableParallax, setDisableParallax] = useState(false);
+
+    useEffect(() => {
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        if (prefersReducedMotion || isTouchDevice) {
+            setDisableParallax(true);
+        }
+    }, [prefersReducedMotion]);
 
     // Parallax scales for the bento items
     const { scrollYProgress } = useScroll({
@@ -18,6 +27,7 @@ export default function BentoFeatures() {
 
     const y1 = useTransform(scrollYProgress, [0, 1], ["50px", "-50px"]);
     const y2 = useTransform(scrollYProgress, [0, 1], ["80px", "-80px"]);
+    const staticMotionStyle = { scale: 1, y: 0 };
 
     return (
         <section ref={containerRef} className="pt-16 pb-0 md:pt-32 md:pb-0 bg-gray-50 relative overflow-hidden" id="bento-features">
@@ -49,7 +59,7 @@ export default function BentoFeatures() {
 
                     {/* Item 1 - Large Left */}
                     <motion.div
-                        style={{ scale: scale1, y: y1 }}
+                        style={disableParallax ? staticMotionStyle : { scale: scale1, y: y1 }}
                         className="md:col-span-8 md:row-span-2 bg-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-12 relative overflow-hidden group shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-gray-100 flex flex-col justify-between"
                     >
                         <div className="relative z-10 max-w-md">
@@ -79,7 +89,7 @@ export default function BentoFeatures() {
 
                     {/* Item 2 - Top Right */}
                     <motion.div
-                        style={{ scale: scale2, y: y2 }}
+                        style={disableParallax ? staticMotionStyle : { scale: scale2, y: y2 }}
                         className="md:col-span-4 md:row-span-1 bg-gray-900 text-white rounded-[2rem] md:rounded-[2.5rem] p-6 md:p-8 relative overflow-hidden group shadow-xl"
                     >
                         <div className="absolute top-0 right-0 w-32 h-32 bg-[#FD6941] blur-[60px] opacity-20 rounded-full group-hover:scale-150 transition-transform duration-700" />
@@ -93,7 +103,7 @@ export default function BentoFeatures() {
 
                     {/* Item 3 - Bottom Middle (Small) */}
                     <motion.div
-                        style={{ scale: scale3, y: y1 }}
+                        style={disableParallax ? staticMotionStyle : { scale: scale3, y: y1 }}
                         className="md:col-span-2 md:row-span-1 bg-[#FFF5F1] rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-6 relative overflow-hidden group flex flex-col justify-center items-center text-center border border-[#FD6941]/10"
                     >
                         <ChefHat className="w-8 h-8 md:w-10 md:h-10 text-[#FD6941] mb-2 md:mb-3 group-hover:scale-110 transition-transform" />
@@ -102,7 +112,7 @@ export default function BentoFeatures() {
 
                     {/* Item 4 - Bottom Right */}
                     <motion.div
-                        style={{ scale: scale4, y: y2 }}
+                        style={disableParallax ? staticMotionStyle : { scale: scale4, y: y2 }}
                         className="md:col-span-2 md:row-span-1 bg-white rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-6 relative overflow-hidden group shadow-md border border-gray-50 flex flex-col justify-center items-center text-center"
                     >
                         <Users className="w-8 h-8 md:w-10 md:h-10 text-blue-500 mb-2 md:mb-3 group-hover:scale-110 transition-transform" />

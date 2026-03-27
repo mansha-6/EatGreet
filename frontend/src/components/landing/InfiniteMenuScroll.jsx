@@ -88,7 +88,14 @@ export default function InfiniteMenuScroll() {
                             onMouseLeave={() => setActiveEmoji(null)}
                             className="relative group w-[220px] h-[300px] md:w-[350px] md:h-[450px] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex-shrink-0 cursor-none shadow-lg"
                         >
-                            <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                            <img
+                                src={item.image}
+                                alt={item.name}
+                                loading="lazy"
+                                decoding="async"
+                                fetchPriority="low"
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                            />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
 
                             <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
@@ -118,7 +125,14 @@ export default function InfiniteMenuScroll() {
                             onMouseLeave={() => setActiveEmoji(null)}
                             className="relative group w-[220px] h-[300px] md:w-[350px] md:h-[450px] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex-shrink-0 cursor-none shadow-lg"
                         >
-                            <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                            <img
+                                src={item.image}
+                                alt={item.name}
+                                loading="lazy"
+                                decoding="async"
+                                fetchPriority="low"
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                            />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
 
                             <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full translate-y-4 group-hover:translate-y-0 transition-transform duration-500">

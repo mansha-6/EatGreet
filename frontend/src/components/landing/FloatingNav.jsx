@@ -68,7 +68,7 @@ export const FloatingNav = ({ navItems, className }) => {
                 <div className={cn(
                     "w-full mx-auto flex flex-col transition-all duration-500",
                     scrolled
-                        ? "max-w-6xl rounded-2xl sm:rounded-full bg-white/92 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.10)] border border-gray-100"
+                        ? "max-w-6xl rounded-2xl sm:rounded-full bg-white/95 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.10)] border border-gray-100"
                         : "max-w-none"
                 )}>
                     {/* ── Main row ── */}

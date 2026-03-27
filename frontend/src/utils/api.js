@@ -169,6 +169,8 @@ export const orderAPI = {
   // Public Kitchen API
   getKitchenOrders: (restaurantName) => api.get(`/orders/kitchen/${restaurantName}`),
   updateKitchenOrderStatus: (restaurantName, orderId, status) => api.put(`/orders/kitchen/${restaurantName}/${orderId}/status`, { status }),
+  getOrder: (id) => api.get(`/orders/${id}`),
+  rateOrder: (id, ratings) => api.put(`/orders/${id}/rate`, { ratings }),
 };
 
 /* 

@@ -48,7 +48,7 @@ const AdminLayout = () => {
             style={{ WebkitUserDrag: 'none' }}
         >
             <DynamicNavbar />
-            <main className={`flex-1 px-4 sm:px-6 lg:px-[30px] py-6 w-full no-scrollbar ${isScrollablePage ? 'overflow-y-auto' : 'overflow-hidden overscroll-none'}`}>
+            <main className={`flex-1 px-4 sm:px-6 lg:px-[30px] pt-2 pb-6 sm:py-6 w-full no-scrollbar ${isScrollablePage ? 'overflow-y-auto' : 'overflow-hidden overscroll-none'}`}>
                 <Outlet />
             </main>
         </div>

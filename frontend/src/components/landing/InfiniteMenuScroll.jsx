@@ -11,6 +11,7 @@ const menuItems = [
     { id: 5, name: "Matcha Latte", emoji: "🍵", image: "https://images.unsplash.com/photo-1515823662972-da6a2e4d3002?q=80&w=2670&auto=format&fit=crop" },
 ];
 
+// Only shown on desktop (non-touch) devices
 const EmojiCursor = ({ emoji, isVisible }) => {
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
@@ -50,6 +51,11 @@ const EmojiCursor = ({ emoji, isVisible }) => {
 export default function InfiniteMenuScroll() {
     const containerRef = useRef(null);
     const [activeEmoji, setActiveEmoji] = useState(null);
+    const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+    useEffect(() => {
+        setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    }, []);
 
     const { scrollYProgress } = useScroll({
         target: containerRef,
@@ -63,14 +69,14 @@ export default function InfiniteMenuScroll() {
     const duplicatedItemsRow2 = [...menuItems].reverse().concat([...menuItems].reverse(), [...menuItems].reverse());
 
     return (
-        <section 
-            ref={containerRef} 
-            onMouseLeave={() => setActiveEmoji(null)}
-            className="pt-8 pb-16 md:pt-16 md:pb-32 bg-white overflow-hidden relative" 
+        <section
+            ref={containerRef}
+            onMouseLeave={() => !isTouchDevice && setActiveEmoji(null)}
+            className="pt-8 pb-16 md:pt-16 md:pb-32 bg-white overflow-hidden relative"
             id="menu-showcase"
         >
-            <EmojiCursor emoji={activeEmoji} isVisible={!!activeEmoji} />
-
+            {/* Emoji cursor — desktop only */}
+            {!isTouchDevice && <EmojiCursor emoji={activeEmoji} isVisible={!!activeEmoji} />}
 
             <div className="max-w-7xl mx-auto px-4 md:px-6 text-center mb-10 md:mb-16">
                 <span className="text-[#FD6941] font-medium tracking-widest text-[10px] md:text-xs uppercase mb-2 block">Visual Dining</span>
@@ -84,9 +90,9 @@ export default function InfiniteMenuScroll() {
                     {duplicatedItemsRow1.map((item, idx) => (
                         <div
                             key={`r1-${idx}`}
-                            onMouseEnter={() => setActiveEmoji(item.emoji)}
-                            onMouseLeave={() => setActiveEmoji(null)}
-                            className="relative group w-[220px] h-[300px] md:w-[350px] md:h-[450px] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex-shrink-0 cursor-none shadow-lg"
+                            onMouseEnter={() => !isTouchDevice && setActiveEmoji(item.emoji)}
+                            onMouseLeave={() => !isTouchDevice && setActiveEmoji(null)}
+                            className="relative group w-[220px] h-[300px] md:w-[350px] md:h-[450px] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex-shrink-0 shadow-lg"
                         >
                             <img
                                 src={item.image}
@@ -94,11 +100,11 @@ export default function InfiniteMenuScroll() {
                                 loading="lazy"
                                 decoding="async"
                                 fetchPriority="low"
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                className="w-full h-full object-cover transition-transform duration-700 md:group-hover:scale-110"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 md:group-hover:opacity-100 transition-opacity duration-300" />
 
-                            <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                            <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full md:translate-y-4 md:group-hover:translate-y-0 transition-transform duration-500">
                                 <div>
                                     <p className="text-white/80 text-[10px] md:text-sm font-medium tracking-wider uppercase mb-1 drop-shadow-md">Signature</p>
                                     <h4 className="text-white text-lg md:text-2xl font-bold font-['Urbanist'] drop-shadow-md">{item.name}</h4>
@@ -106,7 +112,7 @@ export default function InfiniteMenuScroll() {
                             </div>
 
                             <div className="absolute top-6 right-6">
-                                <div className="bg-white/20 backdrop-blur-md p-3 rounded-full border border-white/30 text-white group-hover:bg-[#FD6941] group-hover:border-[#FD6941] group-hover:scale-110 transition-all duration-300 shadow-xl">
+                                <div className="bg-white/20 backdrop-blur-md p-3 rounded-full border border-white/30 text-white md:group-hover:bg-[#FD6941] md:group-hover:border-[#FD6941] md:group-hover:scale-110 transition-all duration-300 shadow-xl">
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
                                     </svg>
@@ -121,9 +127,9 @@ export default function InfiniteMenuScroll() {
                     {duplicatedItemsRow2.map((item, idx) => (
                         <div
                             key={`r2-${idx}`}
-                            onMouseEnter={() => setActiveEmoji(item.emoji)}
-                            onMouseLeave={() => setActiveEmoji(null)}
-                            className="relative group w-[220px] h-[300px] md:w-[350px] md:h-[450px] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex-shrink-0 cursor-none shadow-lg"
+                            onMouseEnter={() => !isTouchDevice && setActiveEmoji(item.emoji)}
+                            onMouseLeave={() => !isTouchDevice && setActiveEmoji(null)}
+                            className="relative group w-[220px] h-[300px] md:w-[350px] md:h-[450px] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden flex-shrink-0 shadow-lg"
                         >
                             <img
                                 src={item.image}
@@ -131,11 +137,11 @@ export default function InfiniteMenuScroll() {
                                 loading="lazy"
                                 decoding="async"
                                 fetchPriority="low"
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                className="w-full h-full object-cover transition-transform duration-700 md:group-hover:scale-110"
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 md:group-hover:opacity-100 transition-opacity duration-300" />
 
-                            <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                            <div className="absolute bottom-0 left-0 p-6 md:p-8 w-full md:translate-y-4 md:group-hover:translate-y-0 transition-transform duration-500">
                                 <div>
                                     <p className="text-white/80 text-[10px] md:text-sm font-medium tracking-wider uppercase mb-1 drop-shadow-md">Popular</p>
                                     <h4 className="text-white text-lg md:text-2xl font-bold font-['Urbanist'] drop-shadow-md">{item.name}</h4>
@@ -143,12 +149,12 @@ export default function InfiniteMenuScroll() {
                             </div>
 
                             <div className="absolute top-6 right-6">
-                                <div className="bg-white/20 backdrop-blur-md p-3 rounded-full border border-white/30 text-white group-hover:bg-[#FD6941] group-hover:border-[#FD6941] group-hover:scale-110 transition-all duration-300 shadow-xl">
+                                <div className="bg-white/20 backdrop-blur-md p-3 rounded-full border border-white/30 text-white md:group-hover:bg-[#FD6941] md:group-hover:border-[#FD6941] md:group-hover:scale-110 transition-all duration-300 shadow-xl">
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
                                     </svg>
                                 </div>
-                            </div>
+            </div>
                         </div>
                     ))}
                 </motion.div>

@@ -252,7 +252,8 @@ const AdminMenu = () => {
             });
         }
 
-        (item.models || []).forEach(addIfUnique);
+        // NOTE: 3D models are intentionally excluded from the card slider.
+        // They are only accessible via the item edit / detail view.
 
         if (uniqueItems.length === 0) {
             return [{ url: 'https://via.placeholder.com/150', type: 'image/jpeg' }];
@@ -905,9 +906,10 @@ const AdminMenu = () => {
                         const categoryName = catObj ? catObj.name : 'Uncategorized';
 
                         return (
-                            <div key={item._id} className="bg-white rounded-[1.5rem] sm:rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group relative flex flex-col gap-0 h-auto overflow-hidden">
-                                {/* Image Container */}
-                                <div className="relative w-full aspect-video shrink-0 bg-gray-50 overflow-hidden">
+                            <div key={item._id} className="bg-white rounded-[1.5rem] sm:rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group relative flex flex-row sm:flex-col gap-0 h-[140px] sm:h-auto overflow-hidden">
+
+                                {/* Image Container — mobile: fixed small square, sm+: full-width aspect-video */}
+                                <div className="relative w-[120px] sm:w-full h-full sm:h-auto sm:aspect-video shrink-0 bg-gray-50 overflow-hidden rounded-l-[1.5rem] sm:rounded-none sm:rounded-t-3xl">
                                     <MediaSlider
                                         media={getCardMediaItems(item)}
                                         className="w-full h-full"
@@ -916,78 +918,78 @@ const AdminMenu = () => {
                                         showArButton={false}
                                         modelCheckId={`admin-model-${item._id}`}
                                         interactiveModelPreview={true}
+                                        compact={true}
                                     />
-                                    {/* Availability Tag */}
-                                    <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 bg-white/90 backdrop-blur-sm px-2 py-0.5 sm:py-1 rounded-full flex items-center gap-1 sm:gap-1.5 shadow-sm">
-                                        <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${item.isAvailable ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                                        <span className="text-[8px] sm:text-[10px] font-normal text-gray-700 tracking-wide uppercase">{item.isAvailable ? 'Available' : 'Unavailable'}</span>
-                                    </div>
-
-                                    {/* Veg/Non-Veg Symbol - Top Left */}
-                                    <div className="absolute top-2 left-2 sm:top-3 sm:left-3 z-10 w-4 h-4 sm:w-5 sm:h-5 bg-white/90 backdrop-blur-sm rounded-md shadow-sm p-0.5">
+                                    {/* Veg/Non-Veg Symbol */}
+                                    <div className="absolute top-2 left-2 z-10 w-4 h-4 sm:w-5 sm:h-5 bg-white/90 backdrop-blur-sm rounded-md shadow-sm p-0.5">
                                         <img
                                             src={item.isVeg ? vegIcon : nonVegIcon}
-                                            alt={item.isVeg ? "Veg" : "Non-Veg"}
+                                            alt={item.isVeg ? 'Veg' : 'Non-Veg'}
                                             className="w-full h-full object-contain"
                                         />
+                                    </div>
+                                    {/* Availability dot — mobile only */}
+                                    <div className="sm:hidden absolute bottom-2 left-1/2 -translate-x-1/2">
+                                        <div className={`w-2 h-2 rounded-full border-2 border-white shadow-sm ${item.isAvailable ? 'bg-green-500' : 'bg-red-500'}`} />
+                                    </div>
+                                    {/* Availability pill — sm+ */}
+                                    <div className="hidden sm:flex absolute bottom-2 left-2 sm:bottom-3 sm:left-3 bg-white/90 backdrop-blur-sm px-2 py-0.5 sm:py-1 rounded-full items-center gap-1 sm:gap-1.5 shadow-sm">
+                                        <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${item.isAvailable ? 'bg-green-500' : 'bg-red-500'}`} />
+                                        <span className="text-[8px] sm:text-[10px] font-normal text-gray-700 tracking-wide uppercase">{item.isAvailable ? 'Available' : 'Unavailable'}</span>
                                     </div>
                                 </div>
 
                                 {/* Content */}
-                                <div className="flex-1 flex flex-col px-4 pb-4 pt-4">
-                                    <div className="flex flex-col gap-0">
-                                        <span className="text-[8px] sm:text-[10px] font-normal text-[#FD6941] tracking-wider uppercase leading-none mb-1">
-                                            {categoryName}
-                                        </span>
+                                <div className="flex-1 flex flex-col px-3 py-2 sm:px-4 sm:pb-4 sm:pt-4 min-w-0 overflow-hidden">
+                                    <span className="text-[8px] sm:text-[10px] font-normal text-[#FD6941] tracking-wider uppercase leading-none mb-0.5">
+                                        {categoryName}
+                                    </span>
 
-                                        <div className="flex justify-between items-start gap-1">
-                                            <h3 className="font-normal text-gray-900 text-xs sm:text-lg leading-tight w-2/3 line-clamp-1 sm:line-clamp-none">{item.name || 'Unnamed'}</h3>
-                                            <span className="font-normal text-sm sm:text-xl text-gray-900 whitespace-nowrap leading-tight">{currencySymbol}{item.price || 0}</span>
-                                        </div>
-
-                                        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0 text-[8px] sm:text-[10px] font-normal text-gray-400 mt-1 mb-1">
-                                            <span className="flex items-center gap-0.5">
-                                                <Flame className="w-2 h-2 sm:w-3 sm:h-3 text-[#FD6941]" />
-                                                {item.calories || '- kcal'}
-                                            </span>
-                                            <span className="flex items-center gap-0.5">
-                                                <Clock className="w-2 h-2 sm:w-3 sm:h-3" />
-                                                {item.time || '- min'}
-                                            </span>
-                                        </div>
-
-                                        <p className="text-[9px] sm:text-xs text-gray-400 leading-tight line-clamp-2 mt-auto min-h-[24px] sm:min-h-[30px]">
-                                            {item.description}
-                                        </p>
+                                    <div className="flex justify-between items-start gap-1 mb-0.5">
+                                        <h3 className="font-normal text-gray-900 text-xs sm:text-lg leading-tight line-clamp-1">{item.name || 'Unnamed'}</h3>
+                                        <span className="font-normal text-sm sm:text-xl text-gray-900 whitespace-nowrap leading-tight shrink-0">{currencySymbol}{item.price || 0}</span>
                                     </div>
 
-                                    {/* Actions Footer */}
-                                    <div className="mt-auto pt-2 border-t border-gray-50 flex items-center justify-between pb-1 sm:pb-0">
-                                        {/* Toggle Switch */}
-                                        <div>
-                                            <label className="relative inline-flex items-center cursor-pointer scale-90 sm:scale-100">
-                                                <input
-                                                    type="checkbox"
-                                                    className="sr-only peer"
-                                                    checked={item.isAvailable}
-                                                    onChange={() => toggleStatus(item._id)}
-                                                />
-                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                                            </label>
-                                        </div>
+                                    <div className="flex flex-wrap items-center gap-x-2 text-[8px] sm:text-[10px] font-normal text-gray-400 mb-1">
+                                        <span className="flex items-center gap-0.5">
+                                            <Flame className="w-2 h-2 sm:w-3 sm:h-3 text-[#FD6941]" />
+                                            {item.calories || '- kcal'}
+                                        </span>
+                                        <span className="flex items-center gap-0.5">
+                                            <Clock className="w-2 h-2 sm:w-3 sm:h-3" />
+                                            {item.time || '- min'}
+                                        </span>
+                                    </div>
 
-                                        <div className="flex gap-1.5 sm:gap-2">
+                                    <p className="hidden sm:block text-[9px] sm:text-xs text-gray-400 leading-tight line-clamp-2 overflow-hidden min-h-[2.6em] max-h-[2.6em] mb-1">
+                                        {item.description}
+                                    </p>
+
+                                    {/* Actions Footer */}
+                                    <div className="mt-auto pt-1 sm:pt-2 sm:border-t sm:border-gray-50 flex items-center justify-between">
+                                        {/* Toggle Switch */}
+                                        <label className="relative inline-flex items-center cursor-pointer scale-75 sm:scale-90 origin-left">
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only peer"
+                                                checked={item.isAvailable}
+                                                onChange={() => toggleStatus(item._id)}
+                                            />
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black" />
+                                        </label>
+
+                                        <div className="flex gap-1.5">
                                             <button
                                                 onClick={() => handleEdit(item)}
-                                                className="w-8 h-8 sm:w-8 sm:h-8 bg-gray-50 sm:bg-gray-100 rounded-full flex items-center justify-center text-gray-400 sm:text-gray-500 hover:bg-black sm:hover:bg-gray-200 hover:text-white sm:hover:text-black transition-all shadow-sm sm:shadow-none border border-gray-100 sm:border-none"
+                                                className="w-7 h-7 sm:w-8 sm:h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-black hover:text-white transition-all border border-gray-100"
                                             >
-                                                <Pencil className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                                <Pencil className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(item._id)}
-                                                className="w-8 h-8 sm:w-8 sm:h-8 bg-gray-50 sm:bg-gray-100 rounded-full flex items-center justify-center text-gray-400 sm:text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all shadow-sm sm:shadow-none border border-gray-100 sm:border-none"
+                                                className="w-7 h-7 sm:w-8 sm:h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 hover:bg-red-50 hover:text-red-500 transition-all border border-gray-100"
                                             >
-                                                <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                                <Trash2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                                             </button>
                                         </div>
                                     </div>

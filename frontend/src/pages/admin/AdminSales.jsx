@@ -1051,36 +1051,40 @@ const AdminSales = () => {
                     <h1 className="text-[20px] sm:text-[24px] lg:text-[28px] font-normal text-black tracking-tight leading-none">Sales Dashboard</h1>
                     <p className="text-[12px] sm:text-[18px] text-gray-400 font-normal">Financial Overview & Analytics</p>
                 </div>
-                <div className="flex flex-row items-center justify-end gap-2 w-full md:w-auto py-2">
+                <div className="flex flex-wrap items-center gap-3 w-full md:w-auto py-2">
                     <button
                         onClick={() => setIsDatePickerOpen(true)}
-                        className="w-full sm:w-auto h-10 sm:h-12 bg-white border border-gray-100 text-gray-700 text-[10px] sm:text-[13px] rounded-full px-4 sm:px-6 outline-none shadow-sm transition-all hover:border-gray-300 flex items-center gap-2 font-normal justify-between sm:justify-start shrink-0"
+                        className="flex-1 sm:flex-none h-11 sm:h-12 bg-white border border-gray-100 text-gray-700 text-[11px] sm:text-[13px] rounded-full px-4 sm:px-6 outline-none shadow-sm transition-all hover:border-gray-300 flex items-center gap-2 font-normal justify-between sm:justify-start shrink-0 min-w-0"
                     >
-                        <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400" />
-                        <span>{dateRange.start ? `${dateRange.start} - ${dateRange.end || 'Today'}` : "Select Date Range"}</span>
-                        <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 ml-1" />
+                        <div className="flex items-center gap-2 min-w-0">
+                            <Calendar className="w-4 h-4 text-gray-400 shrink-0" />
+                            <span className="truncate">{dateRange.start ? `${dateRange.start} - ${dateRange.end || 'Today'}` : "Select Date Range"}</span>
+                        </div>
+                        <ChevronDown className="w-4 h-4 text-gray-500 shrink-0" />
                     </button>
                     {isDatePickerOpen && <DateRangePicker range={dateRange} onChange={setDateRange} onClose={() => setIsDatePickerOpen(false)} />}
 
-                    <button
-                        onClick={handleDownloadPDF}
-                        className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2 shrink-0"
-                    >
-                        <Download className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                        <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
-                            Export PDF
-                        </span>
-                    </button>
+                    <div className="flex items-center gap-2 shrink-0">
+                        <button
+                            onClick={handleDownloadPDF}
+                            className="bg-[#FD6941] hover:bg-[#FD6941]/90 text-white p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden h-11 w-11 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2 shrink-0"
+                        >
+                            <Download className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
+                            <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                                Export PDF
+                            </span>
+                        </button>
 
-                    <button
-                        onClick={handleDownloadExcel}
-                        className="bg-green-600 hover:bg-green-700 text-white p-2.5 sm:p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden h-10 w-10 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2 shrink-0"
-                    >
-                        <FileSpreadsheet className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
-                        <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
-                            Export Excel
-                        </span>
-                    </button>
+                        <button
+                            onClick={handleDownloadExcel}
+                            className="bg-green-600 hover:bg-green-700 text-white p-3 rounded-full font-normal flex items-center justify-center gap-0 group transition-all duration-300 shadow-sm text-sm overflow-hidden h-11 w-11 sm:h-12 sm:w-12 sm:hover:w-auto sm:hover:px-6 sm:hover:gap-2 shrink-0"
+                        >
+                            <FileSpreadsheet className="w-5 h-5 sm:w-6 sm:h-6 shrink-0" />
+                            <span className="max-w-0 opacity-0 group-hover:max-w-[150px] group-hover:opacity-100 transition-all duration-500 ease-in-out whitespace-nowrap overflow-hidden hidden sm:block">
+                                Export Excel
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -1144,6 +1148,39 @@ const AdminSales = () => {
                     </div>
                 </div>
 
+                {/* Mobile View */}
+                <div className="sm:hidden divide-y divide-gray-100">
+                    {filteredOrders.length > 0 ? (
+                        filteredOrders.map((order) => (
+                            <div key={order._id} className="p-4 flex items-center justify-between hover:bg-gray-50 active:bg-gray-100 transition-colors" onClick={() => setSelectedOrder(order)}>
+                                <div className="flex flex-col gap-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-sm font-bold text-gray-900">{formatOrderDisplayId(order)}</span>
+                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-widest ${(order.paymentMethod || 'Cash') === 'Online' ? 'bg-blue-100 text-blue-700' : 'bg-green-100 text-green-700'}`}>
+                                            {order.paymentMethod || 'Cash'}
+                                        </span>
+                                    </div>
+                                    <span className="text-xs text-gray-500 font-normal">
+                                        {new Date(order.createdAt).toLocaleDateString()} · {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                    <span className="text-xs text-gray-400 font-normal">
+                                        {order.items?.length || 0} items
+                                    </span>
+                                </div>
+                                <div className="flex flex-col items-end gap-2">
+                                    <span className="text-sm font-black text-gray-900">{formatCurrency(order.totalAmount || 0, currencySymbol)}</span>
+                                    <div className="w-8 h-8 rounded-full bg-[#FD6941]/10 text-[#FD6941] flex items-center justify-center">
+                                        <ChevronRight size={18} />
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="px-6 py-12 text-center text-gray-400 text-sm">No transactions found.</div>
+                    )}
+                </div>
+
+                {/* Desktop View */}
                 <div className="hidden sm:block overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
@@ -1170,7 +1207,7 @@ const AdminSales = () => {
                                         <td className="px-6 py-4 text-sm text-gray-600 text-right">{formatCurrency((order.totalAmount || 0) * 0.05, currencySymbol)}</td>
                                         <td className="px-6 py-4 text-sm font-normal text-black text-right">{formatCurrency(order.totalAmount || 0, currencySymbol)}</td>
                                         <td className="px-6 py-4 text-center">
-                                            <button onClick={() => setSelectedOrder(order)} className="w-8 h-8 rounded-full bg-[#FD6941] text-white flex items-center justify-center mx-auto shadow-md"><FileText size={16} /></button>
+                                            <button onClick={() => setSelectedOrder(order)} className="w-8 h-8 rounded-full bg-[#FD6941] text-white flex items-center justify-center mx-auto shadow-md transition-transform hover:scale-110 active:scale-95"><FileText size={16} /></button>
                                         </td>
                                     </tr>
                                 ))

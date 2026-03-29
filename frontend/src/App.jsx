@@ -159,11 +159,21 @@ const TitleUpdater = () => {
 };
 
 
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+};
 
 function App() {
   return (
     <ErrorBoundary>
       <Router>
+        <ScrollToTop />
         <TitleUpdater />
         <Toaster position="top-right" containerStyle={{ zIndex: 99999 }} />
         <Suspense fallback={<LoadingSpinner />}>

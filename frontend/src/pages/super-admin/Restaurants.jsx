@@ -448,7 +448,7 @@ export default function Restaurants() {
     };
 
     return (
-        <div className="flex-1 min-h-0 w-full bg-[#F0F2F4] px-4 md:px-10 py-6 flex flex-col overflow-hidden">
+        <div className="flex-1 min-h-0 w-full bg-[#F0F2F4] px-4 md:px-10 py-6 flex flex-col overflow-y-auto no-scrollbar pb-10">
             <div className="max-w-[1850px] mx-auto w-full flex-1 flex flex-col space-y-6 min-h-0">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
                     <div className="space-y-1">
@@ -471,7 +471,7 @@ export default function Restaurants() {
                     </button>
                 </div>
 
-                <div className="flex-1 min-h-0 bg-white/60 backdrop-blur-sm rounded-[2.5rem] border border-white/60 shadow-sm flex flex-col overflow-hidden">
+                <div className="flex-1 min-h-0 bg-white/60 backdrop-blur-sm rounded-[2.5rem] border border-white/60 shadow-sm flex flex-col overflow-visible sm:overflow-hidden">
                     <div className="px-8 pt-8 pb-0">
                         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-2">
                             <h2 className="text-xl font-normal text-gray-900 font-['Urbanist'] tracking-tight">Subscription Management</h2>
@@ -539,7 +539,7 @@ export default function Restaurants() {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-12 gap-4 px-6 py-2 mt-4">
+                        <div className="hidden lg:grid grid-cols-12 gap-4 px-6 py-2 mt-4">
                             <div className="col-span-3 text-[10px] font-normal text-gray-400 uppercase tracking-widest">User / Business</div>
                             <div className="col-span-2 text-[10px] font-normal text-gray-400 uppercase tracking-widest">Contact Info</div>
                             <div className="col-span-2 text-[10px] font-normal text-gray-400 uppercase tracking-widest text-center">Plan Type</div>
@@ -565,51 +565,61 @@ export default function Restaurants() {
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: idx * 0.05 }}
-                                        className="grid grid-cols-12 items-center gap-4 bg-white hover:bg-gray-50/50 px-6 py-5 rounded-[1.8rem] border border-gray-100 transition-all cursor-pointer group"
+                                        className="flex flex-col lg:grid lg:grid-cols-12 lg:items-center gap-4 bg-white hover:bg-gray-50/50 px-6 py-5 rounded-[1.8rem] border border-gray-100 transition-all cursor-pointer group"
                                     >
-                                        <div className="col-span-3 flex items-center gap-4">
-                                            <div className={`w-12 h-12 rounded-full flex items-center justify-center font-normal text-sm ${getColor(idx)}`}>
+                                        <div className="lg:col-span-3 flex items-center gap-4">
+                                            <div className={`w-12 h-12 rounded-full flex items-center justify-center font-normal text-sm shrink-0 ${getColor(idx)}`}>
                                                 {getInitials(restaurant)}
                                             </div>
-                                            <div>
+                                            <div className="min-w-0">
                                                 <div className="flex items-center gap-1.5">
-                                                    <h3 className="font-normal text-gray-900">{restaurant.restaurantName || restaurant.name}</h3>
+                                                    <h3 className="font-bold lg:font-normal text-gray-900 truncate">{restaurant.restaurantName || restaurant.name}</h3>
                                                     {restaurant.registrationNote && (
                                                         <MessageSquare className="w-3 h-3 text-[#FD6941] shrink-0" title="Has registration note" />
                                                     )}
                                                 </div>
-                                                <p className="text-xs text-gray-400 font-normal">ID {restaurant._id.slice(-6)}</p>
+                                                <p className="text-[10px] text-gray-400 font-normal">ID {restaurant._id.slice(-6)}</p>
                                             </div>
                                         </div>
-                                        <div className="col-span-2">
-                                            <p className="font-normal text-sm text-gray-800">{restaurant.name}</p>
-                                            <p className="text-xs text-gray-400 font-normal truncate">{restaurant.email}</p>
+                                        <div className="lg:col-span-2 flex lg:flex-col justify-between items-center lg:items-start border-t lg:border-none pt-2 lg:pt-0">
+                                            <p className="text-[10px] lg:hidden text-gray-400 uppercase tracking-widest">Owner</p>
+                                            <div className="text-right lg:text-left">
+                                                <p className="font-normal text-sm text-gray-800">{restaurant.name}</p>
+                                                <p className="text-xs text-gray-400 font-normal truncate max-w-[150px] lg:max-w-none">{restaurant.email}</p>
+                                            </div>
                                         </div>
-                                        <div className="col-span-2 text-center">
+                                        <div className="lg:col-span-2 flex lg:justify-center justify-between items-center border-t lg:border-none pt-2 lg:pt-0">
+                                            <p className="text-[10px] lg:hidden text-gray-400 uppercase tracking-widest">Plan</p>
                                             <span className={`px-4 py-1.5 rounded-full text-[10px] font-normal uppercase tracking-tight ${status.color}`}>
                                                 {status.label}
                                             </span>
                                         </div>
-                                        <div className="col-span-1 text-center font-normal text-sm text-gray-800">
-                                            {daysLeft !== null ? `${daysLeft}d` : '-'}
+                                        <div className="lg:col-span-1 flex lg:justify-center justify-between items-center border-t lg:border-none pt-2 lg:pt-0">
+                                            <p className="text-[10px] lg:hidden text-gray-400 uppercase tracking-widest">Days Left</p>
+                                            <p className="font-normal text-sm text-gray-800">
+                                                {daysLeft !== null ? `${daysLeft}d` : '-'}
+                                            </p>
                                         </div>
-                                        <div className="col-span-2 flex justify-center gap-2">
-                                            {!restaurant.isApproved && (
-                                                <span className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-tight bg-amber-50 text-amber-600 border border-amber-100 flex items-center gap-1">
-                                                    <Loader2 className="w-3 h-3 animate-spin" /> Pending
+                                        <div className="lg:col-span-2 flex lg:justify-center justify-between items-center gap-2 border-t lg:border-none pt-2 lg:pt-0">
+                                            <p className="text-[10px] lg:hidden text-gray-400 uppercase tracking-widest">Status</p>
+                                            <div className="flex gap-2">
+                                                {!restaurant.isApproved && (
+                                                    <span className="px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-tight bg-amber-50 text-amber-600 border border-amber-100 flex items-center gap-1">
+                                                        <Loader2 className="w-3 h-3 animate-spin" /> Pending
+                                                    </span>
+                                                )}
+                                                <span className={`px-4 py-1.5 rounded-full text-[10px] font-normal uppercase tracking-tight ${restaurant.isActive ? 'bg-[#E7F9F0] text-[#10B981]' : 'bg-rose-50 text-rose-500'}`}>
+                                                    {restaurant.isActive ? 'Active' : 'Deactivated'}
                                                 </span>
-                                            )}
-                                            <span className={`px-4 py-1.5 rounded-full text-[10px] font-normal uppercase tracking-tight ${restaurant.isActive ? 'bg-[#E7F9F0] text-[#10B981]' : 'bg-rose-50 text-rose-500'}`}>
-                                                {restaurant.isActive ? 'Active' : 'Deactivated'}
-                                            </span>
+                                            </div>
                                         </div>
-                                        <div className="col-span-2 flex items-center justify-end gap-2 pr-2">
+                                        <div className="lg:col-span-2 flex items-center justify-end gap-1 sm:gap-2 border-t lg:border-none pt-4 lg:pt-0">
                                             <button
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     setPreviewRestaurant(restaurant);
                                                 }}
-                                                className="p-2.5 hover:bg-[#FD6941]/10 rounded-full transition-colors text-gray-400 hover:text-[#FD6941]"
+                                                className="p-2.5 bg-gray-50 lg:bg-transparent hover:bg-[#FD6941]/10 rounded-full transition-colors text-gray-400 hover:text-[#FD6941]"
                                                 title="Preview Details"
                                             >
                                                 <Eye className="w-4 h-4" />
@@ -619,7 +629,7 @@ export default function Restaurants() {
                                                     e.stopPropagation();
                                                     handleEditSubscription(restaurant);
                                                 }}
-                                                className="p-2.5 hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
+                                                className="p-2.5 bg-gray-50 lg:bg-transparent hover:bg-gray-100 rounded-full transition-colors text-gray-400 hover:text-gray-600"
                                                 title="Edit Subscription"
                                             >
                                                 <Edit2 className="w-4 h-4" />
@@ -630,7 +640,7 @@ export default function Restaurants() {
                                                         e.stopPropagation();
                                                         handleApproveRestaurant(restaurant);
                                                     }}
-                                                    className="p-2.5 hover:bg-emerald-50 rounded-full transition-colors text-emerald-500 hover:text-emerald-600"
+                                                    className="p-2.5 bg-gray-50 lg:bg-transparent hover:bg-emerald-50 rounded-full transition-colors text-emerald-500 hover:text-emerald-600"
                                                     title="Approve & Send Credentials"
                                                     disabled={isApproving}
                                                 >
@@ -642,7 +652,7 @@ export default function Restaurants() {
                                                     e.stopPropagation();
                                                     handleToggleStatus(restaurant);
                                                 }}
-                                                className={`p-2.5 hover:bg-gray-100 rounded-full transition-colors ${restaurant.isActive ? 'text-gray-400 hover:text-rose-500' : 'text-rose-500 hover:text-emerald-500'}`}
+                                                className={`p-2.5 bg-gray-50 lg:bg-transparent hover:bg-gray-100 rounded-full transition-colors ${restaurant.isActive ? 'text-gray-400 hover:text-rose-500' : 'text-rose-500 hover:text-emerald-500'}`}
                                                 title={restaurant.isActive ? 'Ban Restaurant' : 'Reactivate Restaurant'}
                                             >
                                                 {restaurant.isActive ? <Ban className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
@@ -652,7 +662,7 @@ export default function Restaurants() {
                                                     e.stopPropagation();
                                                     handleDeleteRestaurant(restaurant);
                                                 }}
-                                                className="p-2.5 hover:bg-rose-50 rounded-full transition-colors text-gray-400 hover:text-rose-600"
+                                                className="p-2.5 bg-gray-50 lg:bg-transparent hover:bg-rose-50 rounded-full transition-colors text-gray-400 hover:text-rose-600"
                                                 title="Delete Restaurant"
                                             >
                                                 <Trash2 className="w-4 h-4" />

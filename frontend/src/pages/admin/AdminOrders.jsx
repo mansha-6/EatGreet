@@ -379,20 +379,25 @@ const AdminOrders = () => {
                     <title>Invoice</title>
                     <style>
                         @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap');
+                        * { box-sizing: border-box; }
                         body { 
                             font-family: 'Courier Prime', monospace; 
                             color: #000; 
-                            width: 300px; 
+                            width: 100%; 
+                            max-width: 80mm; 
                             margin: 0 auto; 
-                            padding: 20px;
+                            padding: 5mm;
                         }
                         .header { text-align: center; margin-bottom: 20px; }
                         .restaurant-name { font-size: 18px; font-weight: bold; text-transform: uppercase; margin-bottom: 5px; }
                         .restaurant-info { font-size: 12px; margin-bottom: 2px; }
                         .divider { border-top: 1px dashed #000; margin: 10px 0; }
-                        .info-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 3px; }
-                        .table-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 5px; }
+                        .info-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 3px; gap: 4px; }
+                        .table-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; margin-bottom: 5px; gap: 4px; }
                         .footer { text-align: center; margin-top: 20px; font-size: 14px; font-weight: bold; }
+                        @media print {
+                            body { width: 80mm; padding: 2mm; margin: 0; }
+                        }
                     </style>
                 </head>
                 <body>
@@ -787,8 +792,8 @@ const AdminOrders = () => {
 
                         <div className="p-4 sm:p-8 overflow-hidden flex flex-col flex-1">
                             {selectedOrder.status === 'completed' ? (
-                                <div className="overflow-y-auto no-scrollbar flex-1">
-                                    <div className="bg-white mx-auto shadow-sm border border-gray-200 p-8 font-mono text-black relative mb-8" style={{ width: '380px' }}>
+                                <div className="overflow-y-auto no-scrollbar flex-1 pb-10">
+                                    <div className="bg-white mx-auto shadow-sm border border-gray-200 p-6 sm:p-8 font-mono text-black relative mb-8 w-full max-w-[320px] sm:max-w-[380px] text-xs sm:text-sm">
                                         <button
                                             onClick={() => handlePrint(selectedOrder)}
                                             className="absolute top-4 right-4 p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors no-print"

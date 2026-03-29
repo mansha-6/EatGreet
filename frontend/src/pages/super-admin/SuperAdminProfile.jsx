@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Mail, Phone, MapPin, Building, Camera, Save, Shield, LogOut } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Building, Camera, Save, Shield, LogOut, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { authAPI, uploadAPI } from '../../utils/api';
 import { useSettings } from '../../context/SettingsContext';
@@ -95,6 +95,20 @@ const SuperAdminProfile = () => {
         }
     };
 
+    const handleRemoveProfilePic = async () => {
+        if (!user.profilePicture) return;
+        const loadToast = toast.loading('Removing profile picture...');
+        try {
+            await authAPI.updateProfile({ ...profile, profilePicture: "" });
+            const updatedUser = { ...user, profilePicture: "" };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            toast.success('Profile picture removed!', { id: loadToast });
+            window.location.reload();
+        } catch (error) {
+            toast.error('Failed to remove profile picture', { id: loadToast });
+        }
+    };
+
     return (
         <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar overscroll-none">
             <div className="space-y-6 max-w-[1850px] mx-auto px-4 md:px-10 py-6">
@@ -130,12 +144,24 @@ const SuperAdminProfile = () => {
                                 accept="image/*"
                                 onChange={handleProfilePicUpload}
                             />
-                            <button
-                                onClick={() => document.getElementById('super-admin-pic').click()}
-                                className="absolute bottom-0 right-0 p-2 bg-[#FD6941] text-white rounded-full shadow-md hover:bg-[#FD6941]/90 transition-colors"
-                            >
-                                <Camera className="w-4 h-4" />
-                            </button>
+                            <div className="absolute -bottom-1 -right-1 flex gap-1">
+                                <button
+                                    onClick={() => document.getElementById('super-admin-pic').click()}
+                                    className="p-2 bg-[#FD6941] text-white rounded-full shadow-md hover:bg-[#FD6941]/90 transition-all border-2 border-white active:scale-90"
+                                    title="Change Profile Picture"
+                                >
+                                    <Camera className="w-3.5 h-3.5" />
+                                </button>
+                                {user?.profilePicture && (
+                                    <button
+                                        onClick={handleRemoveProfilePic}
+                                        className="p-2 bg-white text-red-500 rounded-full shadow-md hover:bg-red-50 transition-all border-2 border-white active:scale-90"
+                                        title="Remove Profile Picture"
+                                    >
+                                        <X className="w-3.5 h-3.5" />
+                                    </button>
+                                )}
+                            </div>
                         </div>
                         <h2 className="text-xl font-bold text-gray-800 mb-1">{profile.fullName}</h2>
                         <div className="flex items-center gap-1 text-gray-500 mb-6">

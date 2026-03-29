@@ -110,6 +110,7 @@ const Onboarding = () => {
     const [loading, setLoading] = useState(false);
     const [uploadingLogo, setUploadingLogo] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [passwordError, setPasswordError] = useState('');
 
@@ -486,7 +487,7 @@ const Onboarding = () => {
                                                 <label className="block text-xs font-normal text-gray-400 mb-1.5 ml-1 uppercase tracking-wider">Confirm Password</label>
                                                 <div className="relative">
                                                     <input
-                                                        type={showPassword ? "text" : "password"}
+                                                        type={showConfirmPassword ? "text" : "password"}
                                                         name="confirmPassword"
                                                         value={formData.confirmPassword}
                                                         onChange={handleChange}
@@ -495,7 +496,13 @@ const Onboarding = () => {
                                                         className="w-full px-4 py-3 bg-gray-50 border-none rounded-xl text-gray-800 text-sm focus:ring-2 focus:ring-[#FD6941]/20 outline-none transition-all"
                                                         required
                                                     />
-                                                    <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-300" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300 hover:text-[#FD6941] transition-colors"
+                                                    >
+                                                        {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                                    </button>
                                                 </div>
                                             </div>
                                         </>

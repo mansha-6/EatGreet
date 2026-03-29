@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import {
     User, Store, ClipboardList, CreditCard, Users,
     Bell, Activity, Save, Upload, Plus, Minus,
-    MapPin, Clock, Calendar, FileText, CheckCircle, XCircle, Loader2
+    MapPin, Clock, Calendar, FileText, CheckCircle, XCircle, Loader2, X
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { authAPI, restaurantAPI, uploadAPI } from '../../utils/api';
@@ -216,6 +216,19 @@ const AdminSettings = () => {
         }
     };
 
+    const handleRemoveProfilePic = async () => {
+        if (!window.confirm('Remove profile picture?')) return;
+        setProfile(prev => ({ ...prev, profilePicture: '' }));
+        toast.info('Profile picture removed locally. Click Save Changes to persist.');
+    };
+
+    const handleRemoveLogo = async () => {
+        if (!window.confirm('Remove restaurant logo?')) return;
+        setRestoDetails(prev => ({ ...prev, logo: '' }));
+        toast.info('Logo removed locally. Click Save Changes to persist.');
+    };
+
+
     const handleSaveProfile = async () => {
         const loadToast = toast.loading('Saving changes...');
         try {
@@ -415,6 +428,7 @@ const AdminSettings = () => {
                                                 accept="image/*"
                                                 onChange={handleProfilePicUpload}
                                             />
+                                        <div className="flex items-center gap-3">
                                             <button
                                                 onClick={() => document.getElementById('profile-pic-upload').click()}
                                                 disabled={uploadingProfilePic}
@@ -422,6 +436,15 @@ const AdminSettings = () => {
                                             >
                                                 {uploadingProfilePic ? 'Uploading...' : 'Upload New'}
                                             </button>
+                                            {profile.profilePicture && (
+                                                <button
+                                                    onClick={handleRemoveProfilePic}
+                                                    className="text-xs font-normal text-rose-500 hover:underline"
+                                                >
+                                                    Remove
+                                                </button>
+                                            )}
+                                        </div>
                                         </div>
                                     </div>
                                     <InputGroup label="Full Name" name="name" value={profile.name} onChange={handleProfileChange} />
@@ -467,14 +490,25 @@ const AdminSettings = () => {
                                                 accept=".png, .svg"
                                                 onChange={handleLogoUpload}
                                             />
-                                            <button
-                                                onClick={() => document.getElementById('logo-upload-resto').click()}
-                                                disabled={uploadingLogo}
-                                                className="bg-gray-100 text-black px-4 py-2 rounded-xl text-xs font-normal hover:bg-gray-200 transition-colors flex items-center gap-2"
-                                            >
-                                                <Upload className="w-3 h-3" />
-                                                {uploadingLogo ? 'Uploading...' : 'Update Logo'}
-                                            </button>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => document.getElementById('logo-upload-resto').click()}
+                                                    disabled={uploadingLogo}
+                                                    className="bg-gray-100 text-black px-4 py-2 rounded-xl text-xs font-normal hover:bg-gray-200 transition-colors flex items-center gap-2"
+                                                >
+                                                    <Upload className="w-3 h-3" />
+                                                    {uploadingLogo ? 'Uploading...' : 'Update Logo'}
+                                                </button>
+                                                {restoDetails.logo && (
+                                                    <button
+                                                        onClick={handleRemoveLogo}
+                                                        className="bg-rose-50 text-rose-500 px-4 py-2 rounded-xl text-xs font-normal hover:bg-rose-100 transition-colors flex items-center gap-2"
+                                                    >
+                                                        <X className="w-3 h-3" />
+                                                        Remove
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                     <InputGroup label="Restaurant Name" name="name" value={restoDetails.name} onChange={handleRestoChange} />

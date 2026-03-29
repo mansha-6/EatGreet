@@ -116,19 +116,19 @@ const Customer3DViewer = () => {
     }
 
     return (
-        <div className="fixed inset-0 z-[110] bg-gray-50 flex flex-col p-0 md:p-4 animate-in fade-in zoom-in-95 duration-200 overflow-hidden overscroll-none touch-none">
+        <div className="fixed inset-0 z-[110] bg-gray-50 flex flex-col p-2 md:p-4 animate-in fade-in zoom-in-95 duration-200 overflow-hidden overscroll-none touch-none">
             {/* Header / Close Button */}
-            <div className="absolute top-6 right-6 z-[120]">
+            <div className="absolute top-4 sm:top-6 right-4 sm:right-6 z-[120]">
                 <button
                     onClick={goBack}
-                    className="w-11 h-11 bg-white/90 backdrop-blur-md border border-gray-200 text-gray-900 rounded-full flex items-center justify-center hover:bg-white transition-all shadow-md font-medium"
+                    className="w-10 h-10 sm:w-11 sm:h-11 bg-white/90 backdrop-blur-md border border-gray-200 text-gray-900 rounded-full flex items-center justify-center hover:bg-white transition-all shadow-md font-medium"
                 >
                     <X className="w-5 h-5" />
                 </button>
             </div>
 
             {/* 3D Model Viewer Area */}
-            <div className="flex-1 w-full bg-transparent flex items-center justify-center relative md:rounded-3xl overflow-hidden mt-0">
+            <div className="flex-1 w-full bg-transparent flex items-center justify-center relative rounded-3xl overflow-hidden mt-0 border-2 border-white sm:border-transparent">
                 <model-viewer
                     src={selected3DItem.models[0]?.url || selected3DItem.models[0]}
                     alt={selected3DItem.name}

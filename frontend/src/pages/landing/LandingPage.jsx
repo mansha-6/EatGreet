@@ -309,25 +309,6 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
 
     return (
         <form ref={formRef} className="space-y-8" onSubmit={handleSubmit} noValidate>
-            {error && (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="bg-red-50 text-red-700 p-4 rounded-2xl text-sm font-bold border border-red-200"
-                >
-                    {error}
-                </motion.div>
-            )}
-            {success && (
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="bg-green-50 text-green-700 p-4 rounded-2xl text-sm font-bold border border-green-200"
-                >
-                    {success}
-                </motion.div>
-            )}
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-7">
                 {/* Full Name */}
                 <div className="md:col-span-2 space-y-2 group">
@@ -506,7 +487,7 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                 </div>
             </div>
 
-            <div className="pt-4">
+            <div className="pt-4 space-y-4">
                 <button
                     type="submit"
                     disabled={isLoading}
@@ -515,6 +496,26 @@ const WaitlistForm = ({ handleRegisterSuccess }) => {
                     {isLoading ? 'Creating Account...' : 'Register Now'}
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
                 </button>
+
+                {error && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-red-50 text-red-700 p-4 rounded-2xl text-sm font-bold border border-red-200"
+                    >
+                        {error}
+                    </motion.div>
+                )}
+                {success && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-green-50 text-green-700 p-4 rounded-2xl text-sm font-bold border border-green-200"
+                    >
+                        {success}
+                    </motion.div>
+                )}
+
                 <p className="mt-6 text-center lg:text-left text-xs text-gray-500 font-bold flex items-center justify-center lg:justify-start gap-2">
                     <ShieldCheck className="w-4 h-4 text-green-500" />
                     Secured with industry-standard encryption.

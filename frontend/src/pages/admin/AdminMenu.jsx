@@ -779,7 +779,8 @@ const AdminMenu = () => {
                     <button
                         onClick={() => {
                             if (restaurantName) {
-                                const url = `${window.location.origin}/${encodeURIComponent(restaurantName)}/table/preview/menu`;
+                                const slug = restaurantName.toLowerCase().trim().replace(/\\s+/g, '-');
+                                const url = `${window.location.origin}/menu/${slug}/preview`;
                                 window.open(url, '_blank');
                             } else {
                                 toast.error("Restaurant details not loaded yet");

@@ -411,8 +411,8 @@ const InvoiceModal = ({ order, isOpen, onClose, currencySymbol, restaurant }) =>
                     <X className="w-6 h-6" />
                 </button>
 
-                <div className="p-8 overflow-y-auto custom-scrollbar flex items-center justify-center bg-gray-100/50 h-full">
-                    <div className="bg-white mx-auto shadow-sm border border-gray-200 p-8 font-mono text-black relative" style={{ width: '100%', maxWidth: '380px' }}>
+                <div className="px-4 py-8 sm:p-8 overflow-y-auto no-scrollbar flex flex-col items-center bg-gray-100/50 h-full w-full">
+                    <div className="bg-white mx-auto shadow-sm border border-gray-200 p-5 sm:p-8 font-mono text-black relative w-full shrink-0" style={{ maxWidth: '380px' }}>
                         <button
                             onClick={handlePrint}
                             className="absolute top-4 right-4 p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors no-print"

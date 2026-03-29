@@ -39,4 +39,18 @@ const superadmin = (req, res, next) => {
     }
 };
 
-module.exports = { protect, admin, superadmin };
+// Set req.user if token exists, but NEVER block the request (for public routes that also serve admins)
+const optionalProtect = async (req, res, next) => {
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        try {
+            const token = req.headers.authorization.split(' ')[1];
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            req.user = await User.findById(decoded.id).select('-password');
+        } catch (error) {
+            // Token invalid — treat as anonymous, don't block
+        }
+    }
+    next();
+};
+
+module.exports = { protect, admin, superadmin, optionalProtect };

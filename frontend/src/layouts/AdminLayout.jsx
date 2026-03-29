@@ -4,35 +4,31 @@ import DynamicNavbar from '../components/DynamicNavbar';
 
 const AdminLayout = () => {
     const location = useLocation();
-    const isDashboard = location.pathname.split('/').pop() === 'admin';
-    const isScrollablePage = isDashboard || location.pathname.includes('/orders') || location.pathname.includes('/sales');
+    const pathEnd = location.pathname.split('/').pop();
+
+    // Pages that should stay fixed (no scroll) - desktop dashboard mainly
+    // On mobile, ALL pages need to be scrollable for good UX
+    const isDashboard = pathEnd === 'admin';
+    
+    // These pages always get scroll (content can be taller than viewport)
+    const isScrollablePage = true; // All admin pages should be scrollable for mobile compatibility
 
     useEffect(() => {
-        // Prevent body/html scroll/stretch globally in admin
-        const originalBodyStyle = document.body.style.cssText;
-        const originalHtmlStyle = document.documentElement.style.cssText;
-        
-        if (!isScrollablePage) {
-            document.body.style.overflow = 'hidden';
-            document.body.style.touchAction = 'none';
-            document.body.style.overscrollBehavior = 'none';
-            
-            document.documentElement.style.overflow = 'hidden';
-            document.documentElement.style.overscrollBehavior = 'none';
-        } else {
-            document.body.style.overflow = 'auto';
-            document.body.style.touchAction = 'auto';
-            document.body.style.overscrollBehavior = 'auto';
-            
-            document.documentElement.style.overflow = 'auto';
-            document.documentElement.style.overscrollBehavior = 'auto';
-        }
+        // Always allow scroll - critical for mobile/tablet responsiveness
+        document.body.style.overflow = 'auto';
+        document.body.style.touchAction = 'auto';
+        document.body.style.overscrollBehavior = 'auto';
+        document.documentElement.style.overflow = 'auto';
+        document.documentElement.style.overscrollBehavior = 'auto';
 
         return () => {
-            document.body.style.cssText = originalBodyStyle;
-            document.documentElement.style.cssText = originalHtmlStyle;
+            document.body.style.overflow = '';
+            document.body.style.touchAction = '';
+            document.body.style.overscrollBehavior = '';
+            document.documentElement.style.overflow = '';
+            document.documentElement.style.overscrollBehavior = '';
         };
-    }, [isScrollablePage]);
+    }, [location.pathname]);
 
     // Prevent image dragging globally in admin
     const handleDragStart = (e) => {
@@ -42,13 +38,13 @@ const AdminLayout = () => {
     };
 
     return (
-        <div 
-            className={`fixed inset-0 bg-gray-50 select-none flex flex-col ${!isScrollablePage ? 'overscroll-none overflow-hidden touch-none' : ''}`}
+        <div
+            className="min-h-screen bg-gray-50 select-none flex flex-col"
             onDragStart={handleDragStart}
             style={{ WebkitUserDrag: 'none' }}
         >
             <DynamicNavbar />
-            <main className={`flex-1 px-4 sm:px-6 lg:px-[30px] pt-2 pb-6 sm:py-6 w-full no-scrollbar ${isScrollablePage ? 'overflow-y-auto' : 'overflow-hidden overscroll-none'}`}>
+            <main className="flex-1 px-4 sm:px-6 lg:px-[30px] pt-2 pb-6 sm:py-6 w-full">
                 <Outlet />
             </main>
         </div>

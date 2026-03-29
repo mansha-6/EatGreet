@@ -95,8 +95,8 @@ export default function Reports() {
     }
 
     return (
-        <div className="flex-1 min-h-0 w-full bg-[#F0F2F4] px-4 md:px-10 py-6 flex flex-col overflow-y-auto overscroll-none">
-            <div className="max-w-[1850px] mx-auto w-full space-y-6 pb-8">
+        <div className="w-full bg-[#F0F2F4] px-4 md:px-10 py-6 pb-10">
+            <div className="max-w-[1850px] mx-auto w-full space-y-6">
                 {/* Header */}
                 <div className="flex justify-between items-center">
                     <div>

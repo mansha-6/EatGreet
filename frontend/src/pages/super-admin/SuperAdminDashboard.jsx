@@ -201,18 +201,18 @@ export default function SuperAdminDashboard() {
 
     return (
         <>
-            <div className="flex-1 min-h-0 w-full bg-[#F0F2F4] px-4 md:px-10 py-6 flex flex-col overflow-hidden">
-                <div className="max-w-[1850px] mx-auto w-full flex-1 flex flex-col space-y-6 min-h-0">
+            <div className="w-full bg-[#F0F2F4] px-4 md:px-10 py-6 pb-10">
+                <div className="max-w-[1850px] mx-auto w-full space-y-6">
                     {/* Welcome */}
-                    <div className="flex justify-between items-end shrink-0">
+                    <div className="flex justify-between items-end">
                         <div>
-                            <h1 className="text-3xl font-normal text-gray-900 font-['Urbanist']">Welcome Back</h1>
+                            <h1 className="text-2xl sm:text-3xl font-normal text-gray-900 font-['Urbanist']">Welcome Back</h1>
                             <p className="text-gray-500 text-sm font-normal">Super Admin Control Center</p>
                         </div>
                     </div>
 
                     {/* Stats Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 shrink-0">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
                         <DashboardStat
                             title="Total Restaurants"
                             value={stats.totalRestaurants || 0}
@@ -249,21 +249,21 @@ export default function SuperAdminDashboard() {
                     </div>
 
                     {/* Approvals Section (Replacing Recent Users) */}
-                    <div className="flex-1 min-h-0 flex flex-col">
+                    <div>
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="flex-1 min-h-0 bg-white/60 backdrop-blur-sm rounded-[2.5rem] border border-white/60 shadow-sm flex flex-col overflow-hidden"
+                            className="bg-white/60 backdrop-blur-sm rounded-[2rem] sm:rounded-[2.5rem] border border-white/60 shadow-sm flex flex-col"
                         >
-                            <div className="px-8 pt-8 pb-0">
+                            <div className="px-4 sm:px-8 pt-5 sm:pt-8 pb-0">
                                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
                                     <div className="space-y-1">
                                         <h3 className="text-xl font-normal text-gray-900 font-['Urbanist'] tracking-tight">Pending Approvals</h3>
                                         <p className="text-xs text-gray-500">Review and authorize new restaurant managers</p>
                                     </div>
 
-                                    <div className="flex items-center gap-3">
-                                        <div className="relative group flex-1 md:min-w-[300px]">
+                                    <div className="flex items-center gap-2 sm:gap-3">
+                                        <div className="relative group flex-1 sm:min-w-[240px] md:min-w-[300px]">
                                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-[#FD6941] transition-colors" />
                                             <input
                                                 type="text"
@@ -327,7 +327,7 @@ export default function SuperAdminDashboard() {
                                 </div>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-4 no-scrollbar">
+                            <div className="px-4 sm:px-8 pb-6 sm:pb-8 pt-4 space-y-4">
                                 {isLoading ? (
                                     <div className="h-full flex flex-col items-center justify-center py-20 text-gray-400">
                                         <div className="w-8 h-8 border-3 border-[#FD6941]/20 border-t-[#FD6941] rounded-full animate-spin mb-4"></div>
@@ -343,7 +343,7 @@ export default function SuperAdminDashboard() {
                                                     initial={{ opacity: 0, scale: 0.98 }}
                                                     animate={{ opacity: 1, scale: 1 }}
                                                     exit={{ opacity: 0, scale: 0.98 }}
-                                                    className="bg-white p-5 rounded-[2rem] border border-gray-100 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 hover:shadow-md transition-all group"
+                                                    className="bg-white p-4 sm:p-5 rounded-[1.5rem] sm:rounded-[2rem] border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 hover:shadow-md transition-all group"
                                                 >
                                                     <div className="flex items-center gap-5">
                                                         <div className="w-14 h-14 rounded-[1.2rem] bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center text-lg font-normal text-gray-400 border border-gray-100 group-hover:border-[#FD6941]/20 group-hover:bg-white transition-all">
@@ -358,7 +358,7 @@ export default function SuperAdminDashboard() {
                                                         </div>
                                                     </div>
 
-                                                    <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-2 self-end sm:self-auto">
                                                         <button
                                                             onClick={() => setSelectedUser(user)}
                                                             className="p-3 rounded-full text-gray-400 hover:bg-blue-50 hover:text-blue-600 transition-all border border-gray-100 hover:border-blue-100"

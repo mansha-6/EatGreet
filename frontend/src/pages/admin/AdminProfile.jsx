@@ -135,9 +135,9 @@ const AdminProfile = () => {
     };
 
     return (
-        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar overscroll-none pb-12">
+        <div className="min-h-0 pb-12">
             <div className="space-y-6 max-w-5xl mx-auto py-6 px-4 md:px-0">
-                <div className="flex justify-between items-end">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4">
                     <div>
                         <h1 className="text-3xl font-normal text-black tracking-tight leading-none mb-2">My Profile</h1>
                         <div className="flex items-center gap-3">
@@ -149,17 +149,17 @@ const AdminProfile = () => {
                             )}
                         </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
                         <button
                             onClick={handleSaveProfile}
-                            className="h-11 px-8 bg-[#FD6941] hover:bg-[#FD6941]/90 text-white rounded-full font-medium flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm text-sm"
+                            className="h-11 px-6 sm:px-8 bg-[#FD6941] hover:bg-[#FD6941]/90 text-white rounded-full font-medium flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm text-sm"
                         >
                             <CheckCircle className="w-4 h-4" />
                             Save Changes
                         </button>
                         <Link
                             to={`/${user?.restaurantName?.toLowerCase()?.replace(/\s+/g, '-') || 'restaurant'}/admin/settings`}
-                            className="h-11 px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full font-medium flex items-center gap-2 transition-all active:scale-95 shadow-sm text-sm"
+                            className="h-11 px-5 sm:px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full font-medium flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm text-sm"
                         >
                             <Settings className="w-4 h-4 shrink-0" />
                             Advanced Settings
@@ -169,11 +169,11 @@ const AdminProfile = () => {
 
                 <div className="grid grid-cols-1 gap-6">
                     {/* Profile Overview Card */}
-                    <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden group">
+                    <div className="bg-white rounded-[2.5rem] p-6 sm:p-8 shadow-sm border border-gray-100 flex flex-col sm:flex-row items-center gap-6 sm:gap-8 relative overflow-hidden group">
                         <div className="absolute top-0 left-0 w-2 h-full bg-[#FD6941]/10 group-hover:bg-[#FD6941]/20 transition-colors" />
                         
                         <div className="relative shrink-0 group/pic-container">
-                            <div className="w-32 h-32 rounded-full bg-[#FD6941]/10 border-4 border-white shadow-xl overflow-hidden flex items-center justify-center relative group/pic">
+                            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-[#FD6941]/10 border-4 border-white shadow-xl overflow-hidden flex items-center justify-center relative group/pic">
                                 {form.profilePicture ? (
                                     <img src={form.profilePicture} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
@@ -192,27 +192,27 @@ const AdminProfile = () => {
                                 accept="image/*"
                                 onChange={handleProfilePicUpload}
                             />
-                            <div className="absolute -bottom-1 -right-1 flex gap-2">
+                            <div className="absolute -bottom-1 -right-1 flex gap-1.5">
                                 {form.profilePicture && (
                                     <button
                                         onClick={handleRemoveProfilePic}
-                                        className="p-2 bg-rose-500 text-white rounded-full shadow-lg hover:bg-rose-600 active:scale-90 transition-all border-2 border-white"
+                                        className="w-9 h-9 sm:w-10 sm:h-10 bg-rose-500 text-white rounded-full shadow-lg hover:bg-rose-600 active:scale-90 transition-all border-2 border-white flex items-center justify-center"
                                         title="Remove Picture"
                                     >
-                                        <X className="w-4 h-4" />
+                                        <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                     </button>
                                 )}
                                 <button
                                     onClick={() => document.getElementById('admin-profile-pic').click()}
-                                    className="p-2.5 bg-black text-white rounded-full shadow-lg hover:bg-gray-800 active:scale-90 transition-all border-2 border-white"
+                                    className="w-9 h-9 sm:w-10 sm:h-10 bg-black text-white rounded-full shadow-lg hover:bg-gray-800 active:scale-90 transition-all border-2 border-white flex items-center justify-center"
                                     title="Change Picture"
                                 >
-                                    <Camera className="w-4 h-4" />
+                                    <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                 </button>
                             </div>
                         </div>
 
-                        <div className="flex-1 text-center md:text-left space-y-2">
+                        <div className="flex-1 text-center sm:text-left space-y-2 w-full sm:w-auto">
                             <input 
                                 className="text-3xl font-medium text-gray-900 border-none p-0 focus:ring-0 w-full bg-transparent hover:bg-gray-50/50 rounded-lg transition-colors cursor-text px-2"
                                 name="name"
@@ -231,10 +231,10 @@ const AdminProfile = () => {
                             </div>
                         </div>
 
-                        <div className="shrink-0 w-full md:w-auto">
+                        <div className="shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
                             <button
                                 onClick={handleLogout}
-                                className="w-full md:w-auto px-8 py-4 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-2xl text-sm font-medium flex items-center justify-center gap-2 transition-all active:scale-95"
+                                className="w-full sm:w-auto px-6 sm:px-8 py-3.5 sm:py-4 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-2xl text-sm font-medium flex items-center justify-center gap-2 transition-all active:scale-95"
                             >
                                 <LogOut className="w-4 h-4" />
                                 Sign Out
@@ -243,15 +243,15 @@ const AdminProfile = () => {
                     </div>
 
                     {/* Editable Details Grid */}
-                    <div className="bg-white rounded-[2.5rem] p-10 shadow-sm border border-gray-100">
-                        <h3 className="text-xl font-medium text-gray-900 mb-8 flex items-center gap-3">
+                    <div className="bg-white rounded-[2.5rem] p-6 sm:p-10 shadow-sm border border-gray-100">
+                        <h3 className="text-xl font-medium text-gray-900 mb-6 sm:mb-8 flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-[#FD6941]/10 flex items-center justify-center">
                                 <User className="w-5 h-5 text-[#FD6941]" />
                             </div>
                             Identity & Contact
                         </h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 sm:gap-x-12 gap-y-6 sm:gap-y-10">
                             <div className="space-y-2 group">
                                 <label className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1 group-focus-within:text-[#FD6941] transition-colors">Account Email</label>
                                 <div className="flex items-center gap-4 text-gray-700 font-medium text-base p-4 bg-gray-50/50 rounded-[1.5rem] border border-transparent focus-within:border-[#FD6941]/30 focus-within:bg-white transition-all">

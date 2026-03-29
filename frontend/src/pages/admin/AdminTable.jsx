@@ -36,13 +36,7 @@ const ChecklistIcon = ({ className, style }) => (
     </svg>
 );
 const AdminTable = () => {
-    const [tables, setTables] = useState(() => {
-        const saved = localStorage.getItem('admin_tables');
-        let initialTables = saved ? JSON.parse(saved) : [1, 2, 3, 4, 5];
-        // Ensure unique and sorted
-        initialTables = [...new Set(initialTables.map(Number))].sort((a, b) => a - b);
-        return initialTables;
-    });
+    const [tables, setTables] = useState([]);
 
     const { currencySymbol } = useSettings();
 
@@ -86,22 +80,19 @@ const AdminTable = () => {
                 } else if (backendTableCount > 0) {
                     // Fallback for old data with only totalTables count
                     setTables(Array.from({ length: backendTableCount }, (_, i) => i + 1));
+                } else {
+                    setTables([1, 2, 3, 4, 5]); // Default fallback if utterly new
                 }
             } catch (err) {
                 console.error("Init failed", err);
+                setTables([1, 2, 3, 4, 5]);
             }
             fetchActiveOrders();
         };
         init();
     }, []);
 
-    // Handle Table State Changes
-    useEffect(() => {
-        if (tables.length > 0) {
-            localStorage.setItem('admin_tables', JSON.stringify(tables));
-            syncTableCount(tables.length, tables);
-        }
-    }, [tables]);
+    // Handle Table State Changes manually inside actions instead of aggressive effect
 
     // Socket Listener for Real-Time Table Status
     useEffect(() => {
@@ -152,12 +143,14 @@ const AdminTable = () => {
         // Ensure unique and sorted
         const newTables = [...new Set([...numericTables, nextTableNo])].sort((a, b) => a - b);
         setTables(newTables);
+        syncTableCount(newTables.length, newTables);
         toast.success(`Table ${nextTableNo} added`);
     };
 
     const removeTable = (table) => {
         const newTables = tables.filter(t => t !== table);
         setTables(newTables);
+        syncTableCount(newTables.length, newTables);
         toast.success(`Table ${table} removed`);
     };
 

@@ -263,7 +263,7 @@ const AdminCategory = () => {
             </div>
 
             {/* Main Content Area */}
-            <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 shadow-sm border border-gray-100 min-h-[calc(100vh-12rem)]">
+            <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 shadow-sm border border-gray-100 min-h-[50vh]">
 
                 {/* Search & Toolbar */}
                 <div className="flex flex-row items-center mb-5 gap-2 sm:gap-4 justify-between">
@@ -322,7 +322,7 @@ const AdminCategory = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 max-h-[calc(100vh-260px)] overflow-y-auto no-scrollbar pb-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pb-6">
                     {/* Category Cards */}
                     {categories.filter(c => {
                         const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase());

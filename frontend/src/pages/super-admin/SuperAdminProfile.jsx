@@ -110,13 +110,13 @@ const SuperAdminProfile = () => {
     };
 
     return (
-        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar overscroll-none">
-            <div className="space-y-6 max-w-[1850px] mx-auto px-4 md:px-10 py-6">
-                <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-800">My Profile</h1>
+        <div className="w-full bg-[#F0F2F4] min-h-screen">
+            <div className="space-y-6 max-w-[1850px] mx-auto px-4 md:px-10 py-6 pb-10">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                    <h1 className="text-2xl sm:text-2xl font-bold text-gray-800">My Profile</h1>
                     <button
                         onClick={() => isEditing ? handleSaveProfile() : setIsEditing(true)}
-                        className={`px-8 py-3.5 rounded-full text-sm font-normal flex items-center gap-2 transition-all shadow-lg active:scale-95 ${isEditing
+                        className={`w-full sm:w-auto px-8 py-3.5 rounded-full text-sm font-normal flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95 ${isEditing
                             ? 'bg-green-500 hover:bg-green-600 text-white'
                             : 'bg-[#FD6941] hover:bg-[#FD6941]/90 text-white'
                             }`}

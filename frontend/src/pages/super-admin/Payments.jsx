@@ -276,10 +276,10 @@ export default function Payments() {
     };
 
     return (
-        <div className="flex-1 min-h-0 w-full bg-[#F0F2F4] px-4 md:px-10 py-6 flex flex-col overflow-hidden">
-            <div className="max-w-[1850px] mx-auto w-full flex-1 flex flex-col space-y-6 min-h-0">
+        <div className="w-full bg-[#F0F2F4] px-4 md:px-10 py-6 pb-10">
+            <div className="max-w-[1850px] mx-auto w-full space-y-6">
                 {/* Header */}
-                <div className="flex justify-between items-center shrink-0">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
                     <div>
                         <h1 className="text-3xl font-normal text-gray-900">Payments</h1>
                         <p className="text-gray-500 font-normal text-sm mt-1">Track revenue and subscription payments.</p>
@@ -315,7 +315,7 @@ export default function Payments() {
                 )}
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                     <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100">
                         <div className="flex items-center justify-between mb-4">
                             <span className="text-gray-500 text-sm font-normal">Total Revenue</span>
@@ -343,11 +343,11 @@ export default function Payments() {
                 </div>
 
                 {/* Transactions Table */}
-                <div className="flex-1 bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden flex flex-col">
+                <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm overflow-hidden min-h-[300px]">
                     <div className="p-6 border-b border-gray-50 bg-gray-50/30">
                         <h3 className="font-normal text-gray-800">Recent Transactions</h3>
                     </div>
-                    <div className="overflow-y-auto no-scrollbar flex-1">
+                    <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead className="bg-white sticky top-0 z-10">
                                 <tr>

@@ -263,7 +263,7 @@ const AdminOffers = () => {
                 </div>
             </div>
 
-            <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 shadow-sm border border-gray-100 min-h-[calc(100vh-12rem)]">
+            <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-4 sm:p-6 shadow-sm border border-gray-100 min-h-[50vh]">
                 <div className="flex flex-row items-center mb-5 gap-2 sm:gap-4 justify-between">
                     <h2 className="text-[14px] sm:text-[22px] font-normal text-black shrink-0">All Offers</h2>
 

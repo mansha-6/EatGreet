@@ -817,7 +817,7 @@ const AdminMenu = () => {
             </div>
 
             {/* Main Content Area */}
-            <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-3 sm:p-4 shadow-sm border border-gray-100 min-h-[calc(100vh-12rem)]">
+            <div className="bg-white rounded-[1.5rem] sm:rounded-[2rem] p-3 sm:p-4 shadow-sm border border-gray-100 min-h-[50vh]">
 
                 {/* Filter and Search Bar */}
                 <div className="flex flex-row items-center mb-5 gap-2 sm:gap-4 justify-between">

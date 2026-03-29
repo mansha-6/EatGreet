@@ -188,13 +188,12 @@ const SuperAdminSettings = () => {
     };
 
     return (
-        <div className="flex-1 min-h-0 flex flex-col lg:flex-row gap-8 px-4 md:px-10 py-6 max-w-[1850px] mx-auto w-full overflow-hidden">
-
-            {/* Sidebar */}
-            <div className="w-full lg:w-64 flex-shrink-0 space-y-6">
-                <div>
-                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 px-2">Global Settings</h3>
-                    <div className="space-y-1">
+        <div className="w-full min-h-screen bg-[#F0F2F4] px-4 md:px-10 py-6 pb-10">
+            <div className="max-w-[1850px] mx-auto w-full flex flex-col lg:flex-row gap-6 lg:gap-8">
+            {/* Sidebar — horizontal scroll on mobile, vertical list on desktop */}
+            <div className="w-full lg:w-64 flex-shrink-0">
+                <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2 hidden lg:block">Global Settings</h3>
+                <div className="flex flex-row lg:flex-col gap-1 overflow-x-auto no-scrollbar pb-1 lg:pb-0">
                         <SidebarItem
                             icon={CreditCard}
                             label="Subscription & Plans"
@@ -231,12 +230,11 @@ const SuperAdminSettings = () => {
                             isActive={activeTab === 'security'}
                             onClick={() => setActiveTab('security')}
                         />
-                    </div>
                 </div>
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col gap-6 overflow-hidden">
+            <div className="flex-1 flex flex-col gap-6">
 
                 {/* Header */}
                 <div className="flex items-center justify-between shrink-0">
@@ -261,8 +259,8 @@ const SuperAdminSettings = () => {
                     <div />
                 </div>
 
-                {/* Content Area - Scrollable */}
-                <div className="flex-1 overflow-y-auto pr-2 pb-6 space-y-6 no-scrollbar">
+                {/* Content Area */}
+                <div className="space-y-6 pb-6">
 
                     {/* Subscription & Plans */}
                     {activeTab === 'subscription' && (
@@ -374,7 +372,7 @@ const SuperAdminSettings = () => {
                                             <option>PayPal</option>
                                         </select>
                                     </div>
-                                    <div className="flex items-end pb-3">
+                                    <div className="flex items-center md:items-end pb-0 md:pb-3">
                                         <ToggleItem
                                             title="Test Mode (Sandbox)"
                                             description="Enable for testing payments"
@@ -549,6 +547,8 @@ const SuperAdminSettings = () => {
 
                 </div>
             </div>
+            </div>
+
             {/* Plan Edit/Create Modal */}
             <AnimatePresence>
                 {isPlanModalOpen && (
@@ -608,7 +608,6 @@ const SuperAdminSettings = () => {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Price ({currencySymbol})</label>
-
                                             <input
                                                 type="text"
                                                 className="w-full px-5 py-3.5 bg-gray-50 border border-transparent focus:bg-white focus:border-[#FD6941]/30 rounded-2xl text-sm font-bold outline-none transition-all"
@@ -634,10 +633,7 @@ const SuperAdminSettings = () => {
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between px-1">
                                             <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Plan Features</label>
-                                            <button
-                                                onClick={handleAddFeature}
-                                                className="text-[10px] font-bold text-[#FD6941] hover:underline"
-                                            >
+                                            <button onClick={handleAddFeature} className="text-[10px] font-bold text-[#FD6941] hover:underline">
                                                 + Add Line
                                             </button>
                                         </div>
@@ -651,10 +647,7 @@ const SuperAdminSettings = () => {
                                                         value={feat}
                                                         onChange={(e) => handleFeatureChange(idx, e.target.value)}
                                                     />
-                                                    <button
-                                                        onClick={() => handleRemoveFeature(idx)}
-                                                        className="p-3 text-gray-300 hover:text-red-500 transition-colors"
-                                                    >
+                                                    <button onClick={() => handleRemoveFeature(idx)} className="p-3 text-gray-300 hover:text-red-500 transition-colors">
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
                                                 </div>
@@ -664,9 +657,7 @@ const SuperAdminSettings = () => {
 
                                     <div className="flex items-center justify-between p-5 bg-gray-50 rounded-[1.8rem] border border-gray-100">
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-orange-100 rounded-lg text-orange-500">
-                                                <Sparkles className="w-5 h-5" />
-                                            </div>
+                                            <div className="p-2 bg-orange-100 rounded-lg text-orange-500"><Sparkles className="w-5 h-5" /></div>
                                             <div>
                                                 <p className="text-xs font-bold text-gray-800">Highlight as Best Value</p>
                                                 <p className="text-[10px] text-gray-400">Attract more customers to this tier</p>
@@ -697,17 +688,18 @@ const SuperAdminSettings = () => {
     );
 };
 
+
 // Reusable Components
 const SidebarItem = ({ icon: Icon, label, isActive, onClick }) => (
     <button
         onClick={onClick}
-        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
+        className={`flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl transition-all duration-200 group whitespace-nowrap lg:w-full shrink-0 ${isActive
             ? 'bg-[#FD6941] text-white shadow-md '
-            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+            : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900 bg-white lg:bg-transparent border border-gray-200 lg:border-0'
             }`}
     >
-        <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'}`} />
-        <span className="text-sm font-bold">{label}</span>
+        <Icon className={`w-4 h-4 lg:w-5 lg:h-5 transition-colors ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'}`} />
+        <span className="text-xs lg:text-sm font-bold">{label}</span>
     </button>
 );
 
@@ -736,16 +728,18 @@ const InputGroup = ({ label, value, onChange }) => (
 );
 
 const ToggleItem = ({ title, description, enabled, onToggle }) => (
-    <div className="flex items-center justify-between py-2">
-        <div>
-            <h4 className="font-bold text-gray-800 text-sm">{title}</h4>
-            <p className="text-xs text-gray-500">{description}</p>
+    <div className="flex items-center justify-between gap-4 py-2 w-full">
+        <div className="min-w-0">
+            <h4 className="font-bold text-gray-800 text-sm leading-snug">{title}</h4>
+            {description && <p className="text-xs text-gray-500 mt-0.5">{description}</p>}
         </div>
         <button
             onClick={() => onToggle?.(!enabled)}
-            className={`w-12 h-6 rounded-full relative transition-colors ${enabled ? 'bg-[#FD6941]' : 'bg-gray-300'}`}
+            aria-checked={enabled}
+            role="switch"
+            className={`relative shrink-0 w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FD6941]/50 ${enabled ? 'bg-[#FD6941]' : 'bg-gray-300'}`}
         >
-            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${enabled ? 'right-1' : 'left-1'}`} />
+            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all duration-200 ${enabled ? 'left-7' : 'left-1'}`} />
         </button>
     </div>
 );

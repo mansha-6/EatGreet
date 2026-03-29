@@ -4,15 +4,32 @@ import { RefreshCw, AlertTriangle } from 'lucide-react';
 class ErrorBoundary extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { hasError: false, error: null };
+        this.state = { hasError: false, error: null, isReloading: false };
+    }
+
+    componentDidMount() {
+        // Clear the reload flag on successful mount
+        sessionStorage.removeItem('chunk_failed_reload');
     }
 
     static getDerivedStateFromError(error) {
+        const isChunkLoadError = 
+            error?.name === 'ChunkLoadError' || 
+            (error?.message && (error.message.includes('Failed to fetch dynamically imported module') || error.message.includes('Importing a module script failed')));
+            
+        if (isChunkLoadError && !sessionStorage.getItem('chunk_failed_reload')) {
+            return { hasError: true, error, isReloading: true };
+        }
         // Update state so the next render will show the fallback UI.
-        return { hasError: true, error };
+        return { hasError: true, error, isReloading: false };
     }
 
     componentDidCatch(error, errorInfo) {
+        if (this.state.isReloading) {
+            sessionStorage.setItem('chunk_failed_reload', 'true');
+            window.location.reload();
+            return;
+        }
         // You can also log the error to an error reporting service
         console.error("Uncaught error in application:", error, errorInfo);
         this.setState({ errorInfo });
@@ -26,6 +43,15 @@ class ErrorBoundary extends React.Component {
     };
 
     render() {
+        if (this.state.isReloading) {
+            return (
+                <div className="min-h-screen bg-[#F9FAFB] flex flex-col items-center justify-center p-4">
+                    <div className="w-12 h-12 border-4 border-[#FD6941] border-t-transparent rounded-full animate-spin mb-4 fade-in duration-300"></div>
+                    <p className="text-gray-400 font-normal animate-pulse">Applying new updates...</p>
+                </div>
+            );
+        }
+
         if (this.state.hasError) {
             // You can render any custom fallback UI
             return (

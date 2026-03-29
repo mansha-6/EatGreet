@@ -428,9 +428,9 @@ const SuperAdminSettings = () => {
                                 <div className="p-6 bg-[#FD6941]/5 rounded-[1.5rem] mb-4 border border-[#FD6941]/10">
                                     <h4 className="font-bold text-[#FD6941] mb-1">Reset User Password</h4>
                                     <p className="text-xs text-gray-500 mb-4">Send a password reset link to a specific user.</p>
-                                    <div className="flex gap-2">
-                                        <input type="email" placeholder="Enter user email" className="flex-1 px-4 py-2 rounded-xl text-sm border border-gray-100 focus:outline-none focus:ring-1 focus:ring-[#FD6941] bg-white" />
-                                        <button className="px-6 py-2 bg-[#FD6941] hover:bg-[#e15a35] text-white rounded-xl text-sm font-bold shadow-sm transition-all">Send Reset</button>
+                                    <div className="flex flex-col sm:flex-row gap-3">
+                                        <input type="email" placeholder="Enter user email" className="w-full sm:flex-1 px-4 py-3 rounded-xl text-sm border border-gray-100 focus:outline-none focus:ring-1 focus:ring-[#FD6941] bg-white transition-all shadow-sm" />
+                                        <button className="w-full sm:w-auto px-6 py-3 bg-[#FD6941] hover:bg-[#e15a35] text-white rounded-xl text-sm font-bold shadow-sm transition-all shrink-0">Send Reset</button>
                                     </div>
                                 </div>
                             </SectionCard>

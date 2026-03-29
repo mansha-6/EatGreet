@@ -7,17 +7,21 @@ const SuperAdminLayout = () => {
 
     useEffect(() => {
         // Always allow scroll — critical for mobile/tablet responsiveness
-        document.body.style.overflow = 'auto';
+        document.body.style.overflowY = 'auto';
+        document.body.style.overflowX = 'hidden';
         document.body.style.touchAction = 'auto';
         document.body.style.overscrollBehavior = 'auto';
-        document.documentElement.style.overflow = 'auto';
+        document.documentElement.style.overflowY = 'auto';
+        document.documentElement.style.overflowX = 'hidden';
         document.documentElement.style.overscrollBehavior = 'auto';
 
         return () => {
-            document.body.style.overflow = '';
+            document.body.style.overflowY = '';
+            document.body.style.overflowX = '';
             document.body.style.touchAction = '';
             document.body.style.overscrollBehavior = '';
-            document.documentElement.style.overflow = '';
+            document.documentElement.style.overflowY = '';
+            document.documentElement.style.overflowX = '';
             document.documentElement.style.overscrollBehavior = '';
         };
     }, [location.pathname]);

@@ -521,7 +521,7 @@ const Menu = () => {
                 ))}
             </div>
 
-            {/* Search Bar */}
+            {/* Search Bar & Category Dropdown */}
             <div className="px-4 py-4 flex gap-3 sticky top-[48px] z-30 bg-gray-50">
                 <div className="relative flex-1">
                     <input
@@ -533,31 +533,43 @@ const Menu = () => {
                     />
                     <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400" />
                 </div>
-                <button
-                    onClick={() => setShowCategoryFilter(!showCategoryFilter)}
-                    className={`p-3 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors shadow-sm aspect-square ${showCategoryFilter ? 'bg-[#FD6941] text-white' : 'bg-white text-gray-600'}`}
-                >
-                    <SlidersHorizontal className="w-5 h-5" />
-                </button>
-            </div>
+                
+                <div className="relative">
+                    <button
+                        onClick={() => setShowCategoryFilter(!showCategoryFilter)}
+                        className={`p-3 rounded-full flex items-center justify-center transition-all shadow-sm aspect-square relative ${showCategoryFilter || selectedCategory !== "All" ? 'bg-[#FD6941] text-white hover:bg-[#FD6941]/90' : 'bg-white text-gray-600 hover:bg-gray-100'}`}
+                    >
+                        <SlidersHorizontal className="w-5 h-5" />
+                        {selectedCategory !== "All" && !showCategoryFilter && (
+                            <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
+                        )}
+                    </button>
 
-            {/* Categories Navigation */}
-            {showCategoryFilter && (
-                <div className="sticky top-[120px] md:top-0 z-20 bg-gray-50 pt-2 pb-4 px-4 overflow-x-auto no-scrollbar flex gap-3 animate-fade-in-down">
-                    {categories.map((cat) => (
-                        <button
-                            key={cat}
-                            onClick={() => setSelectedCategory(cat)}
-                            className={`whitespace-nowrap px-6 py-2.5 rounded-full text-sm transition-all shadow-sm ${selectedCategory === cat
-                                ? 'bg-[#FD6941] text-white shadow-md transform scale-105'
-                                : 'bg-white text-gray-500 hover:bg-gray-100'
-                                }`}
-                        >
-                            {cat}
-                        </button>
-                    ))}
+                    {/* Category Dropdown Menu */}
+                    {showCategoryFilter && (
+                        <>
+                            <div className="fixed inset-0 z-40" onClick={() => setShowCategoryFilter(false)}></div>
+                            <div className="absolute right-0 mt-3 w-56 max-h-[60vh] overflow-y-auto no-scrollbar bg-white rounded-2xl shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="px-4 py-2 border-b border-gray-100 mb-2">
+                                    <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Categories</h3>
+                                </div>
+                                {categories.map((cat) => (
+                                    <button
+                                        key={cat}
+                                        onClick={() => {
+                                            setSelectedCategory(cat);
+                                            setShowCategoryFilter(false);
+                                        }}
+                                        className={`w-full text-left px-5 py-3 text-sm transition-colors focus:outline-none ${selectedCategory === cat ? 'bg-[#FD6941]/10 text-[#FD6941] font-bold border-l-4 border-[#FD6941]' : 'text-gray-600 hover:bg-gray-50 border-l-4 border-transparent font-medium'}`}
+                                    >
+                                        {cat}
+                                    </button>
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </div>
-            )}
+            </div>
 
             {/* Menu Grid */}
             <div className="px-4 pb-20">

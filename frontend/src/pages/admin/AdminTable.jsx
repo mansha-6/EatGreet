@@ -36,13 +36,7 @@ const ChecklistIcon = ({ className, style }) => (
     </svg>
 );
 const AdminTable = () => {
-    const [tables, setTables] = useState(() => {
-        const saved = localStorage.getItem('admin_tables');
-        let initialTables = saved ? JSON.parse(saved) : [1, 2, 3, 4, 5];
-        // Ensure unique and sorted
-        initialTables = [...new Set(initialTables.map(Number))].sort((a, b) => a - b);
-        return initialTables;
-    });
+    const [tables, setTables] = useState([]);
 
     const { currencySymbol } = useSettings();
 
@@ -86,22 +80,19 @@ const AdminTable = () => {
                 } else if (backendTableCount > 0) {
                     // Fallback for old data with only totalTables count
                     setTables(Array.from({ length: backendTableCount }, (_, i) => i + 1));
+                } else {
+                    setTables([1, 2, 3, 4, 5]); // Default fallback if utterly new
                 }
             } catch (err) {
                 console.error("Init failed", err);
+                setTables([1, 2, 3, 4, 5]);
             }
             fetchActiveOrders();
         };
         init();
     }, []);
 
-    // Handle Table State Changes
-    useEffect(() => {
-        if (tables.length > 0) {
-            localStorage.setItem('admin_tables', JSON.stringify(tables));
-            syncTableCount(tables.length, tables);
-        }
-    }, [tables]);
+    // Handle Table State Changes manually inside actions instead of aggressive effect
 
     // Socket Listener for Real-Time Table Status
     useEffect(() => {
@@ -152,12 +143,14 @@ const AdminTable = () => {
         // Ensure unique and sorted
         const newTables = [...new Set([...numericTables, nextTableNo])].sort((a, b) => a - b);
         setTables(newTables);
+        syncTableCount(newTables.length, newTables);
         toast.success(`Table ${nextTableNo} added`);
     };
 
     const removeTable = (table) => {
         const newTables = tables.filter(t => t !== table);
         setTables(newTables);
+        syncTableCount(newTables.length, newTables);
         toast.success(`Table ${table} removed`);
     };
 
@@ -327,7 +320,7 @@ const AdminTable = () => {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 sm:gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3 sm:gap-4 md:gap-6">
                 {tables.map(table => {
                     const url = getTableUrl(table);
                     const tableOrder = activeOrders.find(o => String(o.tableNumber) === String(table));
@@ -335,85 +328,103 @@ const AdminTable = () => {
 
                     return (
                         <div key={table}
-                            className={`bg-white rounded-2xl md:rounded-[2rem] p-4 md:p-5 aspect-square shadow-sm border-2 transition-all group relative flex flex-col items-center justify-center text-center overflow-hidden
-                                ${isLive ? 'border-[#FD6941] bg-[#FD6941]/5' : 'border-gray-100 hover:border-gray-200'}
+                            className={`bg-white rounded-2xl md:rounded-[2rem] shadow-sm border-2 transition-all group relative flex flex-col items-center justify-between text-center overflow-hidden
+                                ${isLive
+                                    ? 'border-[#FD6941] bg-gradient-to-b from-[#FD6941]/5 to-white'
+                                    : 'border-gray-100 hover:border-gray-200'
+                                }
                             `}
+                            style={{ minHeight: isLive ? '160px' : '140px' }}
                         >
-                            {/* Top Actions Bar - Delete only on Right */}
-                            <div className="absolute top-3 right-3 sm:top-5 sm:right-5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300">
+                            {/* Delete button — top right */}
+                            <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 z-10">
                                 <button
                                     onClick={() => removeTable(table)}
-                                    className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center bg-white text-gray-300 hover:text-red-500 rounded-md sm:rounded-lg shadow-sm border border-gray-100 transition-colors"
+                                    className="w-6 h-6 flex items-center justify-center bg-white text-gray-300 hover:text-red-500 rounded-md shadow-sm border border-gray-100 transition-colors"
                                     title="Delete Table"
                                 >
-                                    <Trash2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                                    <Trash2 className="w-3 h-3" />
                                 </button>
                             </div>
 
-                            {/* Center Content */}
-                            <div className="flex flex-col items-center mb-8 sm:mb-10">
-                                <span className={`text-3xl md:text-5xl font-normal mb-1 tracking-tighter  transition-colors duration-500 ${isLive ? 'text-[#FD6941]' : 'text-gray-900'}`}>
+                            {/* Center Content — table number + status */}
+                            <div className="flex flex-col items-center justify-center pt-5 pb-2 px-2 flex-1">
+                                <span className={`text-3xl sm:text-4xl md:text-5xl font-normal tracking-tighter transition-colors duration-500 leading-none mb-2
+                                    ${isLive ? 'text-[#FD6941]' : 'text-gray-900'}`}>
                                     {table}
                                 </span>
-                                <div className={`px-4 sm:px-5 py-1 sm:py-1.5 rounded-full text-[8px] sm:text-[9px] font-normal uppercase tracking-[0.2em] shadow-sm border transition-all duration-500
+                                <div className={`px-3 py-0.5 rounded-full text-[8px] sm:text-[9px] font-normal uppercase tracking-[0.15em] border transition-all duration-500
                                     ${isLive
-                                        ? 'bg-[#FD6941]/10 text-[#FD6941] border-[#FD6941]/30 '
-                                        : 'bg-gray-50 text-gray-400 border-gray-100'}
-                                `}>
+                                        ? 'bg-[#FD6941]/10 text-[#FD6941] border-[#FD6941]/25'
+                                        : 'bg-gray-50 text-gray-400 border-gray-100'}`}>
                                     {isLive ? 'Occupied' : 'Vacant'}
                                 </div>
                             </div>
 
-                            {/* Bottom Actions Bar (Brand Styled - Clean Dock) */}
-                            <div className="absolute bottom-3 sm:bottom-6 left-0 right-0 flex justify-center items-center gap-1 sm:gap-2 px-2">
-                                <button
-                                    onClick={() => {
-                                        if (isLive) {
-                                            toast.error("You can't order here, this table is already occupied. Please check your table number and scan the QR Code again.", { duration: 4000 });
-                                            return;
-                                        }
-                                        setQrModal({ isOpen: true, url, tableNo: table });
-                                    }}
-                                    className="w-7 h-7 md:w-9 md:h-9 flex items-center justify-center rounded-lg md:rounded-xl bg-white text-gray-400 hover:text-blue-600 transition-all border border-gray-100 hover:border-blue-100 shadow-sm group/icon"
-                                    title="Scan QR"
-                                >
-                                    <QrCode className="w-3 h-3 md:w-4 md:h-4 group-hover/icon:scale-110 transition-transform" />
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        if (isLive) {
+                            {/* Bottom Action Dock */}
+                            {isLive ? (
+                                // Occupied: full-width pill action bar
+                                <div className="w-full px-3 pb-3 flex gap-2">
+                                    <button
+                                        onClick={() => {
+                                            if (isLive) {
+                                                toast.error("You can't order here, this table is already occupied. Please check your table number and scan the QR Code again.", { duration: 4000 });
+                                                return;
+                                            }
+                                            setQrModal({ isOpen: true, url, tableNo: table });
+                                        }}
+                                        className="flex-1 flex items-center justify-center h-8 rounded-xl bg-gray-100 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all border border-gray-200"
+                                        title="Scan QR"
+                                    >
+                                        <QrCode className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                        onClick={() => {
                                             setSelectedTableOrder(tableOrder);
                                             setIsPreviewOpen(true);
-                                        }
-                                    }}
-                                    disabled={!isLive}
-                                    className={`w-7 h-7 md:w-9 md:h-9 flex items-center justify-center rounded-lg md:rounded-xl transition-all border shadow-sm group/icon
-                                        ${isLive
-                                            ? 'bg-[#FD6941] text-white border-[#FD6941]/20 hover:scale-110 active:scale-95'
-                                            : 'bg-gray-50/50 text-gray-200 border-gray-100 cursor-not-allowed'}
-                                    `}
-                                    title="Preview Order"
-                                >
-                                    <Eye className="w-3 h-3 md:w-4 md:h-4 group-hover/icon:scale-110 transition-transform" />
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        if (isLive) {
+                                        }}
+                                        className="flex-1 flex items-center justify-center h-8 rounded-xl bg-[#FD6941] text-white hover:bg-[#FD6941]/90 transition-all shadow-md shadow-[#FD6941]/20 active:scale-95"
+                                        title="Preview Order"
+                                    >
+                                        <Eye className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                        onClick={() => {
                                             setInvoiceOrder(tableOrder);
                                             setIsInvoicePreviewOpen(true);
-                                        }
-                                    }}
-                                    disabled={!isLive}
-                                    className={`w-7 h-7 md:w-9 md:h-9 flex items-center justify-center rounded-lg md:rounded-xl transition-all border shadow-sm group/icon
-                                        ${isLive
-                                            ? 'bg-[#FD6941] text-white border-[#FD6941]/20 hover:scale-110 active:scale-95'
-                                            : 'bg-gray-50/50 text-gray-200 border-gray-100 cursor-not-allowed'}
-                                    `}
-                                    title="Invoice"
-                                >
-                                    <FileText className="w-3 h-3 md:w-4 md:h-4 group-hover/icon:scale-110 transition-transform" />
-                                </button>
-                            </div>
+                                        }}
+                                        className="flex-1 flex items-center justify-center h-8 rounded-xl bg-[#FD6941] text-white hover:bg-[#FD6941]/90 transition-all shadow-md shadow-[#FD6941]/20 active:scale-95"
+                                        title="Invoice"
+                                    >
+                                        <FileText className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            ) : (
+                                // Vacant: subtle icon row
+                                <div className="w-full px-3 pb-3 flex justify-center gap-1.5 sm:gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={() => setQrModal({ isOpen: true, url, tableNo: table })}
+                                        className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-gray-50 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all border border-gray-100"
+                                        title="Scan QR"
+                                    >
+                                        <QrCode className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                                    </button>
+                                    <button
+                                        disabled
+                                        className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-gray-50 text-gray-200 border border-gray-100 cursor-not-allowed"
+                                        title="No active order"
+                                    >
+                                        <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                                    </button>
+                                    <button
+                                        disabled
+                                        className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg bg-gray-50 text-gray-200 border border-gray-100 cursor-not-allowed"
+                                        title="No active order"
+                                    >
+                                        <FileText className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     );
                 })}
@@ -579,8 +590,8 @@ const AdminTable = () => {
                             <X className="w-5 h-5 sm:w-6 sm:h-6" />
                         </button>
 
-                        <div className="p-2 sm:p-8 overflow-y-auto custom-scrollbar flex items-start sm:items-center justify-center bg-gray-100/50 h-full flex-1">
-                            <div className="bg-white mx-auto shadow-sm border border-gray-200 p-4 sm:p-8 font-mono text-black relative my-2 sm:my-8" style={{ width: '100%', maxWidth: '380px' }}>
+                        <div className="px-4 py-8 sm:p-8 overflow-y-auto no-scrollbar flex flex-col items-center bg-gray-100/50 h-full w-full">
+                            <div className="bg-white mx-auto shadow-sm border border-gray-200 p-5 sm:p-8 font-mono text-black relative w-full shrink-0" style={{ maxWidth: '380px' }}>
                                 <button
                                     onClick={() => handlePrint(invoiceOrder)}
                                     className="absolute top-4 right-4 p-2 bg-gray-50 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600 transition-colors no-print"

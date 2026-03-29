@@ -128,18 +128,20 @@ const Customer3DViewer = () => {
             </div>
 
             {/* 3D Model Viewer Area */}
-            <div className="flex-1 w-full bg-transparent flex items-center justify-center relative rounded-3xl overflow-hidden mt-0 border-2 border-white sm:border-transparent">
+            <div className="flex-1 w-full h-full min-h-[50vh] bg-transparent flex items-center justify-center relative rounded-3xl overflow-hidden mt-0 border-2 border-white sm:border-transparent">
                 <model-viewer
                     src={selected3DItem.models[0]?.url || selected3DItem.models[0]}
                     alt={selected3DItem.name}
                     camera-controls
                     auto-rotate
+                    crossorigin="anonymous"
+                    reveal="auto"
                     ar
                     ar-modes="webxr scene-viewer quick-look"
                     ar-scale="fixed"
                     shadow-intensity="1"
                     shadow-softness="1"
-                    style={{ width: '100%', height: '100%', backgroundColor: 'transparent' }}
+                    style={{ width: '100%', height: '100%', minHeight: '300px', backgroundColor: 'transparent', display: 'block' }}
                     className="w-full h-full object-contain pointer-events-auto"
                 >
                     {/* AR Button Slot */}

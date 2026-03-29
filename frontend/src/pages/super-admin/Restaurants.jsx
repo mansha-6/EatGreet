@@ -688,10 +688,10 @@ export default function Restaurants() {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="bg-white rounded-[2.5rem] w-full max-w-lg shadow-2xl border border-white"
+                        className="bg-white rounded-[2.5rem] w-full max-w-lg max-h-[90vh] shadow-2xl border border-white flex flex-col overflow-hidden"
                     >
-                        <div className="p-8">
-                            <div className="flex items-center justify-between mb-8">
+                        <div className="p-5 sm:p-8 overflow-y-auto no-scrollbar">
+                            <div className="flex items-center justify-between mb-6 sm:mb-8 shrink-0">
                                 <div>
                                     <h2 className="text-2xl font-normal text-gray-900">Edit Subscription</h2>
                                     <p className="text-sm text-gray-500 font-normal">Updating {selectedRestaurant?.restaurantName || selectedRestaurant?.name}</p>
@@ -805,7 +805,7 @@ export default function Restaurants() {
                             onClick={e => e.stopPropagation()}
                         >
                             {/* Top Banner */}
-                            <div className="bg-gradient-to-br from-[#FFF5F1] to-[#FFE4D9] px-8 pt-8 pb-10 relative">
+                            <div className="bg-gradient-to-br from-[#FFF5F1] to-[#FFE4D9] px-5 sm:px-8 pt-6 sm:pt-8 pb-8 sm:pb-10 relative shrink-0">
                                 <button
                                     onClick={() => setPreviewRestaurant(null)}
                                     className="absolute top-5 right-5 p-2 hover:bg-white/60 rounded-full transition-colors"
@@ -840,7 +840,7 @@ export default function Restaurants() {
                             </div>
 
                             {/* Details Body */}
-                            <div className="px-8 py-6 -mt-4 space-y-4 overflow-y-auto">
+                            <div className="px-5 sm:px-8 py-6 -mt-4 space-y-4 overflow-y-auto no-scrollbar">
                                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                     <div className="bg-gray-50 rounded-[1.5rem] p-5 space-y-3.5">
                                         <p className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Admin User Details</p>
@@ -1037,7 +1037,7 @@ export default function Restaurants() {
                             </div>
 
                             {/* Footer Actions */}
-                            <div className="px-8 pb-8 flex gap-3">
+                            <div className="px-5 sm:px-8 pb-6 sm:pb-8 pt-2 flex flex-col sm:flex-row gap-3 shrink-0">
                                 <button
                                     onClick={() => { setPreviewRestaurant(null); handleEditSubscription(previewRestaurant); }}
                                     className="flex-1 py-3 rounded-full border border-gray-200 text-gray-600 font-normal text-sm hover:bg-gray-50 transition-all flex items-center justify-center gap-2"

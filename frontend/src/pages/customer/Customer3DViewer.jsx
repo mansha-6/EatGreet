@@ -209,8 +209,8 @@ const Customer3DViewer = () => {
 
                         {/* Bottom Horizontal List of other 3D items */}
                         {sliderItems.length > 1 && (
-                            <div className="pb-6 pt-2">
-                                <div className="flex items-center gap-4 px-6 overflow-x-auto no-scrollbar pointer-events-auto touch-pan-x overscroll-x-contain">
+                            <div className="pb-4">
+                                <div className="flex items-center gap-4 px-6 py-4 overflow-x-auto no-scrollbar pointer-events-auto touch-pan-x overscroll-x-contain">
                                     {sliderItems.map(item => (
                                         <div 
                                             key={item._id}
@@ -218,12 +218,12 @@ const Customer3DViewer = () => {
                                                 setSelected3DItem(item);
                                                 navigate(`../${generateSlug(item.name)}`, { replace: true, relative: "path" });
                                             }}
-                                            className={`shrink-0 w-24 md:w-28 rounded-2xl md:rounded-[1.5rem] overflow-hidden cursor-pointer border-2 transition-all duration-300 ${selected3DItem._id === item._id ? 'border-[#FD6941] scale-105 shadow-[0_4px_15px_rgba(253,105,65,0.3)]' : 'border-white/50 bg-white/20 backdrop-blur-md opacity-80 hover:opacity-100 shadow-sm'}`}
+                                            className={`shrink-0 w-24 md:w-28 rounded-2xl md:rounded-[1.5rem] overflow-hidden cursor-pointer border-2 transition-all duration-300 ${selected3DItem._id === item._id ? 'border-[#FD6941] bg-white scale-105 shadow-[0_8px_20px_rgba(253,105,65,0.15)]' : 'border-white/50 bg-white/20 backdrop-blur-md opacity-80 hover:opacity-100 shadow-sm'}`}
                                         >
-                                            <div className="h-16 md:h-20 w-full bg-gray-100/50 p-1 flex items-center justify-center">
+                                            <div className="h-16 md:h-20 w-full bg-gray-100/50 p-1 flex items-center justify-center rounded-t-[calc(1rem-2px)] md:rounded-t-[calc(1.5rem-2px)]">
                                                 <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded-xl md:rounded-2xl" />
                                             </div>
-                                            <div className="p-2 bg-white/90 backdrop-blur-sm text-center border-t border-white/20">
+                                            <div className="p-2 bg-white/95 text-center border-t border-gray-100 rounded-b-[calc(1rem-2px)] md:rounded-b-[calc(1.5rem-2px)]">
                                                 <p className="text-[10px] md:text-xs text-gray-800 truncate font-medium">{item.name}</p>
                                             </div>
                                         </div>

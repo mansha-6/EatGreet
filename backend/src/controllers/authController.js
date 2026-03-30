@@ -260,33 +260,28 @@ const sendSuperAdminOtp = async (req, res) => {
         const otpCode = createOtpCode();
         const newOtpData = {
             codeHash: hashOtp(otpCode),
-            expiresAt: new Date(now.getTime() + 5 * 60 * 1000),
+            expiresAt: new Date(now.getTime() + 1 * 60 * 1000),
             lastSentAt: now,
             attempts: 0
         };
 
         console.log(`📡 Attempting to dispatch Super Admin OTP to ${normalizedEmail} using ${process.env.EMAIL_USER}...`);
         
-        try {
-            await sendSuperAdminOtpEmail(normalizedEmail, otpCode);
-            console.log('✅ Super Admin OTP email dispatched successfully');
-            
-            user.superAdminOtp = newOtpData;
-            await user.save();
-            console.log('✅ OTP data saved to database');
+        // 1. Save OTP data to database first to ensure consistency
+        user.superAdminOtp = newOtpData;
+        await user.save();
+        console.log('✅ OTP data saved to database');
 
-            res.status(200).json({
-                message: 'Access code sent! Please check your email.',
-                otpSent: true
-            });
-        } catch (emailError) {
-            console.error('❌ Email Delivery Failed in controller:', emailError);
-            res.status(500).json({ 
-                message: `Failed to deliver OTP email: ${emailError.message}`,
-                error: emailError.code,
-                stack: process.env.NODE_ENV === 'development' ? emailError.stack : undefined
-            });
-        }
+        // 2. Dispatch email in background AFTER response for speed
+        sendSuperAdminOtpEmail(normalizedEmail, otpCode)
+            .then(() => console.log('✅ Super Admin OTP email dispatched successfully'))
+            .catch(emailError => console.error('❌ Background Super Admin OTP delivery failed:', emailError.message));
+
+        // 3. Respond immediately
+        res.status(200).json({
+            message: 'Access code sent! Please check your email.',
+            otpSent: true
+        });
     } catch (error) {
         console.error('❌ Super Admin OTP Critical Error:', error);
         res.status(500).json({ message: 'Failed to send OTP email. Please try again.' });
@@ -569,15 +564,16 @@ const forgotPassword = async (req, res) => {
 
         const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
 
-        try {
-            await sendForgotPasswordEmail(user.email, user.name, resetUrl);
-            res.status(200).json({ message: 'Password reset link sent to your email' });
-        } catch (error) {
-            user.resetPasswordToken = undefined;
-            user.resetPasswordExpires = undefined;
-            await user.save();
-            return res.status(500).json({ message: 'Email could not be sent' });
-        }
+        // Dispatch email in background
+        sendForgotPasswordEmail(user.email, user.name, resetUrl)
+            .then(() => console.log('✅ Forgot password email sent'))
+            .catch(async (error) => {
+                console.error('❌ Background Forgot password email failed:', error.message);
+                // Optional: We don't rollback here because the token is already in DB 
+                // and user has received success response. They can retry forgot password.
+            });
+
+        res.status(200).json({ message: 'If an account exists with this email, a password reset link has been sent.' });
     } catch (error) {
         console.error('🔥 Forgot Password Error:', error);
         res.status(500).json({ 

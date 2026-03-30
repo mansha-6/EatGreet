@@ -162,7 +162,7 @@ export default function SuperAdminLogin() {
                                 />
                             ))}
                         </div>
-                        <p className="text-xs text-gray-400 px-1 mt-2">OTP is valid for 2 minutes</p>
+                        <p className="text-xs text-gray-400 px-1 mt-2">OTP is valid for 1 minute</p>
                     </div>
 
                     <button
